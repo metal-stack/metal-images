@@ -31,7 +31,7 @@ jobs:
           --file docker-make.${{ matrix.os }}.yaml
           --no-cache
           --no-push
-          --summay
+          --summary
           --no-lint
           --skip-registry-auth
     - name: Build docker image for firewalls and export tarball
@@ -42,7 +42,7 @@ jobs:
           --build-only ${{ matrix.os }}
           --no-cache
           --no-push
-          --summay
+          --summary
           --no-lint
           --skip-registry-auth
     - name: Upload image tarballs to GCS
