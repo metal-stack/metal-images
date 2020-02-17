@@ -1,0 +1,51 @@
+name: Mainline Build
+
+on:
+  push:
+    branches:
+    # Restriction will be removed once the build in the test branch is finished
+      - test-github-actions
+
+env:
+  GOOGLE_BUCKETS: https://storage.googleapis.com
+  GOOGLE_IMAGES_BUCKET: images.metal-pod.io
+
+jobs:
+  images:
+    name: Build OS images for metal-stack
+    strategy:
+      matrix:
+        os: [debian, ubuntu]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh
+    - name: Build docker image for workers and export tarball
+      uses: metal-stack/action-docker-make@master
+      with:
+        args: |
+          --work-dir debian \
+          --file docker-make.${{ matrix.os }}.yaml \
+          --no-cache \
+          --no-push \
+          --summay \
+          --no-lint \
+          --skip-registry-auth
+    - name: Build docker image for firewalls and export tarball
+      uses: metal-stack/action-docker-make@master
+      with:
+        args: |
+          --work-dir firewall \
+          --build-only ${{ matrix.os }} \
+          --no-cache \
+          --no-push \
+          --summay \
+          --no-lint \
+          --skip-registry-auth
+    - name: Upload image tarballs to gcs
+      shell: bash
+      run: mc cp --recursive images/* google/${GOOGLE_IMAGES_BUCKET}
+

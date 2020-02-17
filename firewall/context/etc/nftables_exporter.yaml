@@ -1,0 +1,5 @@
+---
+nftables_exporter:
+  bind_to: "[::]:9630"
+  url_path: "/metrics"
+  nft_location: /usr/sbin/nft

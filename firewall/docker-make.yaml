@@ -1,0 +1,38 @@
+---
+version: '1'
+name: firewall
+username: metalstack/images
+registry-host: ""
+default-build-args:
+  - http_proxy=${HTTP_PROXY}
+  - https_proxy=${HTTP_PROXY}
+  - HTTP_PROXY=${HTTP_PROXY}
+  - HTTPS_PROXY=${HTTP_PROXY}
+  - NO_PROXY=${NO_PROXY}
+  - no_proxy=${NO_PROXY}
+  - SEMVER_PATCH=${SEMVER_PATCH}
+builds:
+  -
+    name: debian
+    tags:
+      - ${SEMVER}
+      - ${SEMVER_MAJOR_MINOR}
+    build-args:
+      - BASE_OS_VERSION=10
+      - BASE_OS_NAME=metalstack/images/debian
+      - SEMVER_MAJOR_MINOR=2.0
+      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+    after:
+      - OS_NAME=firewall SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
+  -
+    name: ubuntu
+    tags:
+      - ${SEMVER}
+      - ${SEMVER_MAJOR_MINOR}
+    build-args:
+      - BASE_OS_VERSION=19.10
+      - BASE_OS_NAME=metalstack/images/ubuntu
+      - SEMVER_MAJOR_MINOR=2.0-ubuntu
+      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+    after:
+      - OS_NAME=firewall SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

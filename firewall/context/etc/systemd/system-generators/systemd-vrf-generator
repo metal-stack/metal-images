@@ -1,0 +1,253 @@
+#!/bin/bash
+
+# Intentionally created to run chrony in an internet-facing VRF
+# to provide connectivity to remote NTP servers.
+# Copied from: https://raw.githubusercontent.com/CumulusNetworks/vrf/master/systemd/systemd-vrf-generator 
+
+# Generate systemd files for running a systemd-based service
+# in a VRF. Generator creates instance templates for services
+# that do not have them and creates unit overrides to prepend
+# 'runvrf %i' to all Exec lines.
+
+PROG=systemd-vrf-generator
+
+# command to use to run other commands in a VRF
+RUNVRF="/bin/ip vrf exec"
+
+# config file noting services that might run in a VRF
+VRFCONF=/etc/vrf/systemd.conf
+
+# where to find systemd service files
+SYSTEMD_SVC=/lib/systemd/system
+
+# where to write the instance service files created
+# by this generator
+SYSTEMD_ETC=/etc/systemd/system
+SYSTEMD_RUN=/run/systemd/system
+
+VRFGEN_NOTE="created by vrf generator"
+
+do_cleanup()
+{
+	local file
+
+	grep -d skip -l "${VRFGEN_NOTE}" ${SYSTEMD_ETC}/*.service | \
+	while read file
+	do
+		/bin/rm -f ${file}
+	done
+
+	grep -r -l "${VRFGEN_NOTE}" ${DEST} | \
+	while read file
+	do
+		/bin/rm -f ${file}
+	done
+}
+
+EXEC_DIR=
+
+directive_seen()
+{
+	local d
+
+	for d in $EXEC_DIR
+	do
+		[ "$d" = "$1" ] && return 0
+	done
+
+	EXEC_DIR="$EXEC_DIR $1"
+
+	return 1
+}
+
+create_instance_sysv()
+{
+	local file=${1}
+	local ifile=${2}
+
+	(
+	echo "# ${VRFGEN_NOTE}"
+	while read line; do
+		if [[ $line =~ (Exec[^=]+=[[:space:]]*[^/]*)(\/.*) ]]; then
+			# use full match here to keep all context
+			echo "${BASH_REMATCH[1]}${RUNVRF} %i ${BASH_REMATCH[2]}"
+		else
+			echo "$line"
+			if [ "$line" = "[Service]" ]; then
+				echo "Environment=_SYSTEMCTL_SKIP_REDIRECT=true"
+			fi
+		fi
+	done < ${file}
+
+	grep -q "WantedBy=" ${file}
+	if [ $? -ne 0 ]; then
+		echo
+		echo "[Install]"
+		echo "WantedBy=multi-user.target"
+	fi
+	) > ${ifile}
+}
+
+# Admins can create unit override files. Those files should exist for
+# instance services as well. Additionally, if those files contain Exec
+# lines then the commands need to be prefaced with ip vrf exec
+handle_overrides()
+{
+	local s=$1
+	local sa=$2
+	local ord=${SYSTEMD_ETC}/${s}.service.d
+	local iord=${DEST}/${sa}@.service.d
+	local f
+	local line
+
+	[ ! -e ${ord} ] && return 0
+
+	mkdir -p ${iord}
+
+	ls -C1 ${ord}/*.conf 2>/dev/null |
+	while read f
+	do
+		(
+		echo "# ${VRFGEN_NOTE}"
+
+		while read line; do
+			if [[ $line =~ (Exec[^=]+=[[:space:]]*[^/]*)(\/.*) ]]; then
+				[ -z "${BASH_REMATCH[2]}" ] && continue
+				# use full match here to keep all context
+				echo "${BASH_REMATCH[1]}${RUNVRF} %i ${BASH_REMATCH[2]}"
+			else
+				echo "${line}"
+			fi
+		done < ${f}
+		) > ${iord}/${f##*/}
+	done
+}
+
+create_vrf_override()
+{
+	local file=$1
+	local ifile=$2
+	local sa=$3
+	local iord=${DEST}/${sa}@.service.d
+	local conffiles
+	local line
+	local d
+
+	# reset exec directives seen; those are per service file
+	EXEC_DIR=
+
+	# for each Exec line in the service handle prepend vrf exec.
+	# Keep the '-' and '@' characters after the '=' if applicable.
+	# Commands must be absolute path which allows parsing on the '/'
+	mkdir -p ${iord}
+	conffiles="$(ls -C1  ${iord}/*.conf)"
+	(
+	echo "# ${VRFGEN_NOTE}"
+	echo "[Unit]"
+	echo "SourcePath=${file}"
+	echo "After=network-online.target networking.service"
+	echo
+	echo "[Service]"
+	while read line; do
+		if [[ $line =~ (Exec[^=]+=[[:space:]]*[^/]*)(\/.*) ]]; then
+			# directive is the part before the '='
+			set -- ${BASH_REMATCH[1]/=*}
+			d=${1}
+
+			# has this directive been overridden by an existing unit file?
+			if [ -n "${conffiles}" ]; then
+				egrep -q "${d}\W*=\W*$" ${conffiles} 2>/dev/null
+				[ $? -eq 0 ] && continue
+			fi
+
+			# only write reset for directive first time we see it
+			directive_seen ${d}
+			[ $? -eq 1 ] && echo "${d}="
+
+			# use full match here to keep all context
+			echo "${BASH_REMATCH[1]}${RUNVRF} %i ${BASH_REMATCH[2]}"
+		fi
+	done < ${ifile}
+
+	) > ${iord}/vrf.conf
+
+	chmod 644 ${iord}/vrf.conf
+}
+
+create_instance()
+{
+	local s=${1}
+	local sa=${s//@}
+	local d
+	local force_ifile="no"
+
+	local file=${SYSTEMD_SVC}/${s}.service
+	local ifile=${SYSTEMD_SVC}/${sa}@.service
+	local vrffile=${SYSTEMD_ETC}/${sa}@.service
+	local vrfunit=${DEST}/${sa}@.service.d
+
+	# no service file, nothing to do -- maybe the package
+	# has not been installed yet
+	if [ ! -e ${file} -a ! -e ${ifile} ]; then
+		# service files for sysv init based services are
+		# generated and put in late-dir
+		if [ -e ${LATE_DEST}/${s}.service ]; then
+			file=${LATE_DEST}/${s}.service
+		else
+			return
+		fi
+	fi
+
+	# sysv init scripts converted to systemd services need
+	# special handling
+	grep -q "systemd-sysv-generator" ${file}
+	if [ $? -eq 0 ]; then
+		create_instance_sysv ${file} ${vrffile}
+		return
+	fi
+
+	# some instance files are known not to work with the VRF
+	# use of instance; ignore those and generate a VRF one
+	case ${sa} in
+		ssh) force_ifile="yes"
+		     vrffile=${SYSTEMD_RUN}/${sa}@.service
+		     ;;
+	esac
+
+	# if service brings along its own instance file no
+	# need to create one
+	if [ -e ${ifile} -a ${force_ifile} != "yes" ]; then
+		file=${ifile}
+	else
+		echo "# ${VRFGEN_NOTE}" > ${vrffile}
+		cat ${file} >> ${vrffile}
+
+		ifile=${vrffile}
+	fi
+
+	# check for existing unit override files
+	handle_overrides ${s} ${sa}
+
+	# create vrf base override for instance service
+	create_vrf_override ${file} ${ifile} ${sa}
+}
+
+# take the normal-dir for writing our temp files
+DEST=${1}
+EARLY_DEST=${2}
+LATE_DEST=${3}
+
+# remove old files
+do_cleanup
+
+[ ! -e ${VRFCONF} ] && exit 0
+
+while read service
+do
+	# skip comments and blank lines
+	[ -z "${service}" -o "${service:0:1}" = "#" ] && continue
+
+	create_instance ${service}
+done < ${VRFCONF}
+
+exit 0

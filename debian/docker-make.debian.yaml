@@ -1,0 +1,35 @@
+---
+version: '1'
+name: debian
+username: metalstack/images
+registry-host: ""
+default-build-args:
+  - http_proxy=${HTTP_PROXY}
+  - https_proxy=${HTTP_PROXY}
+  - HTTP_PROXY=${HTTP_PROXY}
+  - HTTPS_PROXY=${HTTP_PROXY}
+  - NO_PROXY=${NO_PROXY}
+  - no_proxy=${NO_PROXY}
+  - IGNITION_BRANCH=v0.34.0
+  - YQ_VERSION=2.4.1
+  - GOLLDPD_VERSION=v0.2.2
+  - METAL_NETWORKER_VERSION=v0.1.1
+  - SEMVER_PATCH=${SEMVER_PATCH}
+  - BASE_OS_NAME=debian
+  - DOCKER_APT_OS=debian
+builds:
+  -
+    name: "Debian 10"
+    tags:
+      - ${SEMVER}
+      - ${SEMVER_MAJOR_MINOR}
+    build-args:
+      - BASE_OS_VERSION=10
+      - DOCKER_APT_CHANNEL=buster
+      - FRR_VERSION=frr-7
+      - FRR_VERSION=7.2-debian-10
+      - LINUX_IMAGE=linux-image-amd64
+      - SEMVER_MAJOR_MINOR=10
+      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+    after:
+      - OS_NAME=debian SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
