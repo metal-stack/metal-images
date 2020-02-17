@@ -7,8 +7,8 @@ on:
       - test-github-actions
 
 env:
-  GOOGLE_BUCKETS: https://storage.googleapis.com
-  GOOGLE_IMAGES_BUCKET: images.metal-pod.io
+  GCS_SERVICE_URL: https://storage.googleapis.com
+  GCS_BUCKET_NAME: images.metal-pod.io
 
 jobs:
   images:
@@ -22,7 +22,7 @@ jobs:
       uses: actions/checkout@v1
     - name: Prepare build environment
       shell: bash
-      run: ./prepare.sh
+      run: ./prepare.sh ${{ matrix.os }}
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
@@ -45,7 +45,14 @@ jobs:
           --summay \
           --no-lint \
           --skip-registry-auth
-    - name: Upload image tarballs to gcs
-      shell: bash
-      run: mc cp --recursive images/* google/${GOOGLE_IMAGES_BUCKET}
-
+    - name: Upload image tarballs to GCS
+      uses: peter-evans/s3-backup@v1.0.1
+      env:
+        ACCESS_KEY_ID: ${{ secrets.GCS_ACCESS_KEY_ID }}
+        SECRET_ACCESS_KEY: ${{ secrets.GCS_SECRET_ACCESS_KEY }}
+        MIRROR_TARGET: "$GCS_BUCKET_NAME"
+        MIRROR_SOURCE: ./images/
+        STORAGE_SERVICE_URL: "$GCS_SERVICE_URL"
+        STORAGE_SERVICE_ALIAS: gcs
+      with:
+        args: --overwrite 

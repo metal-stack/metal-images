@@ -12,11 +12,6 @@ if [ "${BRANCH}" != "master" ]; then
 fi
 echo "::set-env name=SEMVER_PATCH::$(date +%Y%m%d)"
 
-echo "Installing minio client"
-curl -fsSL https://dl.minio.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
-chmod +x /usr/local/bin/mc
-mc config host add google ${GOOGLE_BUCKETS} ${GOOGLE_ACCESS_KEY} "${GOOGLE_SECRET_KEY}"
-
 echo "Generating build metadata"
 mkdir -p ${OS_FLAVOR}/etc/context/metal
 BUILD_META_FILE="${OS_FLAVOR}/context/etc/metal/build.yaml"
