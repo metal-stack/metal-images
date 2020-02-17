@@ -12,7 +12,7 @@ env:
 
 jobs:
   images:
-    name: Build OS images for metal-stack
+    name: Build OS
     strategy:
       matrix:
         os: [debian, ubuntu]
@@ -26,24 +26,24 @@ jobs:
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
-        args: |
-          --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
-          --no-cache \
-          --no-push \
-          --summay \
-          --no-lint \
+        args: >
+          --work-dir debian
+          --file docker-make.${{ matrix.os }}.yaml
+          --no-cache
+          --no-push
+          --summay
+          --no-lint
           --skip-registry-auth
     - name: Build docker image for firewalls and export tarball
       uses: metal-stack/action-docker-make@master
       with:
-        args: |
-          --work-dir firewall \
-          --build-only ${{ matrix.os }} \
-          --no-cache \
-          --no-push \
-          --summay \
-          --no-lint \
+        args: >
+          --work-dir firewall
+          --build-only ${{ matrix.os }}
+          --no-cache
+          --no-push
+          --summay
+          --no-lint
           --skip-registry-auth
     - name: Upload image tarballs to GCS
       uses: peter-evans/s3-backup@v1.0.1
