@@ -48,6 +48,9 @@ jobs:
           --no-pull
           --summary
           --no-lint
+    - name: List directory
+      shell: bash
+      run: ls -alhR .
     - name: Upload image tarballs to GCS
       uses: peter-evans/s3-backup@v1.0.1
       with:
