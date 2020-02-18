@@ -28,7 +28,7 @@ jobs:
       shell: bash
       run: |
         ./prepare.sh ${{ matrix.os }}
-        mkdir images/test
+        mkdir -p images/test
         touch images/test/test
     - name: Test-Upload to GCS
       uses: peter-evans/s3-backup@v1.0.1
