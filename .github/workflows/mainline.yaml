@@ -11,7 +11,7 @@ env:
   STORAGE_SERVICE_URL: https://storage.googleapis.com
   ACCESS_KEY_ID: ${{ secrets.GCS_ACCESS_KEY_ID }}
   SECRET_ACCESS_KEY: ${{ secrets.GCS_SECRET_ACCESS_KEY }}
-  MIRROR_SOURCE: images/*
+  MIRROR_SOURCE: images/
   MIRROR_TARGET: images.metal-pod.io
 
 jobs:
