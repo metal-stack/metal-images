@@ -7,8 +7,12 @@ on:
       - test-github-actions
 
 env:
-  GCS_SERVICE_URL: https://storage.googleapis.com
-  GCS_BUCKET_NAME: images.metal-pod.io
+  STORAGE_SERVICE_ALIAS: gcs
+  STORAGE_SERVICE_URL: https://storage.googleapis.com
+  ACCESS_KEY_ID: ${{ secrets.GCS_ACCESS_KEY_ID }}
+  SECRET_ACCESS_KEY: ${{ secrets.GCS_SECRET_ACCESS_KEY }}
+  MIRROR_SOURCE: ./images/
+  MIRROR_TARGET: images.metal-pod.io
 
 jobs:
   images:
@@ -46,12 +50,5 @@ jobs:
           --no-lint
     - name: Upload image tarballs to GCS
       uses: peter-evans/s3-backup@v1.0.1
-      env:
-        ACCESS_KEY_ID: ${{ secrets.GCS_ACCESS_KEY_ID }}
-        SECRET_ACCESS_KEY: ${{ secrets.GCS_SECRET_ACCESS_KEY }}
-        MIRROR_TARGET: "$GCS_BUCKET_NAME"
-        MIRROR_SOURCE: ./images/
-        STORAGE_SERVICE_URL: "$GCS_SERVICE_URL"
-        STORAGE_SERVICE_ALIAS: gcs
       with:
         args: --overwrite 
