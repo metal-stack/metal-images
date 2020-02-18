@@ -1,14 +1,15 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 OS_FLAVOR=$1
 
 echo "Setting GitHub environment variables"
-echo "::set-env name=BRANCH::$(echo ${GITHUB_REF##*/})"
+BRANCH=${GITHUB_REF/refs\/tags\//}
+echo "::set-env name=BRANCH::${BRANCH})"
 
 if [ "${BRANCH}" != "master" ]; then
-    echo "::set-env name=OUTPUT_FOLDER::$(echo '/' + ${BRANCH})"
+    echo "::set-env name=OUTPUT_FOLDER::'/${BRANCH}'"
 fi
 echo "::set-env name=SEMVER_PATCH::$(date +%Y%m%d)"
 
