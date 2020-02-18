@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 readonly SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
 readonly DOCKER_IMAGE="metalstack/images/${OS_NAME}:${SEMVER}"

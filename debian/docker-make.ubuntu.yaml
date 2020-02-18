@@ -2,7 +2,7 @@
 version: '1'
 name: ubuntu
 username: metalstack/images
-registry-host: ""
+registry-host: docker.io
 default-build-args:
   - http_proxy=${HTTP_PROXY}
   - https_proxy=${HTTP_PROXY}

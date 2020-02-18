@@ -1,6 +1,5 @@
 #!/bin/bash
-
-set -ex
+set -e
 
 OS_FLAVOR=$1
 
