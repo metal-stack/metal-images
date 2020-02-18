@@ -26,7 +26,14 @@ jobs:
       uses: actions/checkout@v1
     - name: Prepare build environment
       shell: bash
-      run: ./prepare.sh ${{ matrix.os }}
+      run: |
+        ./prepare.sh ${{ matrix.os }}
+        mkdir images/test
+        touch images/test/test
+    - name: Test-Upload to GCS
+      uses: peter-evans/s3-backup@v1.0.1
+      with:
+        args: --overwrite 
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
