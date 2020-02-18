@@ -26,23 +26,23 @@ jobs:
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
-        args: |
-          --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
-          --no-cache \
-          --no-push \
-          --summary \
+        args: >
+          --work-dir debian
+          --file docker-make.${{ matrix.os }}.yaml
+          --no-cache
+          --no-push
+          --summary
           --no-lint
     - name: Build docker image for firewalls and export tarball
       uses: metal-stack/action-docker-make@master
       with:
-        args: |
-          --work-dir firewall \
-          --build-only ${{ matrix.os }} \
-          --no-cache \
-          --no-push \
-          --no-pull \
-          --summary \
+        args: >
+          --work-dir firewall
+          --build-only ${{ matrix.os }}
+          --no-cache
+          --no-push
+          --no-pull
+          --summary
           --no-lint
     - name: Upload image tarballs to GCS
       uses: peter-evans/s3-backup@v1.0.1
