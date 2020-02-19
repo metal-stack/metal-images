@@ -7,12 +7,7 @@ on:
       - test-github-actions
 
 env:
-  STORAGE_SERVICE_ALIAS: gcs
-  STORAGE_SERVICE_URL: https://storage.googleapis.com
-  ACCESS_KEY_ID: ${{ secrets.GCS_ACCESS_KEY_ID }}
-  SECRET_ACCESS_KEY: ${{ secrets.GCS_SECRET_ACCESS_KEY }}
-  MIRROR_SOURCE: images/
-  MIRROR_TARGET: images.metal-pod.io
+  GCS_BUCKET: images.metal-pod.io
 
 jobs:
   images:
@@ -30,10 +25,13 @@ jobs:
         ./prepare.sh ${{ matrix.os }}
         mkdir -p images/test
         touch images/test/test
-    - name: Test-Upload to GCS
-      uses: peter-evans/s3-backup@v1.0.1
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
-        args: --overwrite 
+          version: '278.0.0'
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+    - name: Testupload to GCS
+      run: gsutil cp -r ./images/ gs://$GCS_BUCKET
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
