@@ -21,17 +21,12 @@ jobs:
       uses: actions/checkout@v1
     - name: Prepare build environment
       shell: bash
-      run: |
-        ./prepare.sh ${{ matrix.os }}
-        mkdir -p images/test
-        touch images/test/test
+      run: ./prepare.sh ${{ matrix.os }}
     - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
           version: '278.0.0'
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
-    - name: Testupload to GCS
-      run: gsutil cp -r ./images/ gs://$GCS_BUCKET
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
@@ -53,10 +48,5 @@ jobs:
           --no-pull
           --summary
           --no-lint
-    - name: List directory
-      shell: bash
-      run: ls -alhR .
     - name: Upload image tarballs to GCS
-      uses: peter-evans/s3-backup@v1.0.1
-      with:
-        args: --overwrite 
+      run: cd images && gsutil cp -r . gs://$GCS_BUCKET/
