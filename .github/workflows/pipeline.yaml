@@ -1,10 +1,9 @@
-name: Mainline Build
+name: Pipeline
 
 on:
   push:
     branches:
-    # Restriction will be removed once the build in the test branch is finished
-      - test-github-actions
+      - '*'
 
 env:
   GCS_BUCKET: images.metal-pod.io
