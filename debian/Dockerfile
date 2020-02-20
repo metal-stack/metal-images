@@ -29,6 +29,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
     YQ=/usr/local/bin/yq \
+    PATH=/sbin:$PATH \
     DOCKER_URL=https://download.docker.com
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
