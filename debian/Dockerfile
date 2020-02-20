@@ -63,6 +63,7 @@ RUN set -ex \
     lsb-release \
     ntp \
     openssh-server \
+    procps \
     socat \
     software-properties-common \
     sudo \
