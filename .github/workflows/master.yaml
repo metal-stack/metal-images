@@ -3,7 +3,7 @@ name: Pipeline
 on:
   push:
     branches:
-      - '*'
+      - master
 
 env:
   GCS_BUCKET: images.metal-pod.io
@@ -48,4 +48,4 @@ jobs:
           --summary
           --no-lint
     - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/os
+      run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/metal-os
