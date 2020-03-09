@@ -3,7 +3,7 @@ name: Pipeline
 on:
   push:
     branches:
-      - '*'
+      - master
 
 env:
   GCS_BUCKET: images.metal-pod.io

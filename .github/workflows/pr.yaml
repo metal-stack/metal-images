@@ -1,0 +1,51 @@
+name: Pipeline
+
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  GCS_BUCKET: images.metal-pod.io
+
+jobs:
+  images:
+    name: Build OS
+    strategy:
+      matrix:
+        os: [debian, ubuntu]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh ${{ matrix.os }}
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+          version: '278.0.0'
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+    - name: Build docker image for workers and export tarball
+      uses: metal-stack/action-docker-make@master
+      with:
+        args: >
+          --work-dir debian
+          --file docker-make.${{ matrix.os }}.yaml
+          --no-cache
+          --no-push
+          --summary
+          --no-lint
+    - name: Build docker image for firewalls and export tarball
+      uses: metal-stack/action-docker-make@master
+      with:
+        args: >
+          --work-dir firewall
+          --build-only ${{ matrix.os }}
+          --no-cache
+          --no-push
+          --no-pull
+          --summary
+          --no-lint
+    - name: Upload image tarballs to GCS
+      run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/os/pull_requests/
