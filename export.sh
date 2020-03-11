@@ -2,7 +2,7 @@
 set -ex
 
 readonly SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-readonly DOCKER_IMAGE="metalstack/images/${OS_NAME}:${SEMVER}"
+readonly DOCKER_IMAGE="quay.io/metalstack/${OS_NAME}:${SEMVER}"
 readonly IMAGE_BASENAME=img
 
 readonly SEMVER_PATCH_DIR=$(echo ${SEMVER_PATCH} | tr -d ".")
