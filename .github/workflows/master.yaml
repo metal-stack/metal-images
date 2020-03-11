@@ -7,7 +7,7 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # build every sunday night at 1:10 o'clock
-    - cron:  '10 1 * * 0'
+    - cron: '10 1 * * 0'
 
 env:
   GCS_BUCKET: images.metal-pod.io
@@ -33,21 +33,23 @@ jobs:
     - name: Build docker image for workers and export tarball
       uses: metal-stack/action-docker-make@master
       with:
+        username: "metalstack+ci"
+        password: ${{ secrets.QUAY_IO_TOKEN }}
         args: >
           --work-dir debian
           --file docker-make.${{ matrix.os }}.yaml
           --no-cache
-          --no-push
           --summary
           --no-lint
     - name: Build docker image for firewalls and export tarball
       uses: metal-stack/action-docker-make@master
       with:
+        username: "metalstack+ci"
+        password: ${{ secrets.QUAY_IO_TOKEN }}
         args: >
           --work-dir firewall
           --build-only ${{ matrix.os }}
           --no-cache
-          --no-push
           --no-pull
           --summary
           --no-lint
