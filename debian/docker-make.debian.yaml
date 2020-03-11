@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: debian
-username: metalstack/images
-registry-host: docker.io
+username: metalstack
+registry-host: quay.io
 default-build-args:
   - http_proxy=${HTTP_PROXY}
   - https_proxy=${HTTP_PROXY}
