@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: firewall
-username: metalstack/images
-registry-host: ""
+username: metalstack
+registry-host: quay.io
 default-build-args:
   - http_proxy=${HTTP_PROXY}
   - https_proxy=${HTTP_PROXY}
@@ -19,7 +19,7 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=10
-      - BASE_OS_NAME=metalstack/images/debian
+      - BASE_OS_NAME=quay.io/metalstack/debian
       - SEMVER_MAJOR_MINOR=2.0
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
@@ -31,7 +31,7 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=19.10
-      - BASE_OS_NAME=metalstack/images/ubuntu
+      - BASE_OS_NAME=quay.io/metalstack/ubuntu
       - SEMVER_MAJOR_MINOR=2.0-ubuntu
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
