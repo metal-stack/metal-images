@@ -96,6 +96,8 @@ RUN set -ex \
  # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
  # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
  && ln -sf /usr/bin/python2 /usr/bin/python \
+ && /install-fits-ca.sh \
+ && /kernel-installation.sh \
  # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
  && rm -rf /usr/lib/firmware/*wifi* \
            /usr/lib/firmware/netronome \
@@ -105,9 +107,6 @@ RUN set -ex \
            /tmp/*
 
 COPY context/ /
-
-RUN /kernel-installation.sh
-RUN /install-fits-ca.sh
 
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
