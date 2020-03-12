@@ -37,9 +37,6 @@ RUN apt-get update --quiet \
 # - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
 COPY context/ /
 
-# Install backports kernel on debian because firewall requires kernel >= 5.x to make vxlan/evpn work
-RUN /kernel-installation.sh
-
 # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues. 
 # Final setup is left to metal-networker that knows the internet-facing VRF.
 # To succeed metal-networker enabling chrony it is important to provide the chrony unit template in advance.
