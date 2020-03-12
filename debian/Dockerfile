@@ -34,6 +34,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
+COPY context/kernel-installation.sh /
 
 RUN set -ex \
  && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
@@ -96,17 +97,11 @@ RUN set -ex \
  # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
  # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
  && ln -sf /usr/bin/python2 /usr/bin/python \
- && /install-fits-ca.sh \
  && /kernel-installation.sh \
- # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
- && rm -rf /usr/lib/firmware/*wifi* \
-           /usr/lib/firmware/netronome \
-           /usr/lib/firmware/v4l* \
-           /usr/lib/firmware/liquidio \
-           /var/lib/apt/lists/* \
-           /tmp/*
+ && rm -rf /tmp/*
 
 COPY context/ /
+RUN /install-fits-ca.sh
 
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
