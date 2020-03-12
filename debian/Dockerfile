@@ -59,7 +59,6 @@ RUN set -ex \
     iproute2 \
     isc-dhcp-client \
     jq \
-    ${LINUX_IMAGE} \
     lsb-release \
     ntp \
     openssh-server \
@@ -107,9 +106,7 @@ RUN set -ex \
 
 COPY context/ /
 
-# Install backports kernel on debian because firewall requires kernel >= 5.x to make vxlan/evpn work
 RUN /kernel-installation.sh
-
 RUN /install-fits-ca.sh
 
 # Set default target to multi-user.target - otherwise it will be graphical.target

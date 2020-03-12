@@ -27,7 +27,6 @@ builds:
     build-args:
       - BASE_OS_VERSION=20.04
       - FRR_VERSION=7.2-ubuntu-20.04
-      - LINUX_IMAGE=linux-image-generic
       - SEMVER_MAJOR_MINOR=20.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
@@ -40,7 +39,6 @@ builds:
     build-args:
       - BASE_OS_VERSION=19.10
       - FRR_VERSION=7.2-ubuntu-19.10
-      - LINUX_IMAGE=linux-image-generic
       - SEMVER_MAJOR_MINOR=19.10
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
