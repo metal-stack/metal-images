@@ -19,18 +19,18 @@ default-build-args:
   - DOCKER_APT_OS=ubuntu
   - DOCKER_APT_CHANNEL=disco
 builds:
-  -
-    name: "Ubuntu 20.04"
-    tags:
-      - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
-    build-args:
-      - BASE_OS_VERSION=20.04
-      - FRR_VERSION=7.2-ubuntu-20.04
-      - SEMVER_MAJOR_MINOR=20.04
-      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-    after:
-      - OS_NAME=ubuntu SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
+  # -
+  #   name: "Ubuntu 20.04"
+  #   tags:
+  #     - ${SEMVER}
+  #     - ${SEMVER_MAJOR_MINOR}
+  #   build-args:
+  #     - BASE_OS_VERSION=20.04
+  #     - FRR_VERSION=7.2-ubuntu-20.04
+  #     - SEMVER_MAJOR_MINOR=20.04
+  #     - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+  #   after:
+  #     - OS_NAME=ubuntu SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
   -
     name: "Ubuntu 19.10"
     tags:
