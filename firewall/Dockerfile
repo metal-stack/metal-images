@@ -37,7 +37,7 @@ RUN apt-get update --quiet \
 # - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
 COPY context/ /
 
-# Install suricate IDS
+# Install suricata IDS
 RUN /suricata-installation.sh
 
 # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues. 

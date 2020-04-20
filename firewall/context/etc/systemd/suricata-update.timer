@@ -2,7 +2,7 @@
 Description=Run suricata-update hourly and at boot
 
 [Timer]
-OnBootSec=15min
+OnBootSec=10min
 OnUnitActiveSec=1h
 unit=suricata-update.service
 
