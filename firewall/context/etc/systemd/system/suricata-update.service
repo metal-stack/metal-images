@@ -5,6 +5,7 @@ Description=Suricata Intrusion Detection Service Rules Update
 User=root
 Group=root
 Type=oneshot
+# FIXME ip vrf exec <internet vrf> ... configured by networker
 ExecStart=/usr/bin/suricata-update
 
 [Install]
