@@ -11,6 +11,10 @@ if [ "${ID}" = "ubuntu" ] ; then
     apt-get install --yes --no-install-recommends suricata
 else
     echo "Debian - Install suricata from debian repository"
+    rm -f /etc/logrotate.d/suricata
     apt-get update --quiet
     apt-get install --yes --no-install-recommends suricata suricata-update
 fi
+
+echo "Enable suricata service"
+systemctl enable suricata
