@@ -1,6 +1,6 @@
 [Unit]
 Description=Suricata Intrusion Detection Service
-After=syslog.target network-online.target
+After=network.target
 
 [Service]
 EnvironmentFile=-/etc/default/suricata
