@@ -15,15 +15,40 @@ RUN set -ex \
  && git checkout ${IGNITION_BRANCH} \
  && make
 
+FROM ${BASE_OS_NAME}:${BASE_OS_VERSION} as ifupdown2-builder
+ENV DEBIAN_FRONTEND=noninteractive
+RUN set -ex \
+ && apt-get update \
+ && apt-get install --yes --no-install-recommends \
+    build-essential \
+    devscripts \
+    dh-python \
+    dh-systemd \
+    fakeroot \
+    git \
+    iproute2 \
+    python-all \
+    python-docutils \
+    python-setuptools \
+    python3-all \
+    python3-docutils \
+    python3-setuptools \
+ && ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
+ && dpkg-reconfigure --frontend noninteractive tzdata \
+ && git clone git://github.com/CumulusNetworks/ifupdown2 \
+ && cd ifupdown2 \
+ && git checkout ${IPROUTE2_VERSION} \
+ && make deb
+
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION
 ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
-ARG LINUX_IMAGE
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
+ARG IPROUTE2_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -34,6 +59,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
+COPY --from=ifupdown2-builder /ifupdown2_${IPROUTE2_VERSION}_all.deb /tmp/
 COPY context/kernel-installation.sh /
 
 RUN set -ex \
@@ -52,8 +78,7 @@ RUN set -ex \
     gpg-agent \
     grub-efi-amd64-bin \
     grub2 \
-    # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
-    ifupdown2 \
+    /tmp/ifupdown2_${IPROUTE2_VERSION}_all.deb \
     initramfs-tools \
     ipmitool \
     iputils-ping \
@@ -69,6 +94,7 @@ RUN set -ex \
     sudo \
     systemd \
     systemd-sysv \
+    tzdata \
     watchdog \
     wget \
     /tmp/frr_*.deb \
