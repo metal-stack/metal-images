@@ -4,20 +4,17 @@ set -e
 OS_FLAVOR=$1
 
 echo "Setting GitHub environment variables"
+echo "::set-env name=SEMVER_PATCH::$(date +%Y%m%d)"
 
-ref="${GITHUB_REF}"
-if [ ! -z "${GITHUB_BASE_REF}" ]; then
-    echo "using GITHUB_BASE_REF to determine branch name"
-    ref="${GITHUB_BASE_REF}"
-fi
-
-BRANCH=$(echo "${ref}" | awk -F / '{print $3}')
+BRANCH=$(echo "${GITHUB_REF}" | awk -F / '{print $3}')
 echo "::set-env name=BRANCH::${BRANCH})"
-
-if [ "${BRANCH}" != "master" ]; then
+if [ ! -z "${GITHUB_BASE_REF}" ]; then
+    PULL_REQUEST_NUMBER=$(echo "$GITHUB_REF" | awk -F / '{print $3}')
+    BRANCH="${GITHUB_HEAD_REF##*/}"
+    echo "::set-env name=OUTPUT_FOLDER::/${PULL_REQUEST_NUMBER}-${BRANCH}"
+else
     echo "::set-env name=OUTPUT_FOLDER::/${BRANCH}"
 fi
-echo "::set-env name=SEMVER_PATCH::$(date +%Y%m%d)"
 
 echo "Generating build metadata"
 mkdir -p ${OS_FLAVOR}/context/etc/metal
