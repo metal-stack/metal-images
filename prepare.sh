@@ -4,7 +4,14 @@ set -e
 OS_FLAVOR=$1
 
 echo "Setting GitHub environment variables"
-BRANCH=${GITHUB_REF##*/}
+
+ref="${GITHUB_REF}"
+if [ ! -z "${GITHUB_BASE_REF}" ]; then
+    echo "using GITHUB_BASE_REF to determine branch name"
+    ref="${GITHUB_BASE_REF}"
+fi
+
+BRANCH=$(echo "${ref}" | awk -F / '{print $3}')
 echo "::set-env name=BRANCH::${BRANCH})"
 
 if [ "${BRANCH}" != "master" ]; then
