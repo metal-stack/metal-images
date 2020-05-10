@@ -13,7 +13,7 @@ jobs:
     name: Build OS
     strategy:
       matrix:
-        os: [debian, ubuntu]
+        os: [centos]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -34,27 +34,6 @@ jobs:
           --file docker-make.yaml
           --no-cache
           --no-push
-          --summary
-          --no-lint
-    - name: Build docker image for workers and export tarball
-      uses: metal-stack/action-docker-make@master
-      with:
-        args: >
-          --work-dir debian
-          --file docker-make.${{ matrix.os }}.yaml
-          --no-cache
-          --no-push
-          --summary
-          --no-lint
-    - name: Build docker image for firewalls and export tarball
-      uses: metal-stack/action-docker-make@master
-      with:
-        args: >
-          --work-dir firewall
-          --build-only ${{ matrix.os }}
-          --no-cache
-          --no-push
-          --no-pull
           --summary
           --no-lint
     - name: Upload image tarballs to GCS
