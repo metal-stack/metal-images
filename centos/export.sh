@@ -19,7 +19,7 @@ mkdir -p ${EXPORT_DIRECTORY}
 cd ${EXPORT_DIRECTORY}
 docker export $(docker create ${DOCKER_IMAGE}) > ${TAR}
 # FIXME unify with global export
-docker run --rm ${DOCKER_IMAGE} bash -c "rpm -ql" > ${PKG}
+docker run --rm ${DOCKER_IMAGE} bash -c "rpm -qa" > ${PKG}
 lz4 -f -9 ${TAR} ${LZ4}
 rm -f ${TAR}
 md5sum ${LZ4} > ${MD5}
