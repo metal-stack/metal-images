@@ -30,6 +30,16 @@ jobs:
       uses: metal-stack/action-docker-make@master
       with:
         args: >
+          --work-dir centos
+          --file docker-make.yaml
+          --no-cache
+          --no-push
+          --summary
+          --no-lint
+    - name: Build docker image for workers and export tarball
+      uses: metal-stack/action-docker-make@master
+      with:
+        args: >
           --work-dir debian
           --file docker-make.${{ matrix.os }}.yaml
           --no-cache
