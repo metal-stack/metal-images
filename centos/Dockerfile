@@ -1,5 +1,4 @@
 ARG BASE_OS_VERSION
-ARG FRR_VERSION
 
 FROM golang:1.13-buster as ignition-builder
 ARG IGNITION_BRANCH

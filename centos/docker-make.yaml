@@ -15,7 +15,6 @@ default-build-args:
   - GOLLDPD_VERSION=v0.2.4
   - METAL_NETWORKER_VERSION=v0.1.6
   - SEMVER_PATCH=${SEMVER_PATCH}
-  - BASE_OS_NAME=centos
 builds:
   -
     name: "Centos 8"
