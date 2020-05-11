@@ -82,11 +82,11 @@ then
     echo "System was booted with UEFI"
     # FIXME do not ignore any errors
     grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} || true
-    grub2-mkconfig || true
+    grub2-mkconfig -o /boot/grub2/grub.cfg || true
 else
     echo "System was booted with Bios"
     grub2-install --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} || true
-    grub2-mkconfig || true
+    grub2-mkconfig -o /boot/grub2/grub.cfg || true
 fi
 
 # set sshpublickey

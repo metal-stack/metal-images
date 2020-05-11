@@ -37,6 +37,7 @@ RUN set -ex \
     gettext \
     gnupg2 \
     grub2 \
+    grub2-efi-modules \
     # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
     # ifupdown2 \
     ipmitool \
