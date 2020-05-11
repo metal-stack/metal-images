@@ -51,7 +51,7 @@ readonly user="metal"
 readonly pass=$(yq r /etc/metal/install.yaml password)
 readonly devmode=$(yq r /etc/metal/install.yaml devmode)
 echo "creating user '$user'"
-useradd --create-home --gid "sudo" --shell /bin/bash $user
+useradd --create-home --gid "wheel" --shell /bin/bash $user
 
 echo "set password for $user to $pass expires after 1 day."
 echo -e "$pass\n$pass" | passwd $user
@@ -70,7 +70,7 @@ fi
 cat << EOM >/boot/grub2/grub.cfg
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo ${BOOTLOADER_ID})
+GRUB_DISTRIBUTOR=${BOOTLOADER_ID}
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="${CMDLINE}"
 GRUB_TERMINAL=serial
@@ -80,12 +80,13 @@ EOM
 if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
-    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
-    grub2-mkconfig
+    # FIXME do not ignore any errors
+    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} || true
+    grub2-mkconfig || true
 else
     echo "System was booted with Bios"
-    grub2-install --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
-    grub2-mkconfig
+    grub2-install --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} || true
+    grub2-mkconfig || true
 fi
 
 # set sshpublickey
@@ -114,10 +115,14 @@ else
 fi
 
 echo "write boot-info.yaml"
-if [ -e /boot/vmlinuz ]; then
-    INITRD=/boot/initramfs*
-    KERNEL=/boot/vmlinuz*
-fi
+
+cd /boot
+ln -s vmlinuz-* vmlinuz
+ln -s initramfs-* initramfs.img
+cd -
+INITRD=$(readlink -f /boot/initramfs.img)
+KERNEL=$(readlink -f /boot/vmlinuz)
+
 cat <<REBOOT > /etc/metal/boot-info.yaml
 ---
 initrd: ${INITRD}

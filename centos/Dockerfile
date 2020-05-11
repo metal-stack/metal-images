@@ -78,6 +78,10 @@ RUN yum install -y \
     https://ci1.netdef.org/artifact/LIBYANG-YANGRELEASE/shared/build-10/CentOS-7-x86_64-Packages/libyang-0.16.111-0.x86_64.rpm \
     https://github.com/FRRouting/frr/releases/download/frr-7.2/frr-7.2-01.el7.centos.x86_64.rpm
 
+RUN set -ex \
+ && curl -fLsS https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/bin/jq \
+ && chmod +x /usr/bin/jq
+
 COPY context/ /
 # FIXME enable again
 # Current error: mv: cannot move 'FI-TS_F04_Root_CA_G1.der.crt' to '/usr/local/share/ca-certificates/': Not a directory
