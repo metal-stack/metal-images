@@ -27,7 +27,7 @@ readonly ROOT_FS=$(jq -r '.Partitions[] | select(.Label=="root").Filesystem' "$d
 readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Properties.UUID' "$diskjson")
 readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$diskjson")
 
-readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295"
+readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295"
 
 # only add /var/lib filesystem if created.
 VARLIB=""
@@ -55,8 +55,6 @@ useradd --create-home --gid "wheel" --shell /bin/bash $user
 
 echo "set password for $user to $pass expires after 1 day."
 echo -e "$pass\n$pass" | passwd $user
-# expire after one day
-chage -M 1 $user
 
 if [ $devmode == "true" ]; then
     echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
@@ -81,11 +79,9 @@ if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
     # FIXME do not ignore any errors
-    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} || true
-    grub2-mkconfig -o /boot/grub2/grub.cfg || true
+    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg || true
 else
     echo "System was booted with Bios"
-    grub2-install --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} || true
     grub2-mkconfig -o /boot/grub2/grub.cfg || true
 fi
 

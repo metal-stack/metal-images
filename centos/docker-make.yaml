@@ -17,7 +17,7 @@ default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
 builds:
   -
-    name: "Centos 8"
+    name: "Centos 7"
     tags:
       - ${SEMVER}
       - ${SEMVER_MAJOR_MINOR}

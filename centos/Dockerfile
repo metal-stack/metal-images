@@ -37,6 +37,7 @@ RUN set -ex \
     gettext \
     gnupg2 \
     grub2 \
+    grub2-efi \
     grub2-efi-modules \
     # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
     # ifupdown2 \
@@ -45,7 +46,9 @@ RUN set -ex \
     kernel \
     openssl \
     openssh-server \
+    passwd \
     procps \
+    shim \
     socat \
     sudo \
     systemd \
@@ -104,3 +107,11 @@ WORKDIR /etc/metal/networker
 RUN curl -fLOsS https://github.com/metal-stack/metal-networker/releases/download/${METAL_NETWORKER_VERSION}/metal-networker.tgz \
  && tar xzf metal-networker.tgz \
  && rm metal-networker.tgz
+
+WORKDIR /boot
+RUN set -ex \
+ && KERNEL_VERSION=$(rpm -q --queryformat "%{VERSION}-%{RELEASE}.x86_64" kernel) \
+ && dracut \
+    -f initramfs-${KERNEL_VERSION}.img \
+    -i /lib/modules/${KERNEL_VERSION} /lib/modules/${KERNEL_VERSION} \
+    ${KERNEL_VERSION}
