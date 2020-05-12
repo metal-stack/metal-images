@@ -64,6 +64,10 @@ fi
 # FIXME do not ignore any errors
 /network.sh || true
 
+# Create Hostname entry, because networker do not support centos actually
+readonly hostname=$(yq r /etc/metal/install.yaml hostname)
+echo "${hostname}" > /etc/hostname
+
 # Take care: init must use systemd!
 cat << EOM >/boot/grub2/grub.cfg
 GRUB_DEFAULT=0
@@ -79,7 +83,7 @@ if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
     # FIXME do not ignore any errors
-    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg || true
+    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg || true
 else
     echo "System was booted with Bios"
     grub2-mkconfig -o /boot/grub2/grub.cfg || true
