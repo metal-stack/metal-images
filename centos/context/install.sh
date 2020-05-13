@@ -62,9 +62,10 @@ fi
 
 # configure networking to setup interfaces and establish BGP/ EVPN sessions
 # FIXME do not ignore any errors
-/network.sh || true
+/network.sh
 
 # Create Hostname entry, because networker do not support centos actually
+# FIXME check why metal-networker creates a borked /etc/hostname file
 readonly hostname=$(yq r /etc/metal/install.yaml hostname)
 echo "${hostname}" > /etc/hostname
 

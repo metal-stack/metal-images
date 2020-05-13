@@ -1,6 +1,0 @@
-DEVICE=eth1
-ONBOOT=yes
-IPV6_AUTOCONF=yes
-BOOTPROTO=dhcp
-TYPE=Ethernet                                                                                                                                                                                                    │56:hostname: firewall
-NAME="eth1"
