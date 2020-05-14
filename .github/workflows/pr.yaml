@@ -59,7 +59,7 @@ jobs:
       uses: actions/checkout@v1
     - name: Prepare build environment
       shell: bash
-      run: ./prepare.sh ${{ matrix.os }}
+      run: ./prepare.sh centos
     - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
           version: '278.0.0'
