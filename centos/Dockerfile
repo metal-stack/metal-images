@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.13-buster as ignition-builder
+FROM golang:1.14-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -17,13 +17,9 @@ FROM centos:${BASE_OS_VERSION}
 ARG YQ_VERSION
 ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
-ARG LINUX_IMAGE
 
-ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
-    DEBIAN_FRONTEND="noninteractive" \
-    YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
-    YQ=/usr/local/bin/yq \
-    DOCKER_URL=https://download.docker.com
+ENV YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
+    YQ=/usr/local/bin/yq
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
@@ -78,10 +74,12 @@ RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && ln -sf /usr/bin/python2 /usr/bin/python \
  && rm -rf /tmp/*
 
+# Install FRR
 RUN yum install -y \
     https://ci1.netdef.org/artifact/LIBYANG-YANGRELEASE/shared/build-10/CentOS-7-x86_64-Packages/libyang-0.16.111-0.x86_64.rpm \
     https://github.com/FRRouting/frr/releases/download/frr-7.2/frr-7.2-01.el7.centos.x86_64.rpm
 
+# Install jq because centos:7 does not have a package
 RUN set -ex \
  && curl -fLsS https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/bin/jq \
  && chmod +x /usr/bin/jq
@@ -103,11 +101,14 @@ RUN systemctl set-default multi-user.target \
  && update-ca-trust
 
 # Provide metal-networker that is called during the install routine to setup networking.
+# FIXME migrate to release once merged
 WORKDIR /etc/metal/networker
 RUN curl -fLOsS https://images.metal-pod.io/metal-networker/pull_requests/metal-networker.tgz \
  && tar xzf metal-networker.tgz \
  && rm metal-networker.tgz /etc/sysconfig/network-scripts/ifcfg-lo
 
+# execute dracut to regenerate initramfs with all drivers because otherwise only
+# a few drivers are included and the kexec into centos will fail because no disks where found
 WORKDIR /boot
 RUN set -ex \
  && KERNEL_VERSION=$(rpm -q --queryformat "%{VERSION}-%{RELEASE}.x86_64" kernel) \
