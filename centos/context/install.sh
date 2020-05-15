@@ -46,7 +46,6 @@ EOM
 cat /etc/fstab
 
 # create a user/pass (metal:metal) to enable login
-# TODO move to Dockerfile
 readonly user="metal"
 readonly pass=$(yq r /etc/metal/install.yaml password)
 readonly devmode=$(yq r /etc/metal/install.yaml devmode)
@@ -61,11 +60,11 @@ if [ $devmode == "true" ]; then
 fi
 
 # configure networking to setup interfaces and establish BGP/ EVPN sessions
-# FIXME do not ignore any errors
 /network.sh
 
 # Create Hostname entry, because networker do not support centos actually
-# FIXME check why metal-networker creates a borked /etc/hostname file
+# FIXME remove once this issue is fixed in metal-networker
+# https://github.com/metal-stack/metal-networker/issues/13
 readonly hostname=$(yq r /etc/metal/install.yaml hostname)
 echo "${hostname}" > /etc/hostname
 
@@ -83,11 +82,11 @@ EOM
 if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
-    # FIXME do not ignore any errors
-    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg || true
+    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
+    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
 else
     echo "System was booted with Bios"
-    grub2-mkconfig -o /boot/grub2/grub.cfg || true
+    grub2-mkconfig -o /boot/grub2/grub.cfg
 fi
 
 # set sshpublickey

@@ -101,7 +101,6 @@ RUN systemctl set-default multi-user.target \
  && update-ca-trust
 
 # Provide metal-networker that is called during the install routine to setup networking.
-# FIXME migrate to release once merged
 WORKDIR /etc/metal/networker
 RUN curl -fLOsS https://github.com/metal-stack/metal-networker/releases/download/${METAL_NETWORKER_VERSION}/metal-networker.tgz \
  && tar xzf metal-networker.tgz \
