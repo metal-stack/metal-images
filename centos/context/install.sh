@@ -5,7 +5,7 @@ export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 source /etc/os-release
 OS_NAME=${ID}
-readonly BOOTLOADER_ID="metal-${OS_NAME}"
+readonly BOOTLOADER_ID="${OS_NAME}"
 
 # Must be written here because during docker build this file is synthetic
 echo -e "nameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf
@@ -82,8 +82,8 @@ EOM
 if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
-    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
     grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} UUID=${ROOT_UUID}
 else
     echo "System was booted with Bios"
     grub2-mkconfig -o /boot/grub2/grub.cfg
