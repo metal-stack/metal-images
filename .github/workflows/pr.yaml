@@ -27,7 +27,7 @@ jobs:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
     - name: Build docker image for workers and export tarball
-      uses: metal-stack/action-docker-make@master
+      uses: metal-stack/action-docker-make@5c01d87d9a067363ac46ab18285a22e7a70f1cdc
       with:
         args: >
           --work-dir debian
@@ -37,7 +37,7 @@ jobs:
           --summary
           --no-lint
     - name: Build docker image for firewalls and export tarball
-      uses: metal-stack/action-docker-make@master
+      uses: metal-stack/action-docker-make@5c01d87d9a067363ac46ab18285a22e7a70f1cdc
       with:
         args: >
           --work-dir firewall
