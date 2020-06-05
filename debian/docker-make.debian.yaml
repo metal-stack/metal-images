@@ -17,6 +17,7 @@ default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - DOCKER_APT_OS=debian
+  - CRI_VERSION=v1.18.0
 builds:
   -
     name: "Debian 10"
