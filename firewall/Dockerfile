@@ -25,6 +25,7 @@ RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     chrony \
+    fever \
     nftables \
     tcpdump \
  && apt-get remove --yes iptables
@@ -53,7 +54,8 @@ RUN systemctl disable systemd-timesyncd \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
- && systemctl enable nftables
+ && systemctl enable nftables \
+ && systemctl enable fever
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
