@@ -2,18 +2,10 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.2
 ARG FIREWALL_CONTROLLER_VERSION=latest
-ARG NFTABLES_EXPORTER_BRANCH=eb592159
 
 FROM metalstack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM metalstack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
-
-FROM golang:1.13 AS nftables_exporter_builder
-RUN git clone https://github.com/Sheridan/nftables_exporter.git \
- && cd nftables_exporter \
- && git checkout ${NFTABLES_EXPORTER_BRANCH} \
- && make \
- && mv ./bin/nftables_exporter /
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
@@ -65,9 +57,6 @@ COPY --from=firewall-controller-artifacts /firewall-controller /usr/local/bin/fi
 
 # Install droptailer-client
 COPY --from=droptailer-artifacts /client /usr/local/bin/droptailer-client
-
-# Install nftables_exporter
-COPY --from=nftables_exporter_builder /nftables_exporter /usr/local/bin/
 
 # Install node_exporter
 WORKDIR /tmp/node_exporter
