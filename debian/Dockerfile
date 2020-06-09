@@ -117,7 +117,5 @@ RUN systemctl set-default multi-user.target \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
-WORKDIR /etc/metal/networker
-RUN curl -fLOsS https://github.com/metal-stack/metal-networker/releases/download/${METAL_NETWORKER_VERSION}/metal-networker.tgz \
- && tar xzf metal-networker.tgz \
- && rm metal-networker.tgz
+FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION}
+COPY /metal-networker /etc/metal/networker/
