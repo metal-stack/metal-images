@@ -18,6 +18,7 @@ default-build-args:
   - BASE_OS_NAME=ubuntu
   - DOCKER_APT_OS=ubuntu
   - DOCKER_APT_CHANNEL=disco
+  - CRI_VERSION=v1.18.0
 builds:
   # -
   #   name: "Ubuntu 20.04"
