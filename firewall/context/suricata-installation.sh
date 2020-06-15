@@ -18,5 +18,5 @@ else
     apt-get install --yes --no-install-recommends -t testing suricata suricata-update
 fi
 
-echo "Enable suricata service"
-systemctl enable suricata
+echo "Enable suricata service and suricata-update timer"
+systemctl enable suricata suricata-update.service suricata-update.timer

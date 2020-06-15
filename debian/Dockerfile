@@ -1,8 +1,10 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG FRR_VERSION
+ARG METAL_NETWORKER_VERSION
 
 FROM metalstack/frr:${FRR_VERSION} AS frr-artifacts
+FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
 FROM golang:1.13-buster as ignition-builder
 ARG IGNITION_BRANCH
@@ -121,7 +123,5 @@ RUN systemctl set-default multi-user.target \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
-WORKDIR /etc/metal/networker
-RUN curl -fLOsS https://github.com/metal-stack/metal-networker/releases/download/${METAL_NETWORKER_VERSION}/metal-networker.tgz \
- && tar xzf metal-networker.tgz \
- && rm metal-networker.tgz
+
+COPY --from=metal-networker /metal-networker /etc/metal/networker/
