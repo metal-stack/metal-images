@@ -13,10 +13,11 @@ default-build-args:
   - IGNITION_BRANCH=v0.34.0
   - YQ_VERSION=2.4.1
   - GOLLDPD_VERSION=v0.2.4
-  - METAL_NETWORKER_VERSION=v0.1.9
+  - METAL_NETWORKER_VERSION=v0.2.1
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - DOCKER_APT_OS=debian
+  - CRI_VERSION=v1.18.0
 builds:
   -
     name: "Debian 10"
