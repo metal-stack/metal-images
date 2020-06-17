@@ -8,11 +8,12 @@ FROM metalstack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM metalstack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
 
-FROM golang:1.13 AS nftables_exporter_builder
+FROM golang:1.14 AS nftables_exporter_builder
 RUN git clone https://github.com/Sheridan/nftables_exporter.git \
  && cd nftables_exporter \
  && git checkout ${NFTABLES_EXPORTER_BRANCH} \
  && make \
+ && strip ./bin/nftables_exporter \
  && mv ./bin/nftables_exporter /
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
