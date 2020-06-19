@@ -20,16 +20,24 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    VERSION_NODE_EXPORTER=0.18.1
+    VERSION_NODE_EXPORTER=0.18.1 \
+    EVEBOX_VERSION=1:0.11.1
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     chrony \
-    fever \
     nftables \
     tcpdump \
  && apt-get remove --yes iptables
+
+# Install suricate event forwarding agent evebox
+RUN curl -q https://evebox.org/files/GPG-KEY-evebox | apt-key add - \
+ && echo "deb http://evebox.org/files/debian stable main" | tee /etc/apt/sources.list.d/evebox.list \
+ && apt-get update --quiet \
+ && apt-get install evebox=${EVEBOX_VERSION} \
+ # remove provided systemd units, they get created by metal-networker with the appropriate vrf set.
+ && rm -f /lib/systemd/system/evebox-agent.service /lib/systemd/system/evebox.service
 
 # Context:
 # - chrony.conf provides default configuration for chrony
@@ -55,8 +63,7 @@ RUN systemctl disable systemd-timesyncd \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
- && systemctl enable nftables \
- && systemctl enable fever
+ && systemctl enable nftables
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
