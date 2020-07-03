@@ -107,7 +107,6 @@ RUN set -ex \
  && rm -rf /tmp/*
 
 COPY context/ /
-RUN /install-fits-ca.sh
 
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
