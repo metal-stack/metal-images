@@ -1,28 +1,32 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.2
+ARG FIREWALL_CONTROLLER_VERSION=v0.1.7
 ARG NFTABLES_EXPORTER_BRANCH=eb592159
 
 FROM metalstack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
-FROM golang:1.13 AS nftables_exporter_builder
+FROM metalstack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
+
+FROM golang:1.14 AS nftables_exporter_builder
 RUN git clone https://github.com/Sheridan/nftables_exporter.git \
  && cd nftables_exporter \
  && git checkout ${NFTABLES_EXPORTER_BRANCH} \
  && make \
+ && strip ./bin/nftables_exporter \
  && mv ./bin/nftables_exporter /
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    VERSION_FIREWALL_POLICY_CONTROLLER=v0.1.5 \
     VERSION_NODE_EXPORTER=0.18.1
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     chrony \
+    fever \
     nftables \
     tcpdump \
  && apt-get remove --yes iptables
@@ -40,7 +44,7 @@ COPY context/ /
 # Install suricata IDS
 RUN /suricata-installation.sh
 
-# Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues. 
+# Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
 # Final setup is left to metal-networker that knows the internet-facing VRF.
 # To succeed metal-networker enabling chrony it is important to provide the chrony unit template in advance.
 # Usually the generator creates that template but the generator is loaded only after system boot or at `systemctl daemon-reload` (cannot be run from Docker Context).
@@ -51,16 +55,14 @@ RUN systemctl disable systemd-timesyncd \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
- && systemctl enable nftables
-
-# Install the firewall-policy-controller that might be enabled to connect to a k8s api-server to listen on services and network policies and to enforce
-# additional nftable rules for those.
-WORKDIR /tmp
-RUN curl -fLsS https://github.com/metal-stack/firewall-policy-controller/releases/download/${VERSION_FIREWALL_POLICY_CONTROLLER}/firewall-policy-controller.tgz -o /tmp/firewall-policy-controller.tgz \
- && cd / && tar xf /tmp/firewall-policy-controller.tgz && cd -
+ && systemctl enable nftables \
+ && systemctl enable fever
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
+
+# Install the firewall-controller that might be enabled to connect to a k8s api-server to configure the firewall based on CRDs
+COPY --from=firewall-controller-artifacts /firewall-controller /usr/local/bin/firewall-controller
 
 # Install droptailer-client
 COPY --from=droptailer-artifacts /client /usr/local/bin/droptailer-client

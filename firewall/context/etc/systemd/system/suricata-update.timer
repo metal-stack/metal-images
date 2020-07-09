@@ -3,8 +3,7 @@ Description=Run suricata-update hourly and at boot
 
 [Timer]
 OnBootSec=10min
-OnUnitActiveSec=1h
-unit=suricata-update.service
+OnUnitActiveSec=12h
 
 [Install]
 WantedBy=timers.target

@@ -1,8 +1,10 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG FRR_VERSION
+ARG METAL_NETWORKER_VERSION
 
 FROM metalstack/frr:${FRR_VERSION} AS frr-artifacts
+FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
 FROM golang:1.13-buster as ignition-builder
 ARG IGNITION_BRANCH
@@ -49,6 +51,7 @@ ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
 ARG IPROUTE2_VERSION
+ARG CRI_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -115,6 +118,9 @@ RUN set -ex \
  # debian does not have this link, therefore /bin/docker does not exist.
  # gardener requires /bin/docker in their kubelet.service.
  && ln -s /usr/bin/docker /bin/docker || true \
+ # Install crictl to be able to manipulate containers managed with containerd instead of dockerd
+ && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
+ && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  # Ensure that there exists a link from /usr/bin/python to python2
@@ -127,7 +133,6 @@ RUN set -ex \
  && rm -rf /tmp/*
 
 COPY context/ /
-RUN /install-fits-ca.sh
 
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
@@ -143,7 +148,5 @@ RUN systemctl set-default multi-user.target \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
-WORKDIR /etc/metal/networker
-RUN curl -fLOsS https://github.com/metal-stack/metal-networker/releases/download/${METAL_NETWORKER_VERSION}/metal-networker.tgz \
- && tar xzf metal-networker.tgz \
- && rm metal-networker.tgz
+
+COPY --from=metal-networker /metal-networker /etc/metal/networker/
