@@ -6,6 +6,7 @@ export DEBIAN_FRONTEND="noninteractive"
 # Workaround to fix empty path
 export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# shellcheck disable=SC1091
 source /etc/os-release
 OS_NAME=${ID}
 readonly BOOTLOADER_ID="metal-${OS_NAME}"

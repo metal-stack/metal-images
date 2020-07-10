@@ -3,6 +3,7 @@ set -e
 # Workaround to fix empty path
 export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# shellcheck disable=SC1091
 source /etc/os-release
 OS_NAME=${ID}
 readonly BOOTLOADER_ID="${OS_NAME}"
@@ -61,12 +62,6 @@ fi
 
 # configure networking to setup interfaces and establish BGP/ EVPN sessions
 /network.sh
-
-# Create Hostname entry, because networker do not support centos actually
-# FIXME remove once this issue is fixed in metal-networker
-# https://github.com/metal-stack/metal-networker/issues/13
-readonly hostname=$(yq r /etc/metal/install.yaml hostname)
-echo "${hostname}" > /etc/hostname
 
 # Take care: init must use systemd!
 cat << EOM >/boot/grub2/grub.cfg

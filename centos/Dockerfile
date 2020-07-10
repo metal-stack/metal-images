@@ -85,10 +85,6 @@ RUN set -ex \
  && chmod +x /usr/bin/jq
 
 COPY context/ /
-# FIXME enable again
-# Current error: mv: cannot move 'FI-TS_F04_Root_CA_G1.der.crt' to '/usr/local/share/ca-certificates/': Not a directory
-# RUN /install-fits-ca.sh
-
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
 # is a target that is not pulled in per default during startup

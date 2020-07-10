@@ -3,6 +3,7 @@
 #     enforcing - SELinux security policy is enforced.
 #     permissive - SELinux prints warnings instead of enforcing.
 #     disabled - No SELinux policy is loaded.
+# FIXME set to enforcing
 SELINUX=disabled
 # SELINUXTYPE= can take one of three values:
 #     targeted - Targeted processes are protected,
