@@ -35,6 +35,7 @@ RUN set -ex \
     python3-all \
     python3-docutils \
     python3-setuptools \
+    tzdata \
  && ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  && dpkg-reconfigure --frontend noninteractive tzdata \
  && git clone git://github.com/CumulusNetworks/ifupdown2 \
