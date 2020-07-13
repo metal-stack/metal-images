@@ -50,8 +50,8 @@ ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
-ARG IPROUTE2_VERSION
 ARG CRI_VERSION
+ARG IFUPDOWN2_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -62,7 +62,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
-COPY --from=ifupdown2-builder /ifupdown2_${IPROUTE2_VERSION}_all.deb /tmp/
+COPY --from=ifupdown2-builder /ifupdown2_${IFUPDOWN2_VERSION}_all.deb /tmp/
 COPY context/kernel-installation.sh /
 
 RUN set -ex \
@@ -81,7 +81,7 @@ RUN set -ex \
     gpg-agent \
     grub-efi-amd64-bin \
     grub2 \
-    /tmp/ifupdown2_${IPROUTE2_VERSION}_all.deb \
+    /tmp/ifupdown2_${IFUPDOWN2_VERSION}_all.deb \
     initramfs-tools \
     ipmitool \
     iputils-ping \
