@@ -48,9 +48,13 @@ RUN /suricata-installation.sh
 # Final setup is left to metal-networker that knows the internet-facing VRF.
 # To succeed metal-networker enabling chrony it is important to provide the chrony unit template in advance.
 # Usually the generator creates that template but the generator is loaded only after system boot or at `systemctl daemon-reload` (cannot be run from Docker Context).
+# systemd-time-wait-sync.service is disabled because it sometimes does not start and blocks depending services like logrotate.
+# see https://github.com/systemd/systemd/issues/14061
 RUN systemctl disable systemd-timesyncd \
  && systemctl disable chronyd \
  && systemctl mask chronyd \
+ && systemctl disable systemd-time-wait-sync.service \
+ && systemctl mask systemd-time-wait-sync.service \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
