@@ -86,11 +86,6 @@ then
     grub-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
     update-grub2
     dpkg-reconfigure grub-efi-amd64-bin
-else
-    echo "System was booted with Bios"
-    grub-install --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
-    update-grub2
-    dpkg-reconfigure grub
 fi
 
 # set sshpublickey

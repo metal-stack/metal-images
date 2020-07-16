@@ -1,0 +1,11 @@
+{
+    "Partitions": [
+        {
+            "Label": "root",
+            "Filesystem": "ext4",
+            "Properties": {
+                "UUID": ""
+            }
+        }
+    ]
+}
