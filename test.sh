@@ -37,7 +37,6 @@ while ! nc -z ${IP} 22; do
   echo "ssh is not available yet"
   sleep 2
 done
-
 echo "ssh is available"
 
 cd test
