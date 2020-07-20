@@ -6,7 +6,7 @@ ARG METAL_NETWORKER_VERSION
 FROM metalstack/frr:${FRR_VERSION} AS frr-artifacts
 FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
-FROM golang:1.13-buster as ignition-builder
+FROM golang:1.14-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
