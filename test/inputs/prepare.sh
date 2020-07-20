@@ -8,7 +8,7 @@ jq --arg uuid "${UUID}" '.Partitions[0].Properties.UUID = $uuid' /disk.json > /e
 cat /etc/metal/disk.json
 
 echo "move input file for metal-networker to proper location"
-mv /machine.yaml /etc/metal/install.yaml
+mv /${MACHINE_TYPE}.yaml /etc/metal/install.yaml
 
 echo "for idempotency: delete metal user before issuing install.sh"
 userdel metal

@@ -8,9 +8,8 @@ machines:
     backend: ignite
     image: ${IMAGE}
     name: ${OS_NAME}%d
-  ignite:
-    runtime: docker
-    cpus: 2
-    memory: 1GB
-    diskSize: 4GB
-    kernel: weaveworks/ignite-kernel:4.19.47
+    ignite:
+      kernel: weaveworks/ignite-kernel:5.4.43
+      cpus: 2
+      memory: 1GB
+      diskSize: 4GB

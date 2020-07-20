@@ -7,7 +7,7 @@ scp -o StrictHostKeyChecking=no -i ../key ./inputs/* root@${IP}:/
 
 echo "do machine test"
 ssh -o StrictHostKeyChecking=no -i ../key root@${IP} <<EOF
-    /prepare.sh
+    MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     /install.sh
     systemctl restart frr
     systemctl restart networking

@@ -10,6 +10,11 @@ fi
 
 export IMAGE="${1}"
 export VM="imagevm-${OS_NAME}0"
+export MACHINE_TYPE="machine"
+
+if [ $OS_NAME == "firewall" ]; then
+  export MACHINE_TYPE="firewall"
+fi
 
 echo "import oci to ignite: ${IMAGE}"
 sudo ignite image rm -f ${IMAGE} || true
