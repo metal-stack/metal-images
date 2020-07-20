@@ -4,8 +4,9 @@ set -e
 
 # example: sudo OS_NAME=ubuntu ./test.sh quay.io/metalstack/ubuntu:19.10
 
-if [ ! hash footloose 2>/dev/null || ! hash ignite 2>/dev/null ]; then
+if [ ! hash footloose 2>/dev/null ] || [ ! hash ignite 2>/dev/null ]; then
   echo "please install footloose and ignite"
+  exit
 fi
 
 export IMAGE="${1}"

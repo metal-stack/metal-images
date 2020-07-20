@@ -37,6 +37,7 @@ jobs:
           --no-cache
           --summary
           --no-lint
+          --no-push
     - name: Build docker image for firewalls and export tarball
       uses: metal-stack/action-docker-make@5c01d87d9a067363ac46ab18285a22e7a70f1cdc
       with:
@@ -49,6 +50,7 @@ jobs:
           --no-pull
           --summary
           --no-lint
+          --no-push
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
   centos:
@@ -75,5 +77,6 @@ jobs:
           --no-push
           --summary
           --no-lint
+          --no-push
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
