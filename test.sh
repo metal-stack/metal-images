@@ -12,8 +12,8 @@ export IMAGE="${1}"
 export VM="imagevm-${OS_NAME}0"
 
 echo "import oci to ignite: ${IMAGE}"
-#sudo ignite image rm -f ${IMAGE} || true
-#sudo ignite image import --runtime=docker ${IMAGE}
+sudo ignite image rm -f ${IMAGE} || true
+sudo ignite image import --runtime=docker ${IMAGE}
 
 echo "generate footloose config"
 FOOTLOOSE_CFG="footloose.${OS_NAME}.yaml"
@@ -34,7 +34,6 @@ while ! nc -z ${IP} 22; do
 done
 
 echo "ssh is available"
-sleep 2
 
 cd test
 ./test.sh
