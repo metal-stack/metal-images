@@ -20,7 +20,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    VERSION_NODE_EXPORTER=0.18.1
+    VERSION_NODE_EXPORTER=1.0.1
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
