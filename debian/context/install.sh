@@ -12,7 +12,7 @@ OS_NAME=${ID}
 readonly BOOTLOADER_ID="metal-${OS_NAME}"
 
 # Must be written here because during docker build this file is synthetic
-echo -e "nameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
 

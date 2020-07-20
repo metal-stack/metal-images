@@ -1,13 +1,13 @@
 ---
 cluster:
-  name: cluster
+  name: imagevm
   privateKey: key
 machines:
 - count: 1
   spec:
     backend: ignite
     image: ${IMAGE}
-    name: images%d
+    name: ${OS_NAME}%d
   ignite:
     runtime: docker
     cpus: 2

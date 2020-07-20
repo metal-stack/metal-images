@@ -2,6 +2,6 @@
 .idea
 .vagrant
 images
-footloose.yaml
+footloose.*yaml
 key
 key.pub

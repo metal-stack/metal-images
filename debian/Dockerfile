@@ -119,6 +119,7 @@ RUN systemctl set-default multi-user.target \
                      docker.service \
                      frr.service \
                      systemd-networkd \
+                     systemd-resolved \
                      watchdog.service \
  && update-ca-certificates
 
