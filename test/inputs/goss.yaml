@@ -1,0 +1,42 @@
+---
+service:
+  frr:
+    enabled: true
+    running: true
+  ssh:
+    enabled: true
+    running: true
+process:
+  bgpd:
+    running: true
+  zebra:
+    running: true
+dns:
+  google.com:
+    resolvable: true
+command:
+  "hostnamectl --static":
+    exit-status: 0
+    stdout:
+    - machine
+  internet-reachable:
+    exec: "ping -W 1 -c 1 -n 1.1.1.1"
+    exit-status: 0
+  "systemctl list-jobs":
+    exit-status: 0
+    stdout:
+    - No jobs running.
+  "systemctl list-units --failed --no-pager --no-legend":
+    exit-status: 0
+    stdout:
+    - ""
+kernel-param:
+  net.ipv6.conf.all.disable_ipv6:
+    value: "0"
+  net.ipv6.conf.default.disable_ipv6:
+    value: "0"
+  net.ipv4.conf.all.rp_filter:
+    value: "0"
+  net.ipv4.conf.default.rp_filter:
+    value: "0"
+  
