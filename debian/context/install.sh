@@ -69,25 +69,6 @@ fi
 # configure networking to setup interfaces and establish BGP/ EVPN sessions
 /network.sh
 
-# Take care: init must use systemd!
-cat << EOM >/etc/default/grub
-GRUB_DEFAULT=0
-GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo ${BOOTLOADER_ID})
-GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="${CMDLINE}"
-GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=${SERIAL_SPEED} --unit=${SERIAL_PORT} --word=8"
-EOM
-
-if [ -d /sys/firmware/efi ]
-then
-    echo "System was booted with UEFI"
-    grub-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
-    update-grub2
-    dpkg-reconfigure grub-efi-amd64-bin
-fi
-
 # set sshpublickey
 SSHDIR=~metal/.ssh
 mkdir -p ${SSHDIR}
@@ -132,3 +113,25 @@ kernel: ${KERNEL}
 bootloader_id: ${BOOTLOADER_ID}
 ...
 REBOOT
+
+# Take care: init must use systemd!
+cat << EOM >/etc/default/grub
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo ${BOOTLOADER_ID})
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="${CMDLINE}"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=${SERIAL_SPEED} --unit=${SERIAL_PORT} --word=8"
+EOM
+
+if [ -d /sys/firmware/efi ]
+then
+    echo "System was booted with UEFI"
+    grub-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
+    update-grub2
+    dpkg-reconfigure grub-efi-amd64-bin
+else
+    echo "System was booted with Bios which is unsupported"
+    exit 1
+fi
