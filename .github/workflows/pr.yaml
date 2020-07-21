@@ -22,29 +22,29 @@ jobs:
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
     - name: Build docker image for workers and export tarball
-      run: >
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci"
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}"
-        TMPDIR=/var/tmp
-        docker-make
-          --work-dir debian
-          --file docker-make.${{ matrix.os }}.yaml
-          --no-cache
-          --summary
-          --no-lint
+      run: |
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir debian \
+          --file docker-make.${{ matrix.os }}.yaml \
+          --no-cache \
+          --summary \
+          --no-lint \
           --no-push
     - name: Build docker image for firewalls and export tarball
-      run: >
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci"
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}"
-        TMPDIR=/var/tmp
-        docker-make
-          --work-dir firewall
-          --build-only ${{ matrix.os }}
-          --no-cache
-          --no-pull
-          --summary
-          --no-lint
+      run: |
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir firewall \
+          --build-only ${{ matrix.os }} \
+          --no-cache \
+          --no-pull \
+          --summary \
+          --no-lint \
           --no-push
     - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
@@ -63,17 +63,17 @@ jobs:
       shell: bash
       run: ./prepare.sh centos
     - name: Build docker image for centos based workers and export tarball
-      run: >
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci"
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}"
-        TMPDIR=/var/tmp
-        docker-make
-          --work-dir centos
-          --file docker-make.yaml
-          --no-cache
-          --no-push
-          --summary
-          --no-lint
+      run: |
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir centos \
+          --file docker-make.yaml \
+          --no-cache \
+          --no-push \
+          --summary \
+          --no-lint \
           --no-push
     - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
