@@ -18,6 +18,8 @@ if [ $OS_NAME == "firewall" ]; then
 fi
 
 echo "import oci to ignite: ${IMAGE}"
+sudo ignite stop ${VM} || true
+sudo ignite rm ${VM} || true
 sudo ignite image rm -f ${IMAGE} || true
 sudo ignite image import --runtime=docker ${IMAGE}
 
