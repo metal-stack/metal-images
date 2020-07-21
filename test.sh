@@ -40,6 +40,7 @@ while ! nc -z ${IP} 22; do
 done
 
 echo "ssh is available"
+sleep 5
 
 cd test
 ./test.sh
