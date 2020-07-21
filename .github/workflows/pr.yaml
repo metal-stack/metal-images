@@ -24,7 +24,8 @@ jobs:
 
     - name: Build docker image for workers and export tarball
       run: >
-        docker login -u metalstack+ci -p ${{ secrets.QUAY_IO_TOKEN }};
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci"
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}"
         docker-make
           --work-dir debian
           --file docker-make.${{ matrix.os }}.yaml
@@ -34,7 +35,8 @@ jobs:
           --no-push
     - name: Build docker image for firewalls and export tarball
       run: >
-        docker login -u metalstack+ci -p ${{ secrets.QUAY_IO_TOKEN }};
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci"
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}"
         docker-make
           --work-dir firewall
           --build-only ${{ matrix.os }}
@@ -61,7 +63,8 @@ jobs:
       run: ./prepare.sh centos
     - name: Build docker image for centos based workers and export tarball
       run: >
-        docker login -u metalstack+ci -p ${{ secrets.QUAY_IO_TOKEN }};
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci"
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}"
         docker-make
           --work-dir centos
           --file docker-make.yaml
