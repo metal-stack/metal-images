@@ -82,7 +82,9 @@ RUN set -ex \
     gpg-agent \
     grub-efi-amd64-bin \
     grub2 \
+    # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
     /tmp/ifupdown2_${IFUPDOWN2_VERSION}_all.deb \
+    haveged \
     initramfs-tools \
     ipmitool \
     iputils-ping \
@@ -145,6 +147,7 @@ RUN systemctl set-default multi-user.target \
                      docker.service \
                      frr.service \
                      systemd-networkd \
+                     systemd-resolved \
                      watchdog.service \
  && update-ca-certificates
 

@@ -17,6 +17,7 @@ default-build-args:
   - METAL_NETWORKER_VERSION=v0.2.5
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=ubuntu
+  - OS_NAME=ubuntu
   - DOCKER_APT_OS=ubuntu
   - DOCKER_APT_CHANNEL=disco
   - CRI_VERSION=v1.18.0
@@ -32,4 +33,5 @@ builds:
       - SEMVER_MAJOR_MINOR=20.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - OS_NAME=ubuntu SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
+      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
