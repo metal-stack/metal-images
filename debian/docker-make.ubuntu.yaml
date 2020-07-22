@@ -13,6 +13,7 @@ default-build-args:
   - IGNITION_BRANCH=v0.34.0
   - YQ_VERSION=3.3.2
   - GOLLDPD_VERSION=v0.2.4
+  - IFUPDOWN2_VERSION=3.0.0-1
   - METAL_NETWORKER_VERSION=v0.2.5
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=ubuntu
@@ -29,18 +30,6 @@ builds:
       - BASE_OS_VERSION=20.04
       - FRR_VERSION=7.4-ubuntu-20.04
       - SEMVER_MAJOR_MINOR=20.04
-      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-    after:
-      - OS_NAME=ubuntu SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
-  -
-    name: "Ubuntu 19.10"
-    tags:
-      - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
-    build-args:
-      - BASE_OS_VERSION=19.10
-      - FRR_VERSION=7.2-ubuntu-19.10
-      - SEMVER_MAJOR_MINOR=19.10
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
       - OS_NAME=ubuntu SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
