@@ -18,6 +18,7 @@ RUN set -ex \
  && make
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION} as ifupdown2-builder
+ARG IFUPDOWN2_REFSPEC
 ENV DEBIAN_FRONTEND=noninteractive
 RUN set -ex \
  && apt-get update \
@@ -40,7 +41,7 @@ RUN set -ex \
  && dpkg-reconfigure --frontend noninteractive tzdata \
  && git clone git://github.com/CumulusNetworks/ifupdown2 \
  && cd ifupdown2 \
- && git checkout 6d4fd3f \
+ && git checkout ${IFUPDOWN2_REFSPEC} \
  && make deb
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
@@ -82,9 +83,9 @@ RUN set -ex \
     gpg-agent \
     grub-efi-amd64-bin \
     grub2 \
+    haveged \
     # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
     /tmp/ifupdown2_${IFUPDOWN2_VERSION}_all.deb \
-    haveged \
     initramfs-tools \
     ipmitool \
     iputils-ping \
