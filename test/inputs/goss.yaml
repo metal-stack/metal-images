@@ -6,14 +6,14 @@ service:
   ssh:
     enabled: true
     running: true
-{{if eq .Env.MACHINE_TYPE "firewall"}}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
   suricata:
     enabled: true
     running: true
   nftables:
     enabled: true
     running: true
-{{end}}
+{{ end }}
 process:
   bgpd:
     running: true
@@ -38,7 +38,22 @@ command:
     exit-status: 0
     stdout:
     - ""
-{{if eq .Env.MACHINE_TYPE "machine"}}
+  "bgp has two peers visibile":
+    exec: "vtysh -c 'show bgp sum json' | jq '.ipv4Unicast.totalPeers'"
+    exit-status: 0
+    stdout:
+    - "2"
+  "bgp router-id matches":
+    exec: "vtysh -c 'show bgp json' | jq '.routerId'"
+    exit-status: 0
+    stdout:
+    - {{ .Env.ROUTER_ID }}
+  "bgp ASN matches":
+    exec: "vtysh -c 'show bgp json' | jq '.localAS'"
+    exit-status: 0
+    stdout:
+    - {{ .Env.ASN }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "timedatectl show -p NTPSynchronized":
   "only ssh and bgpd is listening at 0.0.0.0":
     exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
@@ -54,7 +69,8 @@ command:
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
-{{ else }}
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
     exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
     exit-status: 0
@@ -69,7 +85,7 @@ command:
     exit-status: 0
     stdout:
     - "Leap status     : Normal"
-{{end}}
+{{ end }}
 kernel-param:
   net.ipv6.conf.all.disable_ipv6:
     value: "0"
