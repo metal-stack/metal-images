@@ -1,4 +1,12 @@
 ---
+user:
+  metal:
+    exists: true
+file:
+  "/home/metal/.ssh/authorized_keys":
+    exists: true
+    contains:
+    - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDVh6ZujzfTzYa7Az/T1LCW3OxlpbfyjmAjfzAnBSNhq09bfj2OZZqvjiFJxXAhFmSOkzyliZHW0HED/+qFDBNhqFSwlbn8pezJKzjOe+l4pJRvRO02hguVOkzKdUM4kTWHCJOirpsRjDYVtAZ4ZVdU7stYE0C1j1JfMsSYXiHNvUmf/a+QjpCT6gdLoHvKZnDg80uBgK0GxjUOu9YaXsdypzitG8SS35gAOd1fiRV5jQk32mgue/5QQB7hgwDPRnUc5aqtxY3x4mc34VPqnW2dYHeAGftfvCHCkMYgtcBU9eGKSrJhw02xdI2MlqS5OjFErQOC0uTUXCT0dhhcfUz9GkCY+iJd1kTcHe6zVmhIBNE5WQ5oa7kBp5YWLJhQ2D6W3+1CnSKOm+1OH9QbEAMnD/IB1ljfexlViHyRijL9WRXrBi3L9Eb/Aiz7k11VUevaO8gay5UxYN4eYrebXhNpX9oW2n0NY74sMDx6QRu+lcA5VoS6z7Yh6jsqrLzM1fR8W1D8EE/MSSgMB1l3tSiJd80/hLGRUmiY3uXC8z93wZHAiR7d6L2CQSsh7KN4UgIFgzev/shvcnSTI22h68cEswVCySk8JrqP0fXTnryWS9jIzul3HSqbb3CugPnALwwJtI36tJY4Yuwu4J+FPxgxAP4AlES9GqrLJeZn6xYN5Q== cluster@footloose.mail"
 service:
   frr:
     enabled: true
@@ -23,21 +31,39 @@ dns:
   google.com:
     resolvable: true
 command:
-  "hostnamectl --static":
+  "hostname is set":
+    exec: "hostnamectl --static"
     exit-status: 0
     stdout:
     - machine
-  internet-reachable:
+  "lldpd is enabled":
+    exec: "systemctl list-unit-files | grep enabled | grep lldpd"
+    exit-status: 0
+  "systemd: timer for logrotation exists":
+    exec: "systemctl list-timers | grep logrotate"
+    exit-status: 0
+    stdout:
+    - "logrotate.timer"
+    - "logrotate.service"
+  "internet is reachable":
     exec: "ping -W 1 -c 1 -n 1.1.1.1"
     exit-status: 0
-  "systemctl list-jobs":
+  "systemd: no pending jobs":
+    exec: systemctl list-jobs
     exit-status: 0
     stdout:
     - No jobs running.
-  "systemctl list-units --failed --no-pager --no-legend":
+  "systemd: no failed units":
+    exec: systemctl list-units --failed --no-pager --no-legend
     exit-status: 0
     stdout:
     - ""
+  "metal user: sudo is possible with the machine console password":
+    exec: |
+      su metal -c /bin/bash -c 'printf "test\n" | sudo --stdin -i id'
+    exit-status: 0
+    stdout:
+    - "uid=0(root)"
 {{if eq .Env.MACHINE_TYPE "machine"}}
   "timedatectl show -p NTPSynchronized":
   "only ssh and bgpd is listening at 0.0.0.0":
