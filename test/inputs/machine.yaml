@@ -7,7 +7,7 @@ networks:
   - asn: 4200003073
     destinationprefixes: []
     ips:
-      - 10.0.17.2
+      - 10.1.0.1
     nat: false
     networkid: bc830818-2df1-4904-8c40-4322296d393d
     prefixes:
