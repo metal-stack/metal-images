@@ -6,6 +6,14 @@ service:
   ssh:
     enabled: true
     running: true
+{{if eq .Env.MACHINE_TYPE "firewall"}}
+  suricata:
+    enabled: true
+    running: true
+  nftables:
+    enabled: true
+    running: true
+{{end}}
 process:
   bgpd:
     running: true
@@ -30,16 +38,38 @@ command:
     exit-status: 0
     stdout:
     - ""
-  "only ssh is listening at 0.0.0.0":
-    exec: "ss -4 -Hlntu src 0.0.0.0 | grep -v 22 | wc -l"
+{{if eq .Env.MACHINE_TYPE "machine"}}
+  "timedatectl show -p NTPSynchronized":
+  "only ssh and bgpd is listening at 0.0.0.0":
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
     exit-status: 0
     stdout:
     - "0"
-  "only ssh is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | grep -v 22 | wc -l"
+  "only ssh and bgpd is listening at [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179' | wc -l"
     exit-status: 0
     stdout:
     - "0"
+  "timedatectl show -p NTPSynchronized":
+    exit-status: 0
+    stdout:
+    - "NTPSynchronized=yes"
+{{ else }}
+  "only ssh,vxlan and bgpd is listening at 0.0.0.0":
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
+    exit-status: 0
+    stdout:
+    - "0"
+  "only ssh,vxlan and bgpd is listening at [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|4789' | wc -l"
+    exit-status: 0
+    stdout:
+    - "0"
+  "chronyc tracking":
+    exit-status: 0
+    stdout:
+    - "Leap status     : Normal"
+{{end}}
 kernel-param:
   net.ipv6.conf.all.disable_ipv6:
     value: "0"

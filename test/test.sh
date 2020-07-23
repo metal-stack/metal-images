@@ -11,5 +11,5 @@ ssh -o StrictHostKeyChecking=no -i ../key root@${IP} <<EOF
     /install.sh
     systemctl restart frr
     systemctl restart networking
-    cd / && /goss.sh
+    cd / && /goss.sh ${MACHINE_TYPE}
 EOF

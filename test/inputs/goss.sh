@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export MACHINE_TYPE=$1
+
 if hash goss 2>/dev/null; then
     echo "goss is already installed"
 else

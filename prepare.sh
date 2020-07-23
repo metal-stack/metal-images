@@ -8,7 +8,7 @@ echo "::set-env name=SEMVER_PATCH::$(date +%Y%m%d)"
 
 BRANCH=$(echo "${GITHUB_REF}" | awk -F / '{print $3}')
 echo "::set-env name=BRANCH::${BRANCH})"
-if [ ! -z "${GITHUB_BASE_REF}" ]; then
+if [ -n "${GITHUB_BASE_REF}" ]; then
     PULL_REQUEST_NUMBER=$(echo "$GITHUB_REF" | awk -F / '{print $3}')
     BRANCH="${GITHUB_HEAD_REF##*/}"
     echo "::set-env name=OUTPUT_FOLDER::/${PULL_REQUEST_NUMBER}-${BRANCH}"
@@ -17,7 +17,7 @@ else
 fi
 
 echo "Generating build metadata"
-mkdir -p ${OS_FLAVOR}/context/etc/metal
+mkdir -p" ${OS_FLAVOR}/context/etc/metal"
 BUILD_META_FILE="${OS_FLAVOR}/context/etc/metal/build.yaml"
 python -c "import yaml; from datetime import datetime; print yaml.dump(dict(builddate=datetime.now(), commit_ref=\"${BRANCH}\", commit_sha1=\"${GITHUB_SHA}\", gitrepo=\"${GITHUB_REPOSITORY}\"), default_flow_style=False)" | tee -a ${BUILD_META_FILE}
 

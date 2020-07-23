@@ -64,7 +64,7 @@ COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 COPY --from=ifupdown2-builder /ifupdown2_${IFUPDOWN2_VERSION}_all.deb /tmp/
-COPY context/kernel-installation.sh /
+COPY context/kernel-and-timesyncd-installation.sh /
 
 RUN set -ex \
  && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
@@ -92,7 +92,6 @@ RUN set -ex \
     isc-dhcp-client \
     jq \
     lsb-release \
-    ntp \
     openssh-server \
     procps \
     socat \
@@ -132,7 +131,7 @@ RUN set -ex \
  # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
  # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
  && ln -sf /usr/bin/python2 /usr/bin/python \
- && /kernel-installation.sh \
+ && /kernel-and-timesyncd-installation.sh \
  && rm -rf /tmp/*
 
 COPY context/ /
@@ -148,6 +147,7 @@ RUN systemctl set-default multi-user.target \
                      frr.service \
                      systemd-networkd \
                      systemd-resolved \
+                     systemd-timesyncd \
                      watchdog.service \
  && update-ca-certificates
 

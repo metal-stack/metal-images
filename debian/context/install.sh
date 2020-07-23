@@ -62,7 +62,7 @@ echo -e "$pass\n$pass" | passwd $user
 # expire after one day
 chage -M 1 $user
 
-if [ $devmode == "true" ]; then
+if [ "$devmode" == "true" ]; then
     echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
 fi
 

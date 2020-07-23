@@ -1,6 +1,6 @@
 # metal-images
 
-CI builds for metal-images. Every OS image is build from a Dockerfile. The generated docker image is then exported to a tarball. This tarball is then stored in [GCS](https://images.metal-pod.io/). The tarball must be compressed using lz4 and a md5 checksum must be provided as well. To be able to have an insight what packages are included in this image a `packages.txt` with the output of `dpkg -l`.
+CI builds for metal-images. Every OS image is build from a Dockerfile. The generated docker image is then exported to a tarball. This tarball is then stored in [GCS](https://images.metal-stack.io/). The tarball must be compressed using lz4 and a md5 checksum must be provided as well. To be able to have an insight what packages are included in this image a `packages.txt` with the output of `dpkg -l`.
 The actual directory layout should look like:
 
 ```bash
@@ -45,7 +45,7 @@ We start testing these images __only__ on the metal level to narrow the test sco
 ### CI
 
 - build on push and daily scheduled ci job to build the images for machines and firewalls
-- images are pushed to Google Bucket and accessible under [images.metal-pod.io](https://images.metal-pod.io)
+- images are pushed to Google Bucket and accessible under [images.metal-stack.io](https://images.metal-stack.io)
 - images are synced to partitions with a synchronization service that runs on management servers
 - pipelines running from the master branch yield an image URL like that is useable in the partition:
   - `https://images.metal-pod.io/ubuntu/19.10/20191017/img.tar.lz4`
