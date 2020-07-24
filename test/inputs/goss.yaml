@@ -2,14 +2,35 @@
 user:
   metal:
     exists: true
-{{ if eq .Env.MACHINE_TYPE "machine" }}
 file:
+  "/etc/systemd/network/10-lan0.link":
+    exists: true
+    contains:
+    - "MACAddress=00:03:00:11:11:01"
+    - "Name=lan0"
+  "/etc/systemd/network/20-lan1.link":
+    exists: true
+    contains:
+    - "MACAddress=00:03:00:11:12:01"
+    - "Name=lan1"
+  "/etc/systemd/network/10-lan0.network":
+    exists: true
+    contains:
+    - "Name=lan0"
+  "/etc/systemd/network/20-lan1.network":
+    exists: true
+    contains:
+    - "Name=lan1"
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "/home/metal/.ssh/authorized_keys":
     exists: true
     contains:
     - {{ .Env.PUB_KEY }}
 {{ end }}
 service:
+  lldpd:
+    enabled: true
+    running: false
   frr:
     enabled: true
     running: true
@@ -20,6 +41,9 @@ service:
   suricata:
     enabled: true
     running: true
+  suricata-update:
+    enabled: true
+    running: false
   nftables:
     enabled: true
     running: true
@@ -38,9 +62,6 @@ command:
     exit-status: 0
     stdout:
     - machine
-  "lldpd is enabled":
-    exec: "systemctl list-unit-files | grep enabled | grep lldpd"
-    exit-status: 0
   "internet is reachable":
     exec: "ping -W 1 -c 1 -n 1.1.1.1"
     exit-status: 0
@@ -66,7 +87,7 @@ command:
     exit-status: 0
     stdout:
     - "uid=0(root)"
-{{if eq .Env.MACHINE_TYPE "machine"}}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "boot-info contains kernel, initrd and cmdline":
     exec: |
       cat /etc/metal/boot-info.yaml | yq r - kernel && \
