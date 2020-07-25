@@ -30,7 +30,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=10
       - DOCKER_APT_CHANNEL=buster
-      - FRR_VERSION=7.4-debian-10
+      - FRR_VERSION=7.3-debian-10
       - SEMVER_MAJOR_MINOR=10
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:

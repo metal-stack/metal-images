@@ -29,7 +29,7 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=20.04
-      - FRR_VERSION=7.4-ubuntu-20.04
+      - FRR_VERSION=7.3-ubuntu-20.04
       - SEMVER_MAJOR_MINOR=20.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
