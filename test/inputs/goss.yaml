@@ -63,7 +63,7 @@ service:
     running: true
   cloud-config-downloader:
     enabled: true
-    running: true
+    running: false
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   suricata:

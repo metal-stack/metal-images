@@ -54,7 +54,7 @@
     },
     "systemd": {
         "units": [{
-            "contents": "[Unit]",
+            "contents": "[Unit]\nDescription=Downloads the actual cloud config from the Shoot API server and executes it\nAfter=docker.service docker.socket\nWants=docker.socket\n[Service]\nRestart=always\nRestartSec=30\nEnvironmentFile=/etc/environment\nExecStart=/var/lib/cloud-config-downloader/download-cloud-config.sh\n[Install]\nWantedBy=multi-user.target",
             "enable": true,
             "name": "cloud-config-downloader.service"
         }]
