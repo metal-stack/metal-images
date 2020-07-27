@@ -88,6 +88,7 @@ RUN set -ex \
     /tmp/ifupdown2_${IFUPDOWN2_VERSION}_all.deb \
     initramfs-tools \
     ipmitool \
+    iptables \
     iputils-ping \
     iproute2 \
     isc-dhcp-client \
@@ -132,6 +133,9 @@ RUN set -ex \
  # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
  # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
  && ln -sf /usr/bin/python2 /usr/bin/python \
+ # Switch to use iptables-legacy on worker nodes
+ && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+ && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  && /kernel-and-timesyncd-installation.sh \
  && rm -rf /tmp/*
 
