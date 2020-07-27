@@ -66,8 +66,6 @@ if [ "$devmode" == "true" ]; then
     echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
 fi
 
-# ifupdown2 for python3 requires this directory, otherwise it cannot create a lockfile
-mkdir -p /var/run/network
 # configure networking to setup interfaces and establish BGP/ EVPN sessions
 /network.sh
 
