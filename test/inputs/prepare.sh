@@ -10,5 +10,8 @@ cat /etc/metal/disk.json
 echo "move input file for metal-networker to proper location"
 mv "/${MACHINE_TYPE}.yaml" /etc/metal/install.yaml
 
+echo "place userdata"
+mv "/userdata-${MACHINE_TYPE}.json" /etc/metal/userdata
+
 echo "for idempotency: delete metal user before issuing install.sh"
 userdel metal

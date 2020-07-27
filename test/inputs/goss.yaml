@@ -26,6 +26,26 @@ file:
     exists: true
     contains:
     - {{ .Env.PUB_KEY }}
+  "/var/lib/cloud-config-downloader/credentials/server":
+    exists: true
+    contains:
+    - https://my-cluster.local
+  "/var/lib/cloud-config-downloader/credentials/ca.crt":
+    exists: true
+    contains:
+    - "-----BEGIN CERTIFICATE-----"
+  "/var/lib/cloud-config-downloader/credentials/client.crt":
+    exists: true
+    contains:
+    - "-----BEGIN CERTIFICATE-----"
+  "/var/lib/cloud-config-downloader/credentials/client.key":
+    exists: true
+    contains:
+    - "-----BEGIN RSA PRIVATE KEY-----"
+  "/var/lib/cloud-config-downloader/download-cloud-config.sh":
+    exists: true
+    contains:
+    - "#!/bin/bash"
 {{ end }}
 service:
   lldpd:
@@ -39,6 +59,9 @@ service:
     running: true
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   docker:
+    enabled: true
+    running: true
+  cloud-config-downloader:
     enabled: true
     running: true
 {{ end }}
