@@ -1,8 +1,0 @@
-{
-    "address": {
-        "defaults": {
-            "ip-forward": "on",
-            "ip6-forward": "on"
-        }
-    }
-}

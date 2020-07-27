@@ -17,33 +17,6 @@ RUN set -ex \
  && git checkout ${IGNITION_BRANCH} \
  && make
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION} as ifupdown2-builder
-ARG IFUPDOWN2_REFSPEC
-ENV DEBIAN_FRONTEND=noninteractive
-RUN set -ex \
- && apt-get update \
- && apt-get install --yes --no-install-recommends \
-    build-essential \
-    devscripts \
-    dh-python \
-    dh-systemd \
-    fakeroot \
-    git \
-    iproute2 \
-    python-all \
-    python-docutils \
-    python-setuptools \
-    python3-all \
-    python3-docutils \
-    python3-setuptools \
-    tzdata \
- && ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- && dpkg-reconfigure --frontend noninteractive tzdata \
- && git clone git://github.com/CumulusNetworks/ifupdown2 \
- && cd ifupdown2 \
- && git checkout ${IFUPDOWN2_REFSPEC} \
- && make deb
-
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
@@ -53,7 +26,6 @@ ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
 ARG CRI_VERSION
-ARG IFUPDOWN2_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -64,7 +36,6 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
-COPY --from=ifupdown2-builder /ifupdown2_${IFUPDOWN2_VERSION}_all.deb /tmp/
 COPY context/kernel-and-timesyncd-installation.sh /
 
 RUN set -ex \
@@ -84,8 +55,6 @@ RUN set -ex \
     grub-efi-amd64-bin \
     grub2 \
     haveged \
-    # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
-    /tmp/ifupdown2_${IFUPDOWN2_VERSION}_all.deb \
     initramfs-tools \
     ipmitool \
     iptables \
@@ -127,12 +96,6 @@ RUN set -ex \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- # Ensure that there exists a link from /usr/bin/python to python2
- # This is needed for ifupdown2 since they have /usr/bin/python as interpreter: https://github.com/CumulusNetworks/ifupdown2/blob/master/ifupdown2/__main__.py#L1
- # - with Ubuntu >= 20.04 this link does not exist anymore
- # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
- # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
- && ln -sf /usr/bin/python2 /usr/bin/python \
  # Switch to use iptables-legacy on worker nodes
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
