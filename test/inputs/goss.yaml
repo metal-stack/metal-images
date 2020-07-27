@@ -8,7 +8,7 @@ file:
     contains:
     - "MACAddress=00:03:00:11:11:01"
     - "Name=lan0"
-  "/etc/systemd/network/20-lan1.link":
+  "/etc/systemd/network/11-lan1.link":
     exists: true
     contains:
     - "MACAddress=00:03:00:11:12:01"
@@ -17,7 +17,7 @@ file:
     exists: true
     contains:
     - "Name=lan0"
-  "/etc/systemd/network/20-lan1.network":
+  "/etc/systemd/network/11-lan1.network":
     exists: true
     contains:
     - "Name=lan1"
