@@ -37,6 +37,11 @@ service:
   ssh:
     enabled: true
     running: true
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  docker:
+    enabled: true
+    running: true
+{{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   suricata:
     enabled: true
