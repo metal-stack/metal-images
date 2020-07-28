@@ -63,7 +63,6 @@ RUN set -ex \
     isc-dhcp-client \
     jq \
     lsb-release \
-    openssh-server \
     procps \
     socat \
     software-properties-common \
