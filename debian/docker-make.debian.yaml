@@ -10,7 +10,7 @@ default-build-args:
   - HTTPS_PROXY=${HTTP_PROXY}
   - NO_PROXY=${NO_PROXY}
   - no_proxy=${NO_PROXY}
-  - IGNITION_BRANCH=v0.34.0
+  - IGNITION_BRANCH=v0.35.0
   - YQ_VERSION=3.3.2
   - GOLLDPD_VERSION=v0.2.4
   - METAL_NETWORKER_VERSION=merge
