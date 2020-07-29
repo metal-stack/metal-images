@@ -29,7 +29,8 @@ RUN apt-get update --quiet \
     fever \
     nftables \
     tcpdump \
- && apt-get remove --yes iptables
+ && apt-get remove --yes iptables \
+ && apt --yes autoremove
 
 # Context:
 # - chrony.conf provides default configuration for chrony
