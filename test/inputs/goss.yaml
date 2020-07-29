@@ -66,6 +66,9 @@ service:
     running: false
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
+  chrony:
+    enabled: true
+    running: true
   suricata:
     enabled: true
     running: true
@@ -179,4 +182,5 @@ kernel-param:
     value: "0"
   net.ipv4.conf.default.rp_filter:
     value: "0"
-  
+  kernel.printk:
+    value: "2\t4\t1\t7"
