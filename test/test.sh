@@ -9,7 +9,8 @@ echo "do machine test"
 ssh -o StrictHostKeyChecking=no -i ../key "root@${IP}" <<EOF
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     /install.sh
+    systemctl restart systemd-networkd
     systemctl restart frr
-    systemctl restart networking
+    systemctl restart nftables
     cd / && /goss.sh ${MACHINE_TYPE}
 EOF
