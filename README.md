@@ -1,53 +1,62 @@
 # metal-images
 
-CI builds for metal-images. Every OS image is build from a Dockerfile. The generated docker image is then exported to a tarball. This tarball is then stored in [GCS](https://images.metal-stack.io/). The tarball must be compressed using lz4 and a md5 checksum must be provided as well. To be able to have an insight what packages are included in this image a `packages.txt` with the output of `dpkg -l`.
-The actual directory layout should look like:
+This project builds operating system images usable for bare metal server provisioning with [metal-stack](https://metal-stack.io).
+Every OS image is build from a Dockerfile, exported to a lz4 compressed tarball, and uploaded to <https://images.metal-stack.io/>.
+
+For security scanning those images are also pushed to [quay.io/metalstack](https://quay.io/user/metalstack).
+
+Further information about the image store is available at [IMAGE_STORE.md](./IMAGE_STORE.md).
+
+Information about our initial architectural decisions may be found in [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Local development and integration testing
+
+Before you can start developing changes for metal-images or even introduce new operating systems, you have to install the following tools:
+
+- **docker**: for sure
+- **kvm**: hypervisor used for integration tests
+- **lz4**: to compress tarballs
+- **[docker-make](https://github.com/fi-ts/docker-make)**: this is a helper tool to define docker builds declaratively with YAML
+- **[weaveworks/ignite](https://github.com/weaveworks/ignite)**: handles [firecracker vms](https://firecracker-microvm.github.io/) to spin up a metal-image virtually as VM
+
+You can build metal-images like that:
 
 ```bash
-<imagesdir>/<os>/<major.minor>/<patch>/img.tar.lz4
-<imagesdir>/<os>/<major.minor>/<patch>/img.tar.lz4.md5
-<imagesdir>/<os>/<major.minor>/<patch>/packages.txt
+# for debian images
+cd debian && docker-make -nNL -f docker-make.debian.yaml
+
+# for ubuntu images
+cd debian && docker-make -nNL -f docker-make.ubuntu.yaml
+
+# for firewall images
+cd firewall && docker-make -nNL docker-make.yaml
 ```
 
-Where `<imagesdir>` is `/` for the master branch and `/${CI_COMMIT_REF_SLUG}/` for branches and merge requests.
-
-`<os>` is the name of the os in use, we currently only have `ubuntu` and `firewall`, where `firewall` is derived from the `ubuntu` image.
-
-`<major.minor>` specifies the major and minor number of the OS, which is case of ubuntu "19.10", "19.10", "20.04" and so on. This version must follow the semantic versioning specification, whereas we tolerate a leading zero for the minor version which is quite common for some OSes.
-
-`<patch>` must follow the semantic version requirements for `patch`, we defined that patch is always in the form of "YYYYMMDD` for example 20191018.
-
-To specify the image for machine creation the full qualified image must be in the form of:
-`<os-major.minor.patch>`, e.g. `ubuntu-19.10.20191018`.
-
-From the metal-api perspective, there are two possibilities to specify a image to create a machine:
-
-1. specify major.minor without patch, e.g. `--image ubuntu-19.10`
-1. specify major.minor.patch `--image ubuntu-19.10.20191018`
-
-In the first case a most recent version resolution is taken place in the metal-api to resolve to the most recent available image for ubuntu-19.10, which will be then for example ubuntu-19.10.20191018, this image is the stored in the machine allocation.
-The second form guarantees the machine creation of this exact image.
-
-Images which are no longer in use by any allocated machine and are older than the specified usage period will be deleted from the metal-api and the blobstore.
+For integration testing the images are started as [firecracker vm](https://firecracker-microvm.github.io/) with [weaveworks/ignite](https://github.com/weaveworks/ignite) and basic properties like interfaces to other metal-stack components, kernel parameters, internet reachability, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. The integration tests are also executed when you build an image locally with.
 
 ## Supported Images
 
 Currently these images are supported:
 
 1. Debian 10
-1. Ubuntu 19.10
-1. Firewall 2.0
+1. Ubuntu 20.04
+1. Firewall 2.0 (based on Debian 10)
+1. Firewall 2.0-ubuntu (based on Ubuntu 20.04)
 
-## Build, Test and Release process
+## Schedule
 
-We start testing these images __only__ on the metal level to narrow the test scope and make failure debugging easier.
+Builds from the master branch are scheduled on every sunday night at 1:10 o'clock to get fresh metal-images every week.
 
-### CI
+## How new images get usable in a metal-stack partition
 
-- build on push and daily scheduled ci job to build the images for machines and firewalls
-- images are pushed to Google Bucket and accessible under [images.metal-stack.io](https://images.metal-stack.io)
-- images are synced to partitions with a synchronization service that runs on management servers
-- pipelines running from the master branch yield an image URL like that is useable in the partition:
-  - `https://images.metal-pod.io/ubuntu/19.10/20191017/img.tar.lz4`
-- pipelines running from other branches yield an image URL like that is useable in the partition:
-  - `https://images.metal-pod.io/${CI_COMMIT_REF_SLUG}/ubuntu/19.10/20191017/img.tar.lz4`
+Images are synced to partitions with a service that mirrors the public bucket and which runs on the management servers of partitions.
+
+Images built from the master branch are accessible with an image URL like this:
+
+`http://images.metal-stack.io/ubuntu/20.04/20200728/img.tar.lz4`
+
+For other branches, the URL pattern is this:
+
+`http://images.metal-stack.io/${CI_COMMIT_REF_SLUG}/ubuntu/20.04/20200728/img.tar.lz4`
+
+Those URLs can be used to define an image at the metal-api.
