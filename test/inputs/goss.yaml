@@ -141,6 +141,7 @@ command:
     exit-status: 0
     stdout:
     - {{ .Env.ASN }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "only ssh and bgpd is listening at 0.0.0.0":
     exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
     exit-status: 0
@@ -155,6 +156,7 @@ command:
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
+{{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
     exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
