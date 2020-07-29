@@ -16,10 +16,7 @@ if [ "$OS_NAME" == "firewall" ]; then
 fi
 
 echo "build metal-kernel oci"
-cd test && docker build . -t metal-kernel && cd -
-
-echo "import metal-kernel oci to ignite"
-sudo ignite kernel import --runtime=docker metal-kernel
+cd test && docker build . -t metal-kernel:latest && cd -
 
 echo "import image oci to ignite: ${IMAGE}"
 sudo ignite stop "${VM}" || true
