@@ -18,6 +18,9 @@ fi
 echo "build metal-kernel oci"
 cd test && docker build . -t metal-kernel:latest && cd -
 
+echo "import metal-kernel image to ignite"
+sudo ignite kernel import --runtime=docker metal-kernel:latest
+
 echo "import image oci to ignite: ${IMAGE}"
 sudo ignite stop "${VM}" || true
 sudo ignite rm "${VM}" || true
