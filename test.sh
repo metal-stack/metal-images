@@ -31,14 +31,15 @@ echo "generate footloose config"
 FOOTLOOSE_CFG="footloose.${OS_NAME}.yaml"
 envsubst < test/footloose.yaml.tpl > "${FOOTLOOSE_CFG}"
 
-echo "creat ignite / firecracker vm with footloose"
+echo "create ignite / firecracker vm with footloose"
 sudo footloose create -c "${FOOTLOOSE_CFG}"
 sudo chown "$(id -u):$(id -g)" key key.pub
 chmod 0600 key
 chmod 0644 key.pub
 
 echo "determine ip address of vm"
-export IP=$(sudo ignite inspect vm "${VM}" -t "{{ .Status.IPAddresses }}")
+IP=$(sudo ignite inspect vm "${VM}" -t "{{ .Status.IPAddresses }}")
+export IP
 
 while ! nc -z "${IP}" 22; do
   echo "ssh is not available yet"
