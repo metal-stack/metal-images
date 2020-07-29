@@ -9,7 +9,7 @@ machines:
     image: ${IMAGE}
     name: ${OS_NAME}%d
     ignite:
-      kernel: weaveworks/ignite-kernel:5.4.43
+      kernel: metal-kernel
       cpus: 2
       memory: 1GB
       diskSize: 4GB
