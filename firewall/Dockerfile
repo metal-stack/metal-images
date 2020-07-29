@@ -48,8 +48,8 @@ RUN /suricata-installation.sh
 # systemd-time-wait-sync.service is disabled because it sometimes does not start and blocks depending services like logrotate.
 # see https://github.com/systemd/systemd/issues/14061
 RUN systemctl disable systemd-timesyncd \
- && systemctl disable chronyd \
- && systemctl mask chronyd \
+ && systemctl disable chrony \
+ && systemctl mask chrony \
  && systemctl disable systemd-time-wait-sync.service \
  && systemctl mask systemd-time-wait-sync.service \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
