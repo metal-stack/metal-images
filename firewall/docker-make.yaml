@@ -24,7 +24,7 @@ builds:
       - SEMVER_MAJOR_MINOR=2.0
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${OS_NAME}-${SEMVER} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
   -
     name: ubuntu
@@ -37,5 +37,5 @@ builds:
       - SEMVER_MAJOR_MINOR=2.0-ubuntu
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${OS_NAME}-${SEMVER} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

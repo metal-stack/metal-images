@@ -3,13 +3,16 @@
 set -ex
 
 echo "copy input files and goss"
-scp -o StrictHostKeyChecking=no -i ../key ./inputs/* "root@${IP}":/
+scp -o StrictHostKeyChecking=no -i ./key ./inputs/* "root@${IP}":/
 
 echo "do machine test"
-ssh -o StrictHostKeyChecking=no -i ../key "root@${IP}" <<EOF
+ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     /install.sh
     systemctl restart systemd-networkd
+    systemctl restart chrony@vrf104009
+    systemctl daemon-reload
+    systemctl restart chrony@vrf104009
     systemctl restart frr
     systemctl restart nftables
     cd / && /goss.sh ${MACHINE_TYPE}
