@@ -15,7 +15,13 @@ if [ "$OS_NAME" == "firewall" ]; then
   export MACHINE_TYPE="firewall"
 fi
 
-echo "import oci to ignite: ${IMAGE}"
+echo "build metal-kernel oci"
+cd test && docker build . -t metal-kernel && cd -
+
+echo "import metal-kernel oci to ignite"
+sudo ignite kernel import --runtime=docker metal-kernel
+
+echo "import image oci to ignite: ${IMAGE}"
 sudo ignite stop "${VM}" || true
 sudo ignite rm "${VM}" || true
 sudo ignite image rm -f "${IMAGE}" || true
