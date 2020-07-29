@@ -21,11 +21,11 @@ file:
     exists: true
     contains:
     - "Name=lan1"
-{{ if eq .Env.MACHINE_TYPE "machine" }}
   "/home/metal/.ssh/authorized_keys":
     exists: true
     contains:
     - {{ .Env.PUB_KEY }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "/var/lib/cloud-config-downloader/credentials/server":
     exists: true
     contains:
@@ -115,7 +115,6 @@ command:
     exit-status: 0
     stdout:
     - "uid=0(root)"
-{{ if eq .Env.MACHINE_TYPE "machine" }}
   "boot-info contains kernel, initrd and cmdline":
     exec: |
       cat /etc/metal/boot-info.yaml | yq r - kernel && \
@@ -153,7 +152,6 @@ command:
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
-{{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
     exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
