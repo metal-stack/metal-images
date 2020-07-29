@@ -25,7 +25,6 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
-    chrony \
     fever \
     nftables \
     tcpdump \
@@ -40,7 +39,7 @@ RUN apt-get update --quiet \
 COPY context/ /
 
 # Install suricata IDS
-RUN /suricata-installation.sh
+RUN /suricata-and-chrony-installation.sh
 
 # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
 # Final setup is left to metal-networker that knows the internet-facing VRF.
