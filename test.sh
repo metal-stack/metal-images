@@ -1,19 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
 # example: sudo OS_NAME=ubuntu ./test.sh quay.io/metalstack/ubuntu:19.10
 hash ignite 2>/dev/null || { echo >&2 "ignite not found please install from: https://github.com/weaveworks/ignite"; exit 1; }
 
-export IMAGE="${1}"
-export VM_NAME="vm-${OS_NAME}"
-export MACHINE_TYPE="machine"
-export KERNEL_IMAGE="weaveworks/ignite-kernel:5.4.43"
+IMAGE="${1}"
+VM_NAME="vm-${OS_NAME}"
+MACHINE_TYPE="machine"
+KERNEL_IMAGE="weaveworks/ignite-kernel:5.4.43"
 
-if [[ "$OS_NAME" == firewall* ]]; then
-  export MACHINE_TYPE="firewall"
+if [[ "$OS_NAME" == *firewall ]]; then
+  MACHINE_TYPE="firewall"
   # for firewalls we take the metal-stack kernel for nftables support by the kernel
-  export KERNEL_IMAGE="metal-kernel"
+  KERNEL_IMAGE="metal-kernel"
 fi
 
 if [ "${KERNEL_IMAGE}" == "metal-kernel" ]; then
@@ -43,7 +43,6 @@ sudo ignite run "${IMAGE}" \
 
 echo "determine ip address of vm"
 IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.IPAddresses }}")
-export IP
 
 while ! nc -z "${IP}" 22; do
   echo "ssh is not available yet"
@@ -54,5 +53,8 @@ echo "ssh is available"
 sleep 5
 
 cd test
-./test.sh
+IP=${IP} MACHINE_TYPE=${MACHINE_TYPE} ./test.sh
 cd -
+
+sudo ignite stop "${VM_NAME}"
+sudo ignite rm "${VM_NAME}"

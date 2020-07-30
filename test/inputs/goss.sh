@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export MACHINE_TYPE=$1
 export ROUTER_ID=10.1.0.1
