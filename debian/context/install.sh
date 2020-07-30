@@ -24,8 +24,8 @@ RESOLV
 readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
 
 # Serial port and speed are required by grub
-readonly SERIAL_PORT=$(echo ${CONSOLE} | cut -d , -f 1 | tr -dc '0-9')
-readonly SERIAL_SPEED=$(echo ${CONSOLE} | cut -d , -f 2 | cut -d n -f 1 | tr -dc '0-9')
+readonly SERIAL_PORT=$(echo "${CONSOLE}" | cut -d , -f 1 | tr -dc '0-9')
+readonly SERIAL_SPEED=$(echo "${CONSOLE}" | cut -d , -f 2 | cut -d n -f 1 | tr -dc '0-9')
 
 export diskjson="/etc/metal/disk.json"
 
@@ -126,7 +126,7 @@ REBOOT
 cat << EOM >/etc/default/grub
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo ${BOOTLOADER_ID})
+GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "${BOOTLOADER_ID}")
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="${CMDLINE}"
 GRUB_TERMINAL=serial
@@ -136,7 +136,7 @@ EOM
 if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
-    grub-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID}
+    grub-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}"
     update-grub2
     dpkg-reconfigure grub-efi-amd64-bin
 else

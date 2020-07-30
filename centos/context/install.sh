@@ -14,8 +14,8 @@ echo -e "nameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf
 readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
 
 # Serial port and speed are required by grub
-readonly SERIAL_PORT=$(echo ${CONSOLE} | cut -d , -f 1 | tr -dc '0-9')
-readonly SERIAL_SPEED=$(echo ${CONSOLE} | cut -d , -f 2 | cut -d n -f 1 | tr -dc '0-9')
+readonly SERIAL_PORT=$(echo "${CONSOLE}" | cut -d , -f 1 | tr -dc '0-9')
+readonly SERIAL_SPEED=$(echo "${CONSOLE}" | cut -d , -f 2 | cut -d n -f 1 | tr -dc '0-9')
 
 export diskjson="/etc/metal/disk.json"
 
@@ -56,7 +56,7 @@ useradd --create-home --gid "wheel" --shell /bin/bash $user
 echo "set password for $user to $pass expires after 1 day."
 echo -e "$pass\n$pass" | passwd $user
 
-if [ $devmode == "true" ]; then
+if [ "$devmode" == "true" ]; then
     echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
 fi
 
@@ -78,7 +78,7 @@ if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
     grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
-    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id=${BOOTLOADER_ID} UUID=${ROOT_UUID}
+    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}"
 else
     echo "System was booted with Bios"
     grub2-mkconfig -o /boot/grub2/grub.cfg

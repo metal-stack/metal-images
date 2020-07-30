@@ -5,7 +5,7 @@ readonly SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
 readonly DOCKER_IMAGE="quay.io/metalstack/${OS_NAME}:${SEMVER}"
 readonly IMAGE_BASENAME=img
 
-readonly SEMVER_PATCH_DIR=$(echo ${SEMVER_PATCH} | tr -d ".")
+readonly SEMVER_PATCH_DIR=$(echo "${SEMVER_PATCH}" | tr -d ".")
 readonly TARGET_PATH="images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/${SEMVER_PATCH_DIR}"
 readonly EXPORT_DIRECTORY="../${TARGET_PATH}"
 
@@ -15,10 +15,10 @@ readonly MD5="${IMAGE_BASENAME}.tar.lz4.md5"
 readonly PKG="packages.txt"
 
 # export tarball with checksum from docker image and package list
-mkdir -p ${EXPORT_DIRECTORY}
-cd ${EXPORT_DIRECTORY}
-docker export $(docker create ${DOCKER_IMAGE}) > ${TAR}
-docker run --rm ${DOCKER_IMAGE} bash -c "dpkg -l" > ${PKG}
+mkdir -p "${EXPORT_DIRECTORY}"
+cd "${EXPORT_DIRECTORY}"
+docker export "$(docker create "${DOCKER_IMAGE}")" > ${TAR}
+docker run --rm "${DOCKER_IMAGE}" bash -c "dpkg -l" > ${PKG}
 lz4 -f -9 ${TAR} ${LZ4}
 rm -f ${TAR}
 md5sum ${LZ4} > ${MD5}
