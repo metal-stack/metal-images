@@ -6,7 +6,7 @@ ARG METAL_NETWORKER_VERSION
 FROM metalstack/frr:${FRR_VERSION} AS frr-artifacts
 FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
-FROM golang:1.13-buster as ignition-builder
+FROM golang:1.14-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -23,7 +23,6 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ARG YQ_VERSION
 ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
-ARG LINUX_IMAGE
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
 ARG CRI_VERSION
@@ -37,7 +36,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
-COPY context/kernel-installation.sh /
+COPY context/kernel-and-timesyncd-installation.sh /
 
 RUN set -ex \
  && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
@@ -56,23 +55,21 @@ RUN set -ex \
     grub-efi-amd64-bin \
     grub2 \
     haveged \
-    # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
-    ifupdown2 \
     initramfs-tools \
     ipmitool \
+    iptables \
     iputils-ping \
     iproute2 \
     isc-dhcp-client \
     jq \
     lsb-release \
-    ntp \
-    openssh-server \
     procps \
     socat \
     software-properties-common \
     sudo \
     systemd \
     systemd-sysv \
+    tzdata \
     watchdog \
     wget \
     /tmp/frr_*.deb \
@@ -98,13 +95,10 @@ RUN set -ex \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- # Ensure that there exists a link from /usr/bin/python to python2
- # This is needed for ifupdown2 since they have /usr/bin/python as interpreter: https://github.com/CumulusNetworks/ifupdown2/blob/master/ifupdown2/__main__.py#L1
- # - with Ubuntu >= 20.04 this link does not exist anymore
- # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
- # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
- && ln -sf /usr/bin/python2 /usr/bin/python \
- && /kernel-installation.sh \
+ # Switch to use iptables-legacy on worker nodes
+ && update-alternatives --set iptables /usr/sbin/iptables-legacy \
+ && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
+ && /kernel-and-timesyncd-installation.sh \
  && rm -rf /tmp/*
 
 COPY context/ /
@@ -120,9 +114,9 @@ RUN systemctl set-default multi-user.target \
                      frr.service \
                      systemd-networkd \
                      systemd-resolved \
+                     systemd-timesyncd \
                      watchdog.service \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
-
 COPY --from=metal-networker /metal-networker /etc/metal/networker/

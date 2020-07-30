@@ -12,7 +12,14 @@ OS_NAME=${ID}
 readonly BOOTLOADER_ID="metal-${OS_NAME}"
 
 # Must be written here because during docker build this file is synthetic
-ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+# FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
+# most probably because the resolved must be running in the internet facing vrf.
+# ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+rm -f /etc/resolv.conf
+cat << RESOLV >/etc/resolv.conf
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+RESOLV
 
 readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
 
@@ -62,7 +69,7 @@ echo -e "$pass\n$pass" | passwd $user
 # expire after one day
 chage -M 1 $user
 
-if [ $devmode == "true" ]; then
+if [ "$devmode" == "true" ]; then
     echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
 fi
 
@@ -105,7 +112,8 @@ if [ -e /boot/vmlinuz ]; then
     INITRD=$(readlink -f /boot/initrd.img)
     KERNEL=$(readlink -f /boot/vmlinuz)
 fi
-cat <<REBOOT > /etc/metal/boot-info.yaml
+
+cat << REBOOT > /etc/metal/boot-info.yaml
 ---
 initrd: ${INITRD}
 cmdline: "${CMDLINE}"

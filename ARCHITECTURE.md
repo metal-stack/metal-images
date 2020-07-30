@@ -43,9 +43,3 @@ The `install.sh` has to be implemented for every OS. Between `install.sh` and th
   cmdline:
   kernel:
   ```
-
-## CI-Process to build our OS images
-
-1. build a docker image locally
-1. export it to a tarball
-1. compress the tarball and store the compressed upload it to a blobstore

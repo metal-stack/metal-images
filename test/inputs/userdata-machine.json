@@ -1,0 +1,62 @@
+{
+    "ignition": {
+        "config": {},
+        "security": {
+            "tls": {}
+        },
+        "timeouts": {},
+        "version": "2.2.0"
+    },
+    "networkd": {},
+    "passwd": {},
+    "storage": {
+        "files": [{
+            "filesystem": "root",
+            "path": "/var/lib/cloud-config-downloader/credentials/server",
+            "contents": {
+                "source": "data:,https://my-cluster.local",
+                "verification": {}
+            },
+            "mode": 420
+        }, {
+            "filesystem": "root",
+            "path": "/var/lib/cloud-config-downloader/credentials/ca.crt",
+            "contents": {
+                "source": "data:,-----BEGIN%20CERTIFICATE-----%0AMIIC2DCCAcCgAwIBAgIRAJWgnR4YtwMitLo7PTjwhKIwDQYJKoZIhvcNAQELBQAw%0AFTETMBEGA1UEAxMKa3ViZXJuZXRlczAeFw0yMDA3MTYwNzM2MTdaFw0zMDA3MTYw%0ANzM2MTdaMBUxEzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUA%0AA4IBDwAwggEKAoIBAQDGb5%2Fs8aaLeI9g9AQ7QpNQ2WR95wuxhCHy%2FwhMskuyjloC%0A6Iom%2BFUKxBDrP0Ilh%2F1B7aqJjRkCfKks%2FumNCW08tXVmvAtSO%2BhcEhl%2BwP6uSJ7t%0A6nJNrKpDPkV3EaSgijgzbx%2B72uGTBN41iGygNSdup0hBjANK3vaMHMyztiUWYoSE%0A86YxqgeaXcgNMriECIF%2FJxJEer6W%2BdaRKujZ42u377uYBRTvpekCcCwEDa5V18E8%0AuSXfzf2gQLDux7iCc4ov796czq2PRyYocaADd6B362wj1ztock58WIAOOQmEj%2BHS%0AwNMbazDRiuNQDQ77U1FkHouTfzUQk4KG9XNfi3pnAgMBAAGjIzAhMA4GA1UdDwEB%0A%2FwQEAwIBpjAPBgNVHRMBAf8EBTADAQH%2FMA0GCSqGSIb3DQEBCwUAA4IBAQDCYwm5%0AKScS2HJ9YKpOVWfqKxwRhcZjZV1NXg7xdlN1lAauT0o1JQYI21QgIuBDUognUTjQ%0AOaA3RxcVsV4fYUEvb2g3PEP8TVkAF061sJXvB3xaKKZcldwr7diWO3AdOjKB3MQY%0A8Vadn85E98x0dZQea3QB%2BHPzXw0AEAM7DfCoKZ0SQxHrC6MgQw1kn5a25UjFaDrd%0AJ1ibPPYSDU0C7WEhoFRk8TZe4Ren1KkFYejC5F1jgJvlrGtZt5aAf%2Bt6%2FOY3Evd1%0AvTrRKnmTYcUe46PmSdvC99psbyNvV0vG71AFlVkyfR0cKVc4ATXuj2%2Fd8IHRuu4t%0AEWGwNVsWQVeyC7%2Bq%0A-----END%20CERTIFICATE-----%0A",
+                "verification": {}
+            },
+            "mode": 420
+        }, {
+            "filesystem": "root",
+            "path": "/var/lib/cloud-config-downloader/credentials/client.crt",
+            "contents": {
+                "source": "data:,-----BEGIN%20CERTIFICATE-----%0AMIIC9jCCAd6gAwIBAgIQCIKtp5MFpH5eHz3yJ6O%2BQDANBgkqhkiG9w0BAQsFADAV%0AMRMwEQYDVQQDEwprdWJlcm5ldGVzMB4XDTIwMDcxNjA3MzYxOFoXDTMwMDcxNjA3%0AMzYxOFowIjEgMB4GA1UEAxMXY2xvdWQtY29uZmlnLWRvd25sb2FkZXIwggEiMA0G%0ACSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC6QOwN%2B%2BgK4pGSuFpvUxPDwIpxCub6%0AmEskIRSHZI36BtKJTIWQBqIYSgSmU9299pcaOZK%2FI%2BppxECNxnb%2B7HCZg7eyTJHt%0AQkIgF0t0FSv3bPHAZ0JGV7VWo5%2Fw%2BOoOJMn3mX2Z8WSPp7nedRqttVstu6RJor1d%0AronXxCJv9dBJP7ao%2FMYjLI7piMgs9Oekre2vXi8gXhWspW6kH1namU%2BLki3rP2r1%0AMLreS4%2B51aFO2fu58iN3uMcBxiSLoyZ4IEj3F%2FJ4TTLkJP7TF8kyzFaPzVXDCHk6%0AoZpUc2mi9IHXRbx1tT1hq4eHIZB5%2BWjOptN89VCCdWARMfRJY5pDb4axAgMBAAGj%0ANTAzMA4GA1UdDwEB%2FwQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcDAjAMBgNVHRMB%0AAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQAAGtKqfIm3Gy4J4iGD%2F1CLRJZdb%2FCm%0AtopdgmDn%2F0BV86AiTLrCv8LNoJimCMf29cNQBxb9QTXqanXKbMtSP92BQlnYzL%2BH%0ABKIKHZAzhXgnJVj3AxVfwYD8K9iw9sJaUTcut%2B7JxDaCTBXiOEMDIStc8DHgiQKw%0ARkN8Pz59aWl31OeDNNmCxy2613OC%2FXWdiCV7m%2FQxxxmYkNuo4wWefqL8uh56QoYR%0ASwwSsJIvX4qqx9LyArOMSCrRDUKAKpuFoNm3ZsURvt4IUnUtgmCPjfkoAQ4J4A0O%0AqeSvZfCsY%2FC6IN6wFcZcum3FmNIUtvDviBVbPB2buY8q8Cw5PLOKqaPb%0A-----END%20CERTIFICATE-----%0A",
+                "verification": {}
+            },
+            "mode": 420
+        }, {
+            "filesystem": "root",
+            "path": "/var/lib/cloud-config-downloader/credentials/client.key",
+            "contents": {
+                "source": "data:,-----BEGIN%20RSA%20PRIVATE%20KEY-----%0AMIIEogIBAAKCAQEAukDsDfvoCuKRkrhab1MTw8CKcQrm%2BphLJCEUh2SN%2BgbSiUyF%0AkAaiGEoEplPdvfaXGjmSvyPqacRAjcZ2%2FuxwmYO3skyR7UJCIBdLdBUr92zxwGdC%0ARle1VqOf8PjqDiTJ95l9mfFkj6e53nUarbVbLbukSaK9Xa6J18Qib%2FXQST%2B2qPzG%0AIyyO6YjILPTnpK3tr14vIF4VrKVupB9Z2plPi5It6z9q9TC63kuPudWhTtn7ufIj%0Ad7jHAcYki6MmeCBI9xfyeE0y5CT%2B0xfJMsxWj81Vwwh5OqGaVHNpovSB10W8dbU9%0AYauHhyGQeflozqbTfPVQgnVgETH0SWOaQ2%2BGsQIDAQABAoIBAFFPtH4qYlQWM51N%0AFFYTe8Zy0T2ml84BHJTKSE8PbBgiUFmWaZzF%2BJAICF2gsWaUN8VAKzt874J7Jf9%2F%0ADEYgbMvoQBL78J0W1w1xfgRQleAv1J69taZF9im7x0CJOo0wLGgGv1msk81PWQqw%0ALxR03zho%2BcEX5fn3D8B9pNciBmtjQa8IlTeSpOwW4h1dyTJolX17UQpM0LRrtsEe%0A7iMRbzCfjmEO0EOrh%2B9Fj10vSr5n9bvMOsVeLUTNRZs67vUJ9T4Ve3bTtFM6871u%0At%2Beb9VoNlypjQ2%2BhScWKJzZx9XyJXou9b%2BoDSrvIyjnkny9Vl%2FgYRUjgoZoeO8eA%0AeoWb6m0CgYEA2UHPwEfJN6Iwp6U%2BTC%2Bal6%2B5fkxMRGFjYBiSOxx1rMhvdAc29DGs%0AcVz85%2BGfBCX4fCALqKoC0uxT9XyUrKoq5%2BZ4VtXxq3iJNNCiOm%2BxX5QmYIUzS3%2Fn%0AlAG%2FLLWsuRNY8m4fHHHsFKNShkfVIu6JR0I2Ni6cuRiFgrcqV%2F%2BKhMcCgYEA23e%2B%0AlI%2BcrDrK4NkHscMQmU%2BVPhQpoIlOUooaxHGIm3OX%2FAjwsjmnYhhLL%2B5YBmCXYA3X%0A%2F1SGWv2KyT1Pk7CxD8jUkF3MqULCnzpHe8Elo75KPawwTXn5rKSKH7LZ2sNzt%2Bab%0AD9ex4KZFeGN0DJNLEgsyXxj2fPuFOik4n5Q7MMcCgYAjsWM%2FVMvjHvtdX5GHlL6S%0AMyWHcWOKTHG2JPNJUNioZVmiN1k47zxEd6F5OyET3mUfh2hC8oN6QaddinUmlOJt%0ArPiSU53brPblvW0ZqqX6bO2NJ%2FUQb1gNgef1oXdaBKq1UZA87R57GYYCV6TVk1js%0AYx1i829%2BHWA55HvJb0tDmwKBgCyCJWFlmqWHKtvcx%2BWyJKyi6iZz2llXX033%2BiO6%0AzrSQBdO0UHQkoyCOwrjOwoVQk4KEbDi5AKJ1Zu8XAwt1uwLzfMBmdXoiMuwt2o9r%0AhWGm1tGZGRatVQhBOk3hbLMkDlTObMYSvV1M%2ByvGJ6PhP0lCgg2tN1fzfnpkH7ql%0ASjfDAoGAbPGDZVLVzRkimXgSzii1xhl4fQDKhx4xIESqLxY0kpUtGFFw2o9IT4oZ%0A3UJxHmwaMfbv2r%2B280a5B2i9SFSrObVOFcw8M0fav3%2FrkWMLp4roEwx49FgajI%2FF%0AxhgIGzNhXKOVXb339fJtZVLA37CWF0OobHJroQGFxmIUNo5eNrI%3D%0A-----END%20RSA%20PRIVATE%20KEY-----%0A",
+                "verification": {}
+            },
+            "mode": 420
+        }, {
+            "filesystem": "root",
+            "path": "/var/lib/cloud-config-downloader/download-cloud-config.sh",
+            "contents": {
+                "source": "data:,%23!%2Fbin%2Fbash%20-eu%0A%0ASECRET_NAME%3D%22cloud-config-default-worker-c8518%22%0A%0ADIR_CLOUDCONFIG_DOWNLOADER_CREDENTIALS%3D%22%2Fvar%2Flib%2Fcloud-config-downloader%2Fcredentials%22%0APATH_CLOUDCONFIG_DOWNLOADER_SERVER%3D%22%24DIR_CLOUDCONFIG_DOWNLOADER_CREDENTIALS%2Fserver%22%0APATH_CLOUDCONFIG_DOWNLOADER_CA_CERT%3D%22%24DIR_CLOUDCONFIG_DOWNLOADER_CREDENTIALS%2Fca.crt%22%0APATH_CLOUDCONFIG_DOWNLOADER_CLIENT_CERT%3D%22%24DIR_CLOUDCONFIG_DOWNLOADER_CREDENTIALS%2Fclient.crt%22%0APATH_CLOUDCONFIG_DOWNLOADER_CLIENT_KEY%3D%22%24DIR_CLOUDCONFIG_DOWNLOADER_CREDENTIALS%2Fclient.key%22%0A%0Aif%20!%20SCRIPT%3D%22%24(wget%20%5C%0A%20%20-qO-%20%5C%0A%20%20--header%20%20%20%20%20%20%20%20%20%22Accept%3A%20application%2Fyaml%22%20%5C%0A%20%20--ca-certificate%20%22%24PATH_CLOUDCONFIG_DOWNLOADER_CA_CERT%22%20%5C%0A%20%20--certificate%20%20%20%20%22%24PATH_CLOUDCONFIG_DOWNLOADER_CLIENT_CERT%22%20%5C%0A%20%20--private-key%20%20%20%20%22%24PATH_CLOUDCONFIG_DOWNLOADER_CLIENT_KEY%22%20%5C%0A%20%20%22%24(cat%20%22%24PATH_CLOUDCONFIG_DOWNLOADER_SERVER%22)%2Fapi%2Fv1%2Fnamespaces%2Fkube-system%2Fsecrets%2F%24SECRET_NAME%22%20%5C%0A%20%20%7C%20sed%20-rn%20's%2F%20%20script%3A%20(.*)%2F%5C1%2Fp')%22%3B%20then%0A%0A%20%20echo%20%22Could%20not%20retrieve%20the%20cloud%20config%20script%20in%20secret%20with%20name%20%24SECRET_NAME%22%0A%20%20exit%201%0Afi%0A%0Aecho%20%22%24SCRIPT%22%20%7C%20base64%20-d%20%7C%20bash",
+                "verification": {}
+            },
+            "mode": 484
+        }]
+    },
+    "systemd": {
+        "units": [{
+            "contents": "[Unit]\nDescription=Downloads the actual cloud config from the Shoot API server and executes it\nAfter=docker.service docker.socket\nWants=docker.socket\n[Service]\nRestart=always\nRestartSec=30\nEnvironmentFile=/etc/environment\nExecStart=/var/lib/cloud-config-downloader/download-cloud-config.sh\n[Install]\nWantedBy=multi-user.target",
+            "enable": true,
+            "name": "cloud-config-downloader.service"
+        }]
+    }
+}

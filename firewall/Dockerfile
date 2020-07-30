@@ -20,29 +20,26 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    VERSION_NODE_EXPORTER=0.18.1
+    VERSION_NODE_EXPORTER=1.0.1
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
-    chrony \
     fever \
     nftables \
     tcpdump \
- && apt-get remove --yes iptables
+ && apt-get remove --yes iptables \
+ && apt --yes autoremove
 
 # Context:
 # - chrony.conf provides default configuration for chrony
-# - ifupdown2 has a bug that disables forwarding for ipv4 after an ifup.
-#   This can be solved by adding a policy to `/var/lib/ifupdown2/policy.d/` that requires forwarding.
-#   Source: Discussion with Attilla (cumulus) @ https://cumulusnetworks.slack.com/archives/GGE01MNPN/p1554790876006800
 # - nftables rules are copied in place; nftables.service will load them on startup.
 # - systemd.generator in `/etc/systemd/system-generators` is used to run applications in custom VRF
 # - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
 COPY context/ /
 
 # Install suricata IDS
-RUN /suricata-installation.sh
+RUN /suricata-and-chrony-installation.sh
 
 # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
 # Final setup is left to metal-networker that knows the internet-facing VRF.
@@ -51,8 +48,8 @@ RUN /suricata-installation.sh
 # systemd-time-wait-sync.service is disabled because it sometimes does not start and blocks depending services like logrotate.
 # see https://github.com/systemd/systemd/issues/14061
 RUN systemctl disable systemd-timesyncd \
- && systemctl disable chronyd \
- && systemctl mask chronyd \
+ && systemctl disable chrony \
+ && systemctl mask chrony \
  && systemctl disable systemd-time-wait-sync.service \
  && systemctl mask systemd-time-wait-sync.service \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
