@@ -16,6 +16,8 @@ else
     echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
     apt-get update --quiet
     apt-get install --yes --no-install-recommends -t testing chrony suricata suricata-update
+    # remove testing list, otherwise doing update on the machine will show 100s of missing updates.
+    rm -f /etc/apt/sources.list.d/testing.list
 fi
 
 echo "Enable suricata service and suricata-update timer"
