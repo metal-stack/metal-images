@@ -47,6 +47,13 @@ file:
     contains:
     - "#!/bin/bash"
 {{ end }}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+  "/etc/logrotate.d/suricata":
+    exists: true
+    contains:
+    - "/var/log/suricata/*.log"
+    - "/var/log/suricata/*.json"
+{{ end }}
 service:
   lldpd:
     enabled: true
