@@ -18,7 +18,8 @@ readonly PKG="packages.txt"
 mkdir -p "${EXPORT_DIRECTORY}"
 cd "${EXPORT_DIRECTORY}"
 docker export "$(docker create "${DOCKER_IMAGE}")" > ${TAR}
-docker run --rm "${DOCKER_IMAGE}" bash -c "dpkg -l" > ${PKG}
+# FIXME unify with global export
+docker run --rm "${DOCKER_IMAGE}" bash -c "rpm -qa" > ${PKG}
 lz4 -f -9 ${TAR} ${LZ4}
 rm -f ${TAR}
 md5sum ${LZ4} > ${MD5}
@@ -26,4 +27,3 @@ md5sum ${LZ4} > ${MD5}
 # export a list with the generated fqdn image names
 # mkdir -p workdir
 echo "${OS_NAME}-${SEMVER_MAJOR_MINOR}-${SEMVER_PATCH}" 
-

@@ -1,0 +1,29 @@
+---
+version: '1'
+name: centos
+username: metalstack
+registry-host: quay.io
+default-build-args:
+  - http_proxy=${HTTP_PROXY}
+  - https_proxy=${HTTP_PROXY}
+  - HTTP_PROXY=${HTTP_PROXY}
+  - HTTPS_PROXY=${HTTP_PROXY}
+  - NO_PROXY=${NO_PROXY}
+  - no_proxy=${NO_PROXY}
+  - IGNITION_BRANCH=v0.34.0
+  - YQ_VERSION=2.4.1
+  - GOLLDPD_VERSION=v0.2.4
+  - METAL_NETWORKER_VERSION=v0.2.5
+  - SEMVER_PATCH=${SEMVER_PATCH}
+builds:
+  -
+    name: "Centos 7"
+    tags:
+      - ${SEMVER}
+      - ${SEMVER_MAJOR_MINOR}
+    build-args:
+      - BASE_OS_VERSION=7
+      - SEMVER_MAJOR_MINOR=7
+      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+    after:
+      - OS_NAME=centos SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh

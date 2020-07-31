@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.2
-ARG FIREWALL_CONTROLLER_VERSION=v0.1.2
+ARG FIREWALL_CONTROLLER_VERSION=v0.1.7
 ARG NFTABLES_EXPORTER_BRANCH=eb592159
 
 FROM metalstack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
@@ -20,16 +20,26 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    VERSION_NODE_EXPORTER=0.18.1 \
+    VERSION_NODE_EXPORTER=1.0.1 \
     EVEBOX_VERSION=1:0.11.1
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
-    chrony \
     nftables \
     tcpdump \
- && apt-get remove --yes iptables
+ && apt-get remove --yes iptables \
+ && apt --yes autoremove
+
+# Context:
+# - chrony.conf provides default configuration for chrony
+# - nftables rules are copied in place; nftables.service will load them on startup.
+# - systemd.generator in `/etc/systemd/system-generators` is used to run applications in custom VRF
+# - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
+COPY context/ /
+
+# Install suricata IDS
+RUN /suricata-and-chrony-installation.sh
 
 # Install suricate event forwarding agent evebox
 RUN curl -q https://evebox.org/files/GPG-KEY-evebox | apt-key add - \
@@ -39,26 +49,17 @@ RUN curl -q https://evebox.org/files/GPG-KEY-evebox | apt-key add - \
  # remove provided systemd units, they get created by metal-networker with the appropriate vrf set.
  && rm -f /lib/systemd/system/evebox-agent.service /lib/systemd/system/evebox.service
 
-# Context:
-# - chrony.conf provides default configuration for chrony
-# - ifupdown2 has a bug that disables forwarding for ipv4 after an ifup.
-#   This can be solved by adding a policy to `/var/lib/ifupdown2/policy.d/` that requires forwarding.
-#   Source: Discussion with Attilla (cumulus) @ https://cumulusnetworks.slack.com/archives/GGE01MNPN/p1554790876006800
-# - nftables rules are copied in place; nftables.service will load them on startup.
-# - systemd.generator in `/etc/systemd/system-generators` is used to run applications in custom VRF
-# - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
-COPY context/ /
-
-# Install suricata IDS
-RUN /suricata-installation.sh
-
 # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
 # Final setup is left to metal-networker that knows the internet-facing VRF.
 # To succeed metal-networker enabling chrony it is important to provide the chrony unit template in advance.
 # Usually the generator creates that template but the generator is loaded only after system boot or at `systemctl daemon-reload` (cannot be run from Docker Context).
+# systemd-time-wait-sync.service is disabled because it sometimes does not start and blocks depending services like logrotate.
+# see https://github.com/systemd/systemd/issues/14061
 RUN systemctl disable systemd-timesyncd \
- && systemctl disable chronyd \
- && systemctl mask chronyd \
+ && systemctl disable chrony \
+ && systemctl mask chrony \
+ && systemctl disable systemd-time-wait-sync.service \
+ && systemctl mask systemd-time-wait-sync.service \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
