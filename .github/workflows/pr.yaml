@@ -22,16 +22,14 @@ jobs:
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
     - name: Build docker image for workers and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
+      uses: metal-stack/action-docker-make@master
+      with:
+        args: >
+          --work-dir debian
+          --file docker-make.${{ matrix.os }}.yaml
+          --no-cache
+          --summary
+          --no-lint
           --no-push
     - name: Build docker image for firewalls and export tarball
       run: |
