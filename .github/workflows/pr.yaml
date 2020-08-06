@@ -22,7 +22,7 @@ jobs:
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
     - name: Build docker image for workers and export tarball
-      uses: metal-stack/action-docker-make@master
+      uses: metal-stack/action-docker-make@move-to-docker-make-docker-image
       with:
         args: >
           --work-dir debian
