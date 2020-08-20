@@ -1,9 +1,8 @@
 /var/log/suricata/*.log /var/log/suricata/*.json {
-    daily
+    hourly
     missingok
     rotate 5
     compress
-    delaycompress
     minsize 500k
     sharedscripts
 	postrotate
