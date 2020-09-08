@@ -4,12 +4,6 @@ name: ubuntu
 username: metalstack
 registry-host: quay.io
 default-build-args:
-  - http_proxy=${HTTP_PROXY}
-  - https_proxy=${HTTP_PROXY}
-  - HTTP_PROXY=${HTTP_PROXY}
-  - HTTPS_PROXY=${HTTP_PROXY}
-  - NO_PROXY=${NO_PROXY}
-  - no_proxy=${NO_PROXY}
   - IGNITION_BRANCH=v0.35.0
   - YQ_VERSION=3.3.2
   - GOLLDPD_VERSION=v0.2.4
@@ -19,7 +13,7 @@ default-build-args:
   - OS_NAME=ubuntu
   - DOCKER_APT_OS=ubuntu
   - DOCKER_APT_CHANNEL=focal
-  - CRI_VERSION=v1.18.0
+  - CRI_VERSION=v1.19.0
 builds:
   -
     name: "Ubuntu 20.04"

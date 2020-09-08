@@ -99,6 +99,14 @@ RUN set -ex \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  && /kernel-and-timesyncd-installation.sh \
+ # Remove devel and orphaned packages
+ && apt remove --yes \
+    libc-dev-bin \
+    libc6-dev \
+    libpcre3-dev \
+    libyang-dev \
+    linux-libc-dev \
+ && apt autoremove --yes \
  && rm -rf /tmp/*
 
 COPY context/ /
