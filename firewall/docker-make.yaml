@@ -4,12 +4,6 @@ name: firewall
 username: metalstack
 registry-host: quay.io
 default-build-args:
-  - http_proxy=${HTTP_PROXY}
-  - https_proxy=${HTTP_PROXY}
-  - HTTP_PROXY=${HTTP_PROXY}
-  - HTTPS_PROXY=${HTTP_PROXY}
-  - NO_PROXY=${NO_PROXY}
-  - no_proxy=${NO_PROXY}
   - SEMVER_PATCH=${SEMVER_PATCH}
   - OS_NAME=firewall
 builds:
