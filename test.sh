@@ -28,7 +28,7 @@ echo "import image oci to ignite: ${IMAGE}"
 sudo ignite stop "${VM_NAME}" || true
 sudo ignite rm "${VM_NAME}" || true
 sudo ignite image rm -f "${IMAGE}" || true
-sudo ignite image import --runtime=docker "${IMAGE}"
+sudo ignite image import --runtime=docker --loglevel debug "${IMAGE}"
 
 echo "create ignite / firecracker vm"
 chmod 0600 ./test/key
