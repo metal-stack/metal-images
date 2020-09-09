@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [debian, ubuntu]
-    runs-on: self-hosted
+    runs-on: self-hostedk
     steps:
     - name: Checkout
       uses: actions/checkout@v1

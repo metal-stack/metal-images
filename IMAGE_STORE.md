@@ -29,4 +29,3 @@ In the first case a most recent version resolution is taken place in the metal-a
 The second form guarantees the machine creation of this exact image.
 
 Images which are no longer in use by any allocated machine and are older than the specified usage period will be deleted from the metal-api and the image store.
- 
