@@ -64,7 +64,7 @@ fi
 /network.sh
 
 # Take care: init must use systemd!
-cat << EOM >/boot/grub2/grub.cfg
+cat << EOM >/etc/default/grub
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=${BOOTLOADER_ID}
