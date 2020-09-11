@@ -64,7 +64,7 @@ fi
 /network.sh
 
 # Take care: init must use systemd!
-cat << EOM >/boot/grub2/grub.cfg
+cat << EOM >/etc/default/grub
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=${BOOTLOADER_ID}
@@ -77,7 +77,7 @@ EOM
 if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
-    grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+    grub2-mkconfig -o /boot/grub2/grub.cfg
     grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}"
 else
     echo "System was booted with Bios"
