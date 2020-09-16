@@ -21,6 +21,7 @@ else
 fi
 
 echo "Move suricata logs to /var/lib/ partition"
+mkdir -p /var/lib/suricata
 mv /var/log/suricata /var/lib/suricata/log
 ln -s /var/lib/suricata/log /var/log/suricata
 
