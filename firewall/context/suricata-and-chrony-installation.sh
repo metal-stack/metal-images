@@ -20,5 +20,9 @@ else
     rm -f /etc/apt/sources.list.d/testing.list
 fi
 
+echo "Move suricata logs to /var/lib/ partition"
+mv /var/log/suricata /var/lib/suricata/log
+ln -s /var/lib/suricata/log /var/log/suricata
+
 echo "Enable suricata service and suricata-update timer"
 systemctl enable suricata suricata-update.service suricata-update.timer
