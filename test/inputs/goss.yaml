@@ -25,6 +25,12 @@ file:
     exists: true
     contains:
     - {{ .Env.PUB_KEY }}
+  "/etc/machine-id":
+    exists: true
+    size: 1
+  "/var/lib/dbus/machine-id":
+    exists: true
+    size: 1
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "/var/lib/cloud-config-downloader/credentials/server":
     exists: true
