@@ -128,6 +128,3 @@ RUN systemctl set-default multi-user.target \
 
 # Provide metal-networker that is called during the install routine to setup networking.
 COPY --from=metal-networker /metal-networker /etc/metal/networker/
-
-# Unset the machine-id (most importantly to avoid persistent MAC addresses of interfaces - otherwise packets will arrive at unintended places!)
-RUN echo "" > /etc/machine-id && echo "" > /var/lib/dbus/machine-id
