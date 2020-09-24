@@ -144,6 +144,6 @@ else
     exit 1
 fi
 
-# Unset the machine-id (most importantly to avoid persistent MAC addresses of interfaces - otherwise packets will arrive at unintended places!)
+# Unset the machine-id (most importantly to avoid fixed MAC addresses of interfaces - otherwise packets will arrive at unintended places!)
 echo "" > /etc/machine-id
 echo "" > /var/lib/dbus/machine-id
