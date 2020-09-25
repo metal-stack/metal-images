@@ -126,3 +126,7 @@ kernel: ${KERNEL}
 bootloader_id: ${BOOTLOADER_ID}
 ...
 REBOOT
+
+# Unset the machine-id (most importantly to avoid fixed MAC addresses of interfaces - otherwise packets will arrive at unintended places!)
+echo "" > /etc/machine-id
+echo "" > /var/lib/dbus/machine-id
