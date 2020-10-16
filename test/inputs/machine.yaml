@@ -13,6 +13,7 @@ networks:
     prefixes:
       - 10.0.16.0/22
     private: true
+    privateprimary: true
     underlay: false
     vrf: 3981
 timestamp: "2019-07-01T09:41:43Z"
