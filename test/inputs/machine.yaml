@@ -13,7 +13,12 @@ networks:
     prefixes:
       - 10.0.16.0/22
     private: true
-    privateprimary: true
+    networktype:
+      name: privateprimaryunshared
+      privateprimary: true
+      private: true
+      shared: false
+      underlay: false
     underlay: false
     vrf: 3981
 timestamp: "2019-07-01T09:41:43Z"
