@@ -14,12 +14,7 @@ networks:
     prefixes:
       - 10.0.16.0/22
     private: true
-    networktype:
-      name: privateprimaryunshared
-      privateprimary: true
-      private: true
-      shared: false
-      underlay: false
+    networktype: privateprimaryunshared
     underlay: false
     vrf: 3981
   - asn: 4200003073
@@ -33,12 +28,7 @@ networks:
       - 185.1.2.0/24
       - 185.27.0.0/22
     private: false
-    networktype:
-      name: external
-      privateprimary: false
-      private: false
-      shared: false
-      underlay: false
+    networktype: external
     underlay: false
     vrf: 104009
   - asn: 4200003073
@@ -50,12 +40,7 @@ networks:
     prefixes:
       - 10.0.12.0/22
     private: false
-    networktype:
-      name: underlay
-      privateprimary: false
-      private: false
-      shared: false
-      underlay: true
+    networktype: underlay
     underlay: true
     vrf: 0
 timestamp: "2019-07-01T09:41:43Z"
