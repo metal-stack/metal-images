@@ -15,7 +15,12 @@ else
     # chrony from main does not play well with newer kernels and exits sometimes.
     echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
     apt-get update --quiet
-    apt-get install --yes --no-install-recommends -t testing chrony suricata suricata-update
+    # FIXME remove the sed and the || true once the installation do not break with:
+    # E: Could not configure 'libc6:amd64'.
+    # this removes the second line in the postinst script with in turn is "set -e"
+    sed -i '2d' /var/lib/dpkg/info/libc6\:amd64.postinst
+    apt-get install --yes --no-install-recommends -t testing chrony suricata suricata-update || true
+    apt-get --fix-broken install
     # remove testing list, otherwise doing update on the machine will show 100s of missing updates.
     rm -f /etc/apt/sources.list.d/testing.list
 fi
