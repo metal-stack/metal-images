@@ -42,6 +42,7 @@ RUN set -ex \
  && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
  && sed 's@security.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
  && apt-get update \
+ && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends \
     apt-transport-https \
     apt-utils \

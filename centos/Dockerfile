@@ -88,6 +88,8 @@ COPY context/ /
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
 # is a target that is not pulled in per default during startup
+# FIXME systemctl enable can be remove if the preset mechanism works
+# in /usr/lib/systemd/system-preset/metal.preset
 RUN systemctl set-default multi-user.target \
  && systemctl enable lldpd.service \
                      docker.service \
