@@ -27,6 +27,7 @@ COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 RUN set -ex \
  && yum install -y \
     ca-certificates \
+    chrony \
     curl \
     dbus \
     efibootmgr \
