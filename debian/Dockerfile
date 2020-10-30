@@ -106,11 +106,9 @@ RUN set -ex \
     cloud-guest-utils \
     libc-dev-bin \
     libc6-dev \
-    libnetplan0 \
     libpcre3-dev \
     libyang-dev \
     linux-libc-dev \
-    netplan.io \
  && apt autoremove --yes \
  && rm -rf /tmp/*
 
