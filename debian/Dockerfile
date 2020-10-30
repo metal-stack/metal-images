@@ -47,6 +47,7 @@ RUN set -ex \
     apt-transport-https \
     apt-utils \
     ca-certificates \
+    cloud-init \
     curl \
     dbus \
     efibootmgr \
@@ -102,11 +103,14 @@ RUN set -ex \
  && /kernel-and-timesyncd-installation.sh \
  # Remove devel and orphaned packages
  && apt remove --yes \
+    cloud-guest-utils \
     libc-dev-bin \
     libc6-dev \
+    libnetplan0 \
     libpcre3-dev \
     libyang-dev \
     linux-libc-dev \
+    netplan.io \
  && apt autoremove --yes \
  && rm -rf /tmp/*
 
