@@ -98,7 +98,9 @@ if [ -e "/etc/metal/userdata" ]; then
         echo "validate cloud-init userdata"
         cloud-init devel schema --config-file userdata
         echo "execute cloud-init"
-        cloud-init --file userdata -d single --name write_files --name runcmd
+        cloud-init --file userdata -d single --name write_files
+        cloud-init --file userdata -d single --name runcmd
+        /var/lib/cloud/instances/iid-datasource-none/scripts/runcmd
     else
         mv userdata config.ign
         echo "validate ignition config.ign"
