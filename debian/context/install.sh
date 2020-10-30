@@ -87,14 +87,26 @@ echo "align directory permissions to OS defaults"
 chmod 1777 /var/tmp
 chmod 644 /etc/hosts
 
-# execute ignition with userdata if present
+# execute ignition/cloud-init userdata if present
 if [ -e "/etc/metal/userdata" ]; then
     cd /etc/metal
-    mv userdata config.ign
-    echo "validate ignition config.ign"
-    ignition-validate config.ign || true
-    echo "execute ignition"
-    ignition -oem file -stage files -log-to-stdout || true
+
+    # check for cloud-init - cluster-api uses this header: https://github.com/kubernetes-sigs/cluster-api/blob/71ba9246f9cd2d718e81866cdc869c10fb90a9e4/bootstrap/kubeadm/internal/cloudinit/cloudinit.go#L33
+    firstLine=$(sed '1q;d' ./userdata)
+    secondLine=$(sed '2q;d' ./userdata)
+    if [[ ${firstLine} == "#cloud-config" ]] || [[ "${secondLine}" == "#cloud-config" ]]; then
+        echo "validate cloud-init userdata"
+        cloud-init devel schema --config-file userdata
+        echo "execute cloud-init"
+        cloud-init --file userdata -d single --name write_files --name runcmd
+    else
+        mv userdata config.ign
+        echo "validate ignition config.ign"
+        ignition-validate config.ign || true
+        echo "execute ignition"
+        ignition -oem file -stage files -log-to-stdout || true
+    fi
+
     systemctl preset-all || true
     cd -
 else
