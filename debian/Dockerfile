@@ -103,7 +103,6 @@ RUN set -ex \
  && /kernel-and-timesyncd-installation.sh \
  # Remove devel and orphaned packages
  && apt remove --yes \
-    cloud-guest-utils \
     libc-dev-bin \
     libc6-dev \
     libpcre3-dev \
