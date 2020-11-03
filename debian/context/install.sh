@@ -95,13 +95,8 @@ if [ -e "/etc/metal/userdata" ]; then
     firstLine=$(sed '1q;d' ./userdata)
     secondLine=$(sed '2q;d' ./userdata)
     if [[ ${firstLine} == "#cloud-config" ]] || [[ "${secondLine}" == "#cloud-config" ]]; then
-        cat << EOF >> /etc/cloud/cloud.cfg
-datasource_list: [ NoCloud ]
-datasource:
-  NoCloud:
-EOF
-        echo "validate cloud-init userdata"
-        cloud-init devel schema --config-file userdata
+        echo "initialize cloud-init in the background"
+        cloud-init init &
         echo "execute cloud-init"
         cloud-init --file userdata -d single --name write_files
         cloud-init --file userdata -d single --name runcmd
