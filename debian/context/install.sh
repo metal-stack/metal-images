@@ -96,11 +96,8 @@ if [ -e "/etc/metal/userdata" ]; then
     secondLine=$(sed '2q;d' ./userdata)
     if [[ ${firstLine} == "#cloud-config" ]] || [[ "${secondLine}" == "#cloud-config" ]]; then
         echo "validate cloud-init userdata"
-        cloud-init devel schema --config-file userdata
-        echo "execute cloud-init"
-        cloud-init --file userdata -d single --name write_files
-        cloud-init --file userdata -d single --name runcmd
-        /var/lib/cloud/instances/iid-datasource-none/scripts/runcmd
+        cloud-init devel schema --config-file userdata || true
+        mv userdata /etc/cloud/cloud.cfg.d/10_metal.cfg
     else
         mv userdata config.ign
         echo "validate ignition config.ign"
