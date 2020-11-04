@@ -126,7 +126,8 @@ RUN systemctl set-default multi-user.target \
                      systemd-resolved \
                      systemd-timesyncd \
                      watchdog.service \
-                     cloud-init.service \
+                     cloud-config.service \
+                     cloud-final.service \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
