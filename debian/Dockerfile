@@ -112,6 +112,7 @@ RUN set -ex \
  && rm -rf /tmp/*
 
 COPY context/ /
+COPY cloud-config-and-final.service /etc/systemd/system/
 
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
@@ -126,7 +127,7 @@ RUN systemctl set-default multi-user.target \
                      systemd-resolved \
                      systemd-timesyncd \
                      watchdog.service \
-                     cloud-final.service \
+                     cloud-config-and-final.service \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
