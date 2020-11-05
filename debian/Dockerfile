@@ -119,8 +119,6 @@ COPY context/ /
 RUN systemctl set-default multi-user.target \
  && sed -i "s/^WantedBy=network-online\.target/WantedBy=network\.target/" \
            /lib/systemd/system/frr.service \
- && mkdir -p /etc/systemd/system/cloud-final.service.d \
- && printf "[Install]\nWantedBy=multi-user.target\n" > /etc/systemd/system/cloud-final.service.d/10-metal.conf \
  && systemctl enable lldpd.service \
                      docker.service \
                      frr.service \
