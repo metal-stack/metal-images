@@ -97,7 +97,6 @@ if [ -e "/etc/metal/userdata" ]; then
     if [[ ${firstLine} == "#cloud-config" ]] || [[ "${secondLine}" == "#cloud-config" ]]; then
         echo "validate cloud-init userdata"
         cloud-init devel schema --config-file userdata || true
-        mv userdata /etc/cloud/cloud.cfg.d/10_metal.cfg
     else
         mv userdata config.ign
         echo "validate ignition config.ign"

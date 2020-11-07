@@ -1,0 +1,14 @@
+[Unit]
+Description=Process the `userdata` from Cluster-API
+
+After=network.target
+Wants=network.target
+
+[Service]
+ExecStart=/etc/metal/cloud-init-custom.sh
+RemainAfterExit=yes
+StandardOutput=journal+console
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

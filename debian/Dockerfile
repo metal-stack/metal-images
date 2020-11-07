@@ -112,7 +112,10 @@ RUN set -ex \
  && rm -rf /tmp/*
 
 COPY context/ /
-COPY cloud-config-and-final.service /etc/systemd/system/
+
+# Copy the dependencies of `cloud-init-custom.service` into the image.
+COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
+COPY /cloud-init/cloud-init-custom.sh /etc/metal/
 
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
@@ -127,7 +130,7 @@ RUN systemctl set-default multi-user.target \
                      systemd-resolved \
                      systemd-timesyncd \
                      watchdog.service \
-                     cloud-config-and-final.service \
+                     cloud-init-custom.service \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
