@@ -7,6 +7,7 @@ on:
 
 env:
   GCS_BUCKET: images.metal-pod.io
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
   debian-ubuntu:
