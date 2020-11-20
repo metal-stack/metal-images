@@ -6,7 +6,7 @@ ARG NFTABLES_EXPORTER_BRANCH=13dcc14
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
-FROM metalstack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
+FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
 
 FROM mirror.gcr.io/library/golang:1.15 AS nftables_exporter_builder
 RUN git clone https://github.com/Sheridan/nftables_exporter.git \
