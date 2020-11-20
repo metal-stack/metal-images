@@ -3,8 +3,8 @@ ARG BASE_OS_VERSION
 ARG FRR_VERSION
 ARG METAL_NETWORKER_VERSION
 
-FROM metalstack/frr:${FRR_VERSION} AS frr-artifacts
-FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
+FROM ghcr.io/metal-stack/frr:${FRR_VERSION} AS frr-artifacts
+FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
 FROM mirror.gcr.io/library/golang:1.15-buster as ignition-builder
 ARG IGNITION_BRANCH
@@ -17,7 +17,7 @@ RUN set -ex \
  && git checkout ${IGNITION_BRANCH} \
  && make
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
+FROM mirror.gcr.io/library/${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION

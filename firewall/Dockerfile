@@ -1,10 +1,10 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG DROPTAILER_VERSION=v0.2.3
+ARG DROPTAILER_VERSION=v0.2.4
 ARG FIREWALL_CONTROLLER_VERSION=v0.2.0
 ARG NFTABLES_EXPORTER_BRANCH=13dcc14
 
-FROM metalstack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
+FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM metalstack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
 
