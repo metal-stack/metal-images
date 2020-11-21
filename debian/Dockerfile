@@ -17,7 +17,7 @@ RUN set -ex \
  && git checkout ${IGNITION_BRANCH} \
  && make
 
-FROM mirror.gcr.io/library/${BASE_OS_NAME}:${BASE_OS_VERSION}
+FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION
