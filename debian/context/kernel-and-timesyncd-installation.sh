@@ -17,7 +17,7 @@ else
     #
     # with ssh to the test vm one gets an audit event for the clock_nanosleep syscall (230)
     # audit: type=1326 audit(1595317960.526:2): auid=4294967295 uid=107 gid=65534 ses=4294967295 subj=kernel pid=1177 comm="sshd" exe="/usr/sbin/sshd" sig=31 arch=c000003e syscall=230 compat=0 ip=0x7fc40d5eebea code=0x0
-    echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main" > /etc/apt/sources.list.d/backports.list
+    echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
     apt-get update --quiet
     apt-get install --yes -t buster-backports linux-image-amd64 openssh-server systemd-timesyncd intel-microcode
 fi
