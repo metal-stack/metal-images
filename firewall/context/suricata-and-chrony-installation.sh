@@ -8,7 +8,7 @@ if [ "${ID}" = "ubuntu" ] ; then
     apt-get install --yes --no-install-recommends software-properties-common
     add-apt-repository --yes ppa:oisf/suricata-stable
     apt-get update --quiet
-    apt-get install --yes --no-install-recommends chrony suricata nftables
+    apt-get install --yes --no-install-recommends chrony suricata nftables || true
 else
     echo "Debian - Install suricata from debian testing repository"
     # Note: suricata from main is still on 4.x, 5.x is in testing only
