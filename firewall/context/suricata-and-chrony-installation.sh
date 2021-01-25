@@ -20,7 +20,7 @@ else
     # this removes the second line in the postinst script with in turn is "set -e"
     sed -i '2d' /var/lib/dpkg/info/libc6\:amd64.postinst
     apt-get install --yes --no-install-recommends -t testing chrony suricata suricata-update nftables || true
-    apt-get --fix-broken install
+    apt-get --fix-broken install || true
     # remove testing list, otherwise doing update on the machine will show 100s of missing updates.
     rm -f /etc/apt/sources.list.d/testing.list
 fi
