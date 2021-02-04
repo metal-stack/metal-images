@@ -20,7 +20,10 @@ else
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME} contrib" > /etc/apt/sources.list.d/contrib.list
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
     apt-get update --quiet
-    apt-get install --yes -t buster-backports linux-image-amd64 openssh-server systemd-timesyncd intel-microcode
+    apt-get install --yes -t buster-backports openssh-server systemd-timesyncd intel-microcode
+    echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
+    apt-get update --quiet
+    apt-get install --yes -t testing linux-image-amd64
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
