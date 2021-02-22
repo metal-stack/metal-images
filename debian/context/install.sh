@@ -17,8 +17,8 @@ readonly BOOTLOADER_ID="metal-${OS_NAME}"
 # ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 rm -f /etc/resolv.conf
 cat << RESOLV >/etc/resolv.conf
-nameserver 1.1.1.1
-nameserver 1.0.0.1
+nameserver 8.8.8.8
+nameserver 8.8.4.4
 RESOLV
 
 readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
