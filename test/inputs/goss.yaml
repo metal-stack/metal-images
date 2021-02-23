@@ -107,7 +107,7 @@ command:
     stdout:
     - machine
   "internet is reachable":
-    exec: "ping -W 1 -c 1 -n 1.1.1.1"
+    exec: "ping -W 1 -c 1 -n 8.8.8.8"
     exit-status: 0
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
