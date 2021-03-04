@@ -26,7 +26,6 @@ RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
-    nftables \
     tcpdump \
  && apt-get remove --yes iptables \
  && apt --yes autoremove

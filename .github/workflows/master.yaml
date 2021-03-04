@@ -49,6 +49,7 @@ jobs:
           --no-pull \
           --summary \
           --no-lint
+      if: ${{ matrix.os == 'ubuntu' }}
     - uses: google-github-actions/setup-gcloud@master
       with:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
