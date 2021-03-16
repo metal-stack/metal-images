@@ -4,7 +4,7 @@ source /etc/os-release
 
 if [ "${ID}" = "ubuntu" ] ; then
     echo "Ubuntu - Install kernel, openssh-server and systemd-timesyncd from ubuntu repository"
-    apt-get install --yes linux-image-generic openssh-server systemd-timesyncd
+    apt-get install --yes "linux-generic-hwe-${SEMVER_MAJOR_MINOR}" openssh-server systemd-timesyncd
 else
     echo "Debian - Install kernel, openssh-server and systemd-timesyncd from backports repository"
     # Note: for firewall images the backports kernel is a hard requirements because kernel >= 5.x is necessary for vxlan/evpn
