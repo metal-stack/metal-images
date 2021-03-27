@@ -55,9 +55,9 @@ file:
     - "/var/log/suricata/*.json"
 {{ end }}
 service:
-  lldpd:
+  lldpad:
     enabled: true
-    running: false
+    running: true
   frr:
     enabled: true
     running: true

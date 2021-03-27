@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.14-buster as ignition-builder
+FROM golang:1.15-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -15,7 +15,6 @@ FROM centos:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION
-ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
 
 ENV YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
@@ -41,6 +40,7 @@ RUN set -ex \
     ipmitool \
     jq \
     kernel \
+    lldpad \
     openssl \
     openssh-server \
     passwd \
@@ -57,8 +57,6 @@ RUN set -ex \
     yum-utils
 RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && chmod +x ${YQ} \
- && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
- && tar -xf /tmp/go-lldpd.tgz \
  && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo \
  && yum install -y docker-ce docker-ce-cli containerd.io \
  # docker is always installed in /usr/bin/docker, on ubuntu /bin is a link to /usr/bin
@@ -92,7 +90,7 @@ COPY context/ /
 # FIXME systemctl enable can be remove if the preset mechanism works
 # in /usr/lib/systemd/system-preset/metal.preset
 RUN systemctl set-default multi-user.target \
- && systemctl enable lldpd.service \
+ && systemctl enable lldpad.service \
                      docker.service \
                      frr.service \
                      systemd-networkd \
