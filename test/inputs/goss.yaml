@@ -133,9 +133,9 @@ command:
     - "uid=0(root)"
   "boot-info contains kernel, initrd and cmdline":
     exec: |
-      cat /etc/metal/boot-info.yaml | yq e '.kernel' - && \
-      cat /etc/metal/boot-info.yaml | yq e '.initrd' - && \
-      cat /etc/metal/boot-info.yaml | yq e '.cmdline` -
+      yq e '.kernel' /etc/metal/boot-info.yaml && \
+      yq e '.initrd' /etc/metal/boot-info.yaml && \
+      yq e '.cmdline' /etc/metal/boot-info.yaml
     exit-status: 0
     stdout:
     - "!null"
