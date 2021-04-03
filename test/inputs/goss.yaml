@@ -139,6 +139,7 @@ command:
     exit-status: 0
     stdout:
     - "!null"
+    stderr: []
   "bgp has two peers visibile":
     exec: "vtysh -c 'show bgp sum json' | jq '.ipv4Unicast.totalPeers'"
     exit-status: 0
