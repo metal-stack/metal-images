@@ -5,7 +5,7 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.35.0
-  - YQ_VERSION=3.3.2
+  - YQ_VERSION=4.6.3
   - GOLLDPD_VERSION=v0.2.5
   - METAL_NETWORKER_VERSION=v0.5.3
   - SEMVER_PATCH=${SEMVER_PATCH}

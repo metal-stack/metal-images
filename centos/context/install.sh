@@ -11,7 +11,7 @@ readonly BOOTLOADER_ID="${OS_NAME}"
 # Must be written here because during docker build this file is synthetic
 echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
 
-readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
+readonly CONSOLE=$(yq e '.console' /etc/metal/install.yaml)
 
 # Serial port and speed are required by grub
 readonly SERIAL_PORT=$(echo "${CONSOLE}" | cut -d , -f 1 | tr -dc '0-9')
@@ -48,8 +48,8 @@ cat /etc/fstab
 
 # create a user/pass (metal:metal) to enable login
 readonly user="metal"
-readonly pass=$(yq r /etc/metal/install.yaml password)
-readonly devmode=$(yq r /etc/metal/install.yaml devmode)
+readonly pass=$(yq e '.password' /etc/metal/install.yaml)
+readonly devmode=$(yq e '.devmode' /etc/metal/install.yaml)
 echo "creating user '$user'"
 useradd --create-home --gid "wheel" --shell /bin/bash $user
 
@@ -89,7 +89,7 @@ SSHDIR=~metal/.ssh
 mkdir -p ${SSHDIR}
 chown metal ${SSHDIR}
 chmod 700 ${SSHDIR}
-yq r /etc/metal/install.yaml sshpublickey > ${SSHDIR}/authorized_keys
+yq e '.sshpublickey' /etc/metal/install.yaml > ${SSHDIR}/authorized_keys
 
 echo "align directory permissions to OS defaults"
 chmod 1777 /var/tmp
