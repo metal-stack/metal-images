@@ -21,6 +21,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION
+ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
@@ -64,7 +65,6 @@ RUN set -ex \
     iproute2 \
     isc-dhcp-client \
     jq \
-    lldpad \
     lsb-release \
     procps \
     socat \
@@ -81,6 +81,8 @@ RUN set -ex \
     vim \
  && curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && chmod +x ${YQ} \
+ && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
+ && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg > docker.key \
  && apt-key add docker.key \
  && rm -f docker.key \
@@ -118,7 +120,7 @@ COPY context/ /
 RUN systemctl set-default multi-user.target \
  && sed -i "s/^WantedBy=network-online\.target/WantedBy=network\.target/" \
            /lib/systemd/system/frr.service \
- && systemctl enable lldpad.service \
+ && systemctl enable lldpd.service \
                      docker.service \
                      frr.service \
                      systemd-networkd \
