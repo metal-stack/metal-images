@@ -15,6 +15,7 @@ FROM centos:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION
+ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
 
 ENV YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
@@ -40,7 +41,6 @@ RUN set -ex \
     ipmitool \
     jq \
     kernel \
-    lldpad \
     openssl \
     openssh-server \
     passwd \
@@ -57,6 +57,8 @@ RUN set -ex \
     yum-utils
 RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && chmod +x ${YQ} \
+ && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
+ && tar -xf /tmp/go-lldpd.tgz \
  && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo \
  && yum install -y docker-ce docker-ce-cli containerd.io \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
@@ -87,7 +89,7 @@ COPY context/ /
 # FIXME systemctl enable can be remove if the preset mechanism works
 # in /usr/lib/systemd/system-preset/metal.preset
 RUN systemctl set-default multi-user.target \
- && systemctl enable lldpad.service \
+ && systemctl enable lldpd.service \
                      docker.service \
                      frr.service \
                      systemd-networkd \
