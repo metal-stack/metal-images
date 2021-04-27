@@ -66,6 +66,7 @@ RUN set -ex \
     isc-dhcp-client \
     jq \
     lsb-release \
+    lvm2 \
     mdadm \
     procps \
     socat \
