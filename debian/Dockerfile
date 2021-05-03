@@ -6,7 +6,7 @@ ARG METAL_NETWORKER_VERSION
 FROM ghcr.io/metal-stack/frr:${FRR_VERSION} AS frr-artifacts
 FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
-FROM mirror.gcr.io/library/golang:1.15 as ignition-builder
+FROM mirror.gcr.io/library/golang:1.16.2 as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
