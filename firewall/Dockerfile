@@ -8,7 +8,7 @@ FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-a
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
 
-FROM mirror.gcr.io/library/golang:1.14 AS nftables_exporter_builder
+FROM golang:1.15-buster AS nftables_exporter_builder
 RUN git clone https://github.com/Sheridan/nftables_exporter.git \
  && cd nftables_exporter \
  && git checkout ${NFTABLES_EXPORTER_BRANCH} \
