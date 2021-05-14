@@ -107,7 +107,7 @@ command:
     stdout:
     - machine
   "internet is reachable":
-    exec: "ping -W 1 -c 1 -n 1.1.1.1"
+    exec: "ping -W 1 -c 1 -n 8.8.8.8"
     exit-status: 0
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
@@ -133,12 +133,13 @@ command:
     - "uid=0(root)"
   "boot-info contains kernel, initrd and cmdline":
     exec: |
-      cat /etc/metal/boot-info.yaml | yq r - kernel && \
-      cat /etc/metal/boot-info.yaml | yq r - initrd && \
-      cat /etc/metal/boot-info.yaml | yq r - cmdline
+      yq e '.kernel' /etc/metal/boot-info.yaml && \
+      yq e '.initrd' /etc/metal/boot-info.yaml && \
+      yq e '.cmdline' /etc/metal/boot-info.yaml
     exit-status: 0
     stdout:
     - "!null"
+    stderr: []
   "bgp has two peers visibile":
     exec: "vtysh -c 'show bgp sum json' | jq '.ipv4Unicast.totalPeers'"
     exit-status: 0
@@ -191,5 +192,17 @@ kernel-param:
     value: "0"
   net.ipv4.conf.default.rp_filter:
     value: "0"
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  net.ipv4.fib_multipath_hash_policy:
+    value: "0"
+  net.ipv6.fib_multipath_hash_policy:
+    value: "0"
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+  net.ipv4.fib_multipath_hash_policy:
+    value: "1"
+  net.ipv6.fib_multipath_hash_policy:
+    value: "1"
+{{ end }}
   kernel.printk:
     value: "2\t4\t1\t7"

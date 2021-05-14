@@ -3,8 +3,8 @@ ARG BASE_OS_VERSION
 ARG FRR_VERSION
 ARG METAL_NETWORKER_VERSION
 
-FROM metalstack/frr:${FRR_VERSION} AS frr-artifacts
-FROM metalstack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
+FROM ghcr.io/metal-stack/frr:${FRR_VERSION} AS frr-artifacts
+FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
 FROM golang:1.15-buster as ignition-builder
 ARG IGNITION_BRANCH
@@ -26,12 +26,14 @@ ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
 ARG CRI_VERSION
+ARG SEMVER_MAJOR_MINOR
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
     YQ=/usr/local/bin/yq \
-    DOCKER_URL=https://download.docker.com
+    DOCKER_URL=https://download.docker.com \
+    SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR}
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
@@ -65,6 +67,8 @@ RUN set -ex \
     isc-dhcp-client \
     jq \
     lsb-release \
+    lvm2 \
+    mdadm \
     procps \
     socat \
     software-properties-common \

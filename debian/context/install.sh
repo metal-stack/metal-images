@@ -17,28 +17,29 @@ readonly BOOTLOADER_ID="metal-${OS_NAME}"
 # ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 rm -f /etc/resolv.conf
 cat << RESOLV >/etc/resolv.conf
-nameserver 1.1.1.1
-nameserver 1.0.0.1
+nameserver 8.8.8.8
+nameserver 8.8.4.4
 RESOLV
 
-readonly CONSOLE=$(yq r /etc/metal/install.yaml console)
+export INSTALL_YAML="/etc/metal/install.yaml"
+readonly CONSOLE=$(yq e '.console' "$INSTALL_YAML")
 
 # Serial port and speed are required by grub
 readonly SERIAL_PORT=$(echo "${CONSOLE}" | cut -d , -f 1 | tr -dc '0-9')
 readonly SERIAL_SPEED=$(echo "${CONSOLE}" | cut -d , -f 2 | cut -d n -f 1 | tr -dc '0-9')
 
-export diskjson="/etc/metal/disk.json"
+export DISK_JSON="/etc/metal/disk.json"
 
 # figure out uuids of partitions to fill etc/fstab
-readonly EFI_UUID=$(jq -r '.Partitions[] | select(.Label=="efi").Properties.UUID' "$diskjson")
-readonly EFI_FS=$(jq -r '.Partitions[] | select(.Label=="efi").Filesystem' "$diskjson")
+readonly EFI_UUID=$(jq -r '.Partitions[] | select(.Label=="efi").Properties.UUID' "$DISK_JSON")
+readonly EFI_FS=$(jq -r '.Partitions[] | select(.Label=="efi").Filesystem' "$DISK_JSON")
 readonly EFI_MOUNTPOINT=/boot/efi
-readonly ROOT_UUID=$(jq -r '.Partitions[] | select(.Label=="root").Properties.UUID' "$diskjson")
-readonly ROOT_FS=$(jq -r '.Partitions[] | select(.Label=="root").Filesystem' "$diskjson")
-readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Properties.UUID' "$diskjson")
-readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$diskjson")
+readonly ROOT_UUID=$(jq -r '.Partitions[] | select(.Label=="root").Properties.UUID' "$DISK_JSON")
+readonly ROOT_FS=$(jq -r '.Partitions[] | select(.Label=="root").Filesystem' "$DISK_JSON")
+readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Properties.UUID' "$DISK_JSON")
+readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$DISK_JSON")
 
-readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295"
+readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 
 # only add /var/lib filesystem if created.
 VARLIB=""
@@ -59,15 +60,13 @@ cat /etc/fstab
 # create a user/pass (metal:metal) to enable login
 # TODO move to Dockerfile
 readonly user="metal"
-readonly pass=$(yq r /etc/metal/install.yaml password)
-readonly devmode=$(yq r /etc/metal/install.yaml devmode)
+readonly pass=$(yq e '.password' "$INSTALL_YAML")
+readonly devmode=$(yq e '.devmode' "$INSTALL_YAML")
 echo "creating user '$user'"
 useradd --create-home --gid "sudo" --shell /bin/bash $user
 
 echo "set password for $user to $pass expires after 1 day."
 echo -e "$pass\n$pass" | passwd $user
-# expire after one day
-chage -M 1 $user
 
 if [ "$devmode" == "true" ]; then
     echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
@@ -81,7 +80,7 @@ SSHDIR=~metal/.ssh
 mkdir -p ${SSHDIR}
 chown metal ${SSHDIR}
 chmod 700 ${SSHDIR}
-yq r /etc/metal/install.yaml sshpublickey > ${SSHDIR}/authorized_keys
+yq e '.sshpublickey' ${INSTALL_YAML} > ${SSHDIR}/authorized_keys
 
 echo "align directory permissions to OS defaults"
 chmod 1777 /var/tmp

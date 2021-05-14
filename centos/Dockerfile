@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.14-buster as ignition-builder
+FROM golang:1.15-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -61,10 +61,6 @@ RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && tar -xf /tmp/go-lldpd.tgz \
  && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo \
  && yum install -y docker-ce docker-ce-cli containerd.io \
- # docker is always installed in /usr/bin/docker, on ubuntu /bin is a link to /usr/bin
- # debian does not have this link, therefore /bin/docker does not exist.
- # gardener requires /bin/docker in their kubelet.service.
- && ln -s /usr/bin/docker /bin/docker || true \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  # Ensure that there exists a link from /usr/bin/python to python2
@@ -75,10 +71,11 @@ RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && ln -sf /usr/bin/python2 /usr/bin/python \
  && rm -rf /tmp/*
 
-# Install FRR
-RUN yum install -y \
-    https://ci1.netdef.org/artifact/LIBYANG-YANGRELEASE/shared/build-10/CentOS-7-x86_64-Packages/libyang-0.16.111-0.x86_64.rpm \
-    https://github.com/FRRouting/frr/releases/download/frr-7.2/frr-7.2-01.el7.centos.x86_64.rpm
+# Install FRR see https://rpm.frrouting.org/ for available channels
+RUN set -ex \
+ && curl -fLsS https://rpm.frrouting.org/repo/frr-stable-repo-1-0.el7.noarch.rpm -o /tmp/frr-repo.rpm \
+ && yum install -y /tmp/frr-repo.rpm \
+ && yum install -y frr frr-pythontools
 
 # Install jq because centos:7 does not have a package
 RUN set -ex \
