@@ -192,5 +192,17 @@ kernel-param:
     value: "0"
   net.ipv4.conf.default.rp_filter:
     value: "0"
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  net.ipv4.fib_multipath_hash_policy:
+    value: "0"
+  net.ipv6.fib_multipath_hash_policy:
+    value: "0"
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+  net.ipv4.fib_multipath_hash_policy:
+    value: "1"
+  net.ipv6.fib_multipath_hash_policy:
+    value: "1"
+{{ end }}
   kernel.printk:
     value: "2\t4\t1\t7"
