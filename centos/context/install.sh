@@ -21,31 +21,10 @@ readonly SERIAL_SPEED=$(echo "${CONSOLE}" | cut -d , -f 2 | cut -d n -f 1 | tr -
 export DISK_JSON="/etc/metal/disk.json"
 
 # figure out uuids of partitions to fill etc/fstab
-readonly EFI_UUID=$(jq -r '.Partitions[] | select(.Label=="efi").Properties.UUID' "$DISK_JSON")
-readonly EFI_FS=$(jq -r '.Partitions[] | select(.Label=="efi").Filesystem' "$DISK_JSON")
 readonly EFI_MOUNTPOINT=/boot/efi
 readonly ROOT_UUID=$(jq -r '.Partitions[] | select(.Label=="root").Properties.UUID' "$DISK_JSON")
-readonly ROOT_FS=$(jq -r '.Partitions[] | select(.Label=="root").Filesystem' "$DISK_JSON")
-readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Properties.UUID' "$DISK_JSON")
-readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$DISK_JSON")
 
 readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0"
-
-# only add /var/lib filesystem if created.
-VARLIB=""
-if [[ ! "${VARLIB_UUID}" = "" ]]
-then
-  VARLIB="UUID=\"${VARLIB_UUID}\" /var/lib ${VARLIB_FS} defaults 0 1"
-fi
-
-cat << EOM >/etc/fstab
-UUID="${ROOT_UUID}" / ${ROOT_FS} defaults 0 1
-${VARLIB}
-UUID="${EFI_UUID}" ${EFI_MOUNTPOINT} ${EFI_FS} defaults 0 2
-tmpfs /tmp tmpfs defaults,noatime,nosuid,nodev,noexec,mode=1777,size=512M 0 0
-EOM
-
-cat /etc/fstab
 
 # create a user/pass (metal:metal) to enable login
 readonly user="metal"
@@ -54,7 +33,7 @@ readonly devmode=$(yq e '.devmode' "$INSTALL_YAML")
 echo "creating user '$user'"
 useradd --create-home --gid "wheel" --shell /bin/bash $user
 
-echo "set password for $user to $pass expires after 1 day."
+echo "set password for $user to $pass"
 echo -e "$pass\n$pass" | passwd $user
 
 if [ "$devmode" == "true" ]; then
