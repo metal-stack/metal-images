@@ -49,6 +49,7 @@ RUN set -ex \
     apt-transport-https \
     apt-utils \
     ca-certificates \
+    cloud-init \
     curl \
     dbus \
     efibootmgr \
@@ -116,6 +117,10 @@ RUN set -ex \
 
 COPY context/ /
 
+# Copy the dependencies of `cloud-init-custom.service` into the image.
+COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
+COPY /cloud-init/cloud-init-custom.sh /etc/metal/
+
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
 # is a target that is not pulled in per default during startup
@@ -129,6 +134,7 @@ RUN systemctl set-default multi-user.target \
                      systemd-resolved \
                      systemd-timesyncd \
                      watchdog.service \
+                     cloud-init-custom.service \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
