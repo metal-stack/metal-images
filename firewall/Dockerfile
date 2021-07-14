@@ -12,7 +12,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NODE_EXPORTER_VERSION=1.1.2 \
-    NFTABLES_EXPORTER_VERSION=v0.1.1
+    NFTABLES_EXPORTER_VERSION=v0.1.2
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
