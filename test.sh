@@ -42,7 +42,9 @@ sudo ignite run "${IMAGE}" \
   --log-level debug
 
 echo "determine ip address of vm"
-IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.Network.IPAddresses }}")
+IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.IPAddresses }}")
+# for version >= v0.9.0
+# IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.Network.IPAddresses }}")
 
 while ! nc -z "${IP}" 22; do
   echo "ssh is not available yet"
