@@ -1,26 +1,18 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG DROPTAILER_VERSION=v0.2.5
+ARG DROPTAILER_VERSION=v0.2.7
 ARG FIREWALL_CONTROLLER_VERSION=v1.0.9
-ARG NFTABLES_EXPORTER_BRANCH=13dcc14
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
 
-FROM golang:1.15-buster AS nftables_exporter_builder
-RUN git clone https://github.com/Sheridan/nftables_exporter.git \
- && cd nftables_exporter \
- && git checkout ${NFTABLES_EXPORTER_BRANCH} \
- && make \
- && strip ./bin/nftables_exporter \
- && mv ./bin/nftables_exporter /
-
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    VERSION_NODE_EXPORTER=1.0.1
+    NODE_EXPORTER_VERSION=1.1.2 \
+    NFTABLES_EXPORTER_VERSION=v0.1.3
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
@@ -67,12 +59,18 @@ COPY --from=firewall-controller-artifacts /firewall-controller /usr/local/bin/fi
 # Install droptailer-client
 COPY --from=droptailer-artifacts /client /usr/local/bin/droptailer-client
 
-# Install nftables_exporter
-COPY --from=nftables_exporter_builder /nftables_exporter /usr/local/bin/
-
 # Install node_exporter
 WORKDIR /tmp/node_exporter
-RUN curl -fLsS https://github.com/prometheus/node_exporter/releases/download/v${VERSION_NODE_EXPORTER}/node_exporter-${VERSION_NODE_EXPORTER}.linux-amd64.tar.gz -o node_exporter.tgz \
+RUN curl -fLsS https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz -o node_exporter.tgz \
  && tar xf node_exporter.tgz --strip-components=1 \
  && mv node_exporter /usr/local/bin/ \
+ && rm -rf /tmp/*
+
+# Install nftables-exporter
+WORKDIR /tmp/
+RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter.tgz -o nftables-exporter.tgz \
+ && tar xvf nftables-exporter.tgz -C / \
+ && systemctl enable nftables-exporter \
+ # TODO remove once metal-networker adopted systemd service template to new binary location
+ && ln -s /usr/bin/nftables-exporter /usr/local/bin/nftables_exporter \
  && rm -rf /tmp/*

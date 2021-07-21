@@ -8,7 +8,7 @@ hash ignite 2>/dev/null || { echo >&2 "ignite not found please install from: htt
 IMAGE="${1}"
 VM_NAME="vm-${OS_NAME}"
 MACHINE_TYPE="machine"
-KERNEL_IMAGE="weaveworks/ignite-kernel:5.4.43"
+KERNEL_IMAGE="weaveworks/ignite-kernel:5.10.25"
 
 if [[ "$OS_NAME" == *firewall ]]; then
   MACHINE_TYPE="firewall"
@@ -43,6 +43,8 @@ sudo ignite run "${IMAGE}" \
 
 echo "determine ip address of vm"
 IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.IPAddresses }}")
+# for version >= v0.9.0
+# IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.Network.IPAddresses }}")
 
 while ! nc -z "${IP}" 22; do
   echo "ssh is not available yet"
