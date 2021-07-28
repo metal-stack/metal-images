@@ -46,6 +46,7 @@ RUN set -ex \
  && apt-get update \
  && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends \
+    apparmor-utils \
     apt-transport-https \
     apt-utils \
     ca-certificates \
