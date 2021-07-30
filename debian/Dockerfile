@@ -79,9 +79,10 @@ RUN set -ex \
     tzdata \
     watchdog \
     wget \
-    /tmp/frr_*.deb \
-    /tmp/frr-pythontools_*.deb \
-    /tmp/libyang*.deb \
+   # TODO
+   #  /tmp/frr_*.deb \
+   #  /tmp/frr-pythontools_*.deb \
+   #  /tmp/libyang*.deb \
     vim \
  && curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && chmod +x ${YQ} \
@@ -108,11 +109,12 @@ RUN set -ex \
  && /kernel-and-timesyncd-installation.sh \
  # Remove devel and orphaned packages
  && apt remove --yes \
-    libc-dev-bin \
-    libc6-dev \
-    libpcre3-dev \
-    libyang-dev \
-    linux-libc-dev \
+   # TODO
+   # libc-dev-bin \
+   #  libc6-dev \
+   #  libpcre3-dev \
+   #  libyang-dev \
+   #  linux-libc-dev \
  && apt autoremove --yes \
  && rm -rf /tmp/*
 
@@ -126,11 +128,12 @@ COPY /cloud-init/cloud-init-custom.sh /etc/metal/
 # Fix WantedBy= definition of frr.service - network-online
 # is a target that is not pulled in per default during startup
 RUN systemctl set-default multi-user.target \
- && sed -i "s/^WantedBy=network-online\.target/WantedBy=network\.target/" \
-           /lib/systemd/system/frr.service \
+# TODO
+# && sed -i "s/^WantedBy=network-online\.target/WantedBy=network\.target/" \
+#           /lib/systemd/system/frr.service \
  && systemctl enable lldpd.service \
                      docker.service \
-                     frr.service \
+                     # frr.service \
                      systemd-networkd \
                      systemd-resolved \
                      systemd-timesyncd \
