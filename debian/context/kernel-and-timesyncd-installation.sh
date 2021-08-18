@@ -2,9 +2,11 @@
 set -e
 source /etc/os-release
 
+ADDITIONAL_PACKAGES="openssh-server systemd-timesyncd intel-microcode"
+
 if [ "${ID}" = "ubuntu" ] ; then
     echo "Ubuntu - Install kernel, openssh-server and systemd-timesyncd from ubuntu repository"
-    apt-get install --yes "linux-generic-hwe-${SEMVER_MAJOR_MINOR}" openssh-server systemd-timesyncd
+    apt-get install --yes "linux-generic-hwe-${SEMVER_MAJOR_MINOR}" ${ADDITIONAL_PACKAGES}
 else
     echo "Debian - Install kernel, openssh-server and systemd-timesyncd from backports repository"
     # Note: for firewall images the backports kernel is a hard requirements because kernel >= 5.x is necessary for vxlan/evpn
@@ -20,7 +22,7 @@ else
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME} contrib" > /etc/apt/sources.list.d/contrib.list
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
     apt-get update --quiet
-    apt-get install --yes -t buster-backports openssh-server systemd-timesyncd intel-microcode
+    apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES}
     echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
     apt-get update --quiet
     apt-get install --yes -t testing linux-image-amd64
