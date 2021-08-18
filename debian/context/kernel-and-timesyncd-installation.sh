@@ -26,6 +26,8 @@ else
     echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
     apt-get update --quiet
     apt-get install --yes -t testing linux-image-amd64
+    # remove testing list, otherwise doing update on the machine will show 100s of missing updates.
+    rm -f /etc/apt/sources.list.d/testing.list
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
