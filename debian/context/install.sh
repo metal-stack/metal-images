@@ -58,7 +58,6 @@ EOM
 cat /etc/fstab
 
 # create a user/pass (metal:metal) to enable login
-# TODO move to Dockerfile
 readonly user="metal"
 readonly pass=$(yq e '.password' "$INSTALL_YAML")
 readonly devmode=$(yq e '.devmode' "$INSTALL_YAML")
