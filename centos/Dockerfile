@@ -63,12 +63,6 @@ RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && yum install -y docker-ce docker-ce-cli containerd.io \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- # Ensure that there exists a link from /usr/bin/python to python2
- # This is needed for ifupdown2 since they have /usr/bin/python as interpreter: https://github.com/CumulusNetworks/ifupdown2/blob/master/ifupdown2/__main__.py#L1
- # - with Ubuntu >= 20.04 this link does not exist anymore
- # - Debian Testing removed ifupdown2 from the repo: https://tracker.debian.org/news/1064997/ifupdown2-removed-from-testing/
- # - but a python3 based ifupdown2 version is on the way: https://github.com/CumulusNetworks/ifupdown2/issues/126
- && ln -sf /usr/bin/python2 /usr/bin/python \
  && rm -rf /tmp/*
 
 # Install FRR see https://rpm.frrouting.org/ for available channels

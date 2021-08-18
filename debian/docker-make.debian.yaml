@@ -34,10 +34,10 @@ builds:
       - ${SEMVER}
       - ${SEMVER_MAJOR_MINOR}
     build-args:
-      - BASE_OS_VERSION=testing
+      - BASE_OS_VERSION=11
       - DOCKER_APT_CHANNEL=buster
       - FRR_VERSION=7.5-debian-10
-      - SEMVER_MAJOR_MINOR=testing
+      - SEMVER_MAJOR_MINOR=11
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
