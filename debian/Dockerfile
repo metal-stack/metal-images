@@ -4,7 +4,7 @@ ARG METAL_NETWORKER_VERSION
 
 FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
-FROM golang:1.15-buster as ignition-builder
+FROM golang:1.17-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -13,7 +13,8 @@ RUN set -ex \
  && git clone https://github.com/coreos/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && make
+ && GO111MODULE=off make \
+ && strip bin/amd64/ignition
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
