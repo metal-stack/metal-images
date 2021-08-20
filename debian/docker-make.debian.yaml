@@ -12,7 +12,7 @@ default-build-args:
   - BASE_OS_NAME=debian
   - OS_NAME=debian
   - DOCKER_APT_OS=debian
-  - CRI_VERSION=v1.21.0
+  - CRI_VERSION=v1.22.0
 builds:
   -
     name: "Debian 10"
@@ -22,7 +22,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=10
       - DOCKER_APT_CHANNEL=buster
-      - FRR_VERSION=7.5-debian-10
+      - FRR_VERSION=frr-8
       - SEMVER_MAJOR_MINOR=10
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
