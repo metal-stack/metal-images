@@ -59,17 +59,8 @@ cat /etc/fstab
 
 # create a user/pass (metal:metal) to enable login
 readonly user="metal"
-readonly pass=$(yq e '.password' "$INSTALL_YAML")
-readonly devmode=$(yq e '.devmode' "$INSTALL_YAML")
 echo "creating user '$user'"
 useradd --create-home --gid "sudo" --shell /bin/bash $user
-
-echo "set password for $user to $pass expires after 1 day."
-echo -e "$pass\n$pass" | passwd $user
-
-if [ "$devmode" == "true" ]; then
-    echo "password valid for 24h: user:$user password:$pass" >> /etc/issue
-fi
 
 # configure networking to setup interfaces and establish BGP/ EVPN sessions
 /network.sh
