@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.15-buster as ignition-builder
+FROM golang:1.17-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -9,7 +9,8 @@ RUN set -ex \
  && git clone https://github.com/coreos/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && make
+ && GO111MODULE=off make \
+ && strip bin/amd64/ignition
 
 FROM centos:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
