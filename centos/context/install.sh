@@ -29,13 +29,14 @@ readonly ROOT_FS=$(jq -r '.Partitions[] | select(.Label=="root").Filesystem' "$D
 readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Properties.UUID' "$DISK_JSON")
 readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$DISK_JSON")
 
-readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0"
+CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0"
 
 if [[ $(mdadm --examine --scan) ]]; then
     echo "raid is configured"
     mdadm --examine --scan > /etc/mdadm.conf
-    eval $(mdadm -D /dev/disk/by-uuid/$ROOT_UUID --export)
-    CMDLINE="$CMDLINE rdloaddriver=raid1 rd.md.uuid=${MD_UUID}"
+    # mdadm: cannot open /dev/disk/by-uuid/40117818-4671-43fd-9a22-b9db2bf7f575: No such file or directory
+    eval $(mdadm -D $(blkid | grep $ROOT_UUID | awk -F':' '{ print $1 }') --export)
+    CMDLINE="$CMDLINE rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=${MD_UUID}"
 fi
 
 # only add /var/lib filesystem if created.
