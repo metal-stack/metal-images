@@ -33,9 +33,8 @@ CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnam
 
 if [[ $(mdadm --examine --scan) ]]; then
     echo "raid is configured"
-    mdadm --examine --scan > /etc/mdadm.conf
-    echo "MAILADDR root" >>  /mnt/etc/mdadm.conf
-    eval $(mdadm -D $(blkid | grep $ROOT_UUID | awk -F':' '{ print $1 }') --export)
+    ROOT_DISK=$(blkid | grep $ROOT_UUID | awk -F':' '{ print $1 }')
+    eval $(mdadm --detail --export $ROOT_DISK)
     CMDLINE="$CMDLINE rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=${MD_UUID}"
 fi
 
@@ -88,6 +87,9 @@ then
     echo "System was booted with UEFI"
     grub2-mkconfig -o /boot/grub2/grub.cfg
     if [[ $(mdadm --examine --scan) ]]; then
+        mdadm --examine --scan > /etc/mdadm.conf
+        echo "MAILADDR root" >>  /etc/mdadm.conf
+
         grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}" --no-nvram
         EFI_DISKS=$(blkid | grep "PARTLABEL=\"efi\"" | awk -F':' '{ print $1 }')
         for EFI_DISK in $EFI_DISKS; do
