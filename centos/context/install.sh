@@ -34,6 +34,7 @@ CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnam
 if [[ $(mdadm --examine --scan) ]]; then
     echo "raid is configured"
     mdadm --examine --scan > /etc/mdadm.conf
+    echo "MAILADDR root" >>  /mnt/etc/mdadm.conf
     eval $(mdadm -D $(blkid | grep $ROOT_UUID | awk -F':' '{ print $1 }') --export)
     CMDLINE="$CMDLINE rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=${MD_UUID}"
 fi
