@@ -30,7 +30,9 @@ readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Propertie
 readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$DISK_JSON")
 
 readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0"
-if [ -d "/dev/md" ]; then
+
+if [[ $(mdadm --examine --scan) ]]; then
+    echo "raid is configured"
     mdadm --examine --scan > /etc/mdadm.conf
     eval $(mdadm -D /dev/disk/by-uuid/$ROOT_UUID --export)
     CMDLINE="$CMDLINE rdloaddriver=raid1 rd.md.uuid=${MD_UUID}"
@@ -84,7 +86,7 @@ if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
     grub2-mkconfig -o /boot/grub2/grub.cfg
-    if [ -d "/dev/md" ]; then
+    if [[ $(mdadm --examine --scan) ]]; then
         grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}" --no-nvram
         EFI_DISKS=$(blkid | grep "PARTLABEL=\"efi\"" | awk -F':' '{ print $1 }')
         for EFI_DISK in $EFI_DISKS; do
