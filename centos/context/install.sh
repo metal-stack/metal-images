@@ -91,9 +91,10 @@ then
         echo "MAILADDR root" >>  /etc/mdadm.conf
 
         grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}" --no-nvram
+
         EFI_DISKS=$(blkid | grep "PARTLABEL=\"efi\"" | awk -F':' '{ print $1 }')
         for EFI_DISK in $EFI_DISKS; do
-            efibootmgr -c -d $EFI_DISK -p1 -l \\EFI\\centos\\shimx64.efi -L "CentOS"
+            efibootmgr -c -d $EFI_DISK -p1 -l \\EFI\\centos\\shimx64.efi -L "${BOOTLOADER_ID}"
         done
 
         KERNEL_VERSION=$(ls /lib/modules | head -1)
@@ -105,7 +106,7 @@ then
             --add="dm mdraid" \
             --add-drivers="raid0 raid1" \
             --hostonly \
-            -f
+            --force
     else
         grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}"
     fi
