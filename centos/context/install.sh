@@ -34,8 +34,7 @@ CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnam
 if [[ $(mdadm --examine --scan) ]]; then
     echo "raid is configured"
     ROOT_DISK=$(blkid | grep $ROOT_UUID | awk -F':' '{ print $1 }')
-    eval $(mdadm --detail --export $ROOT_DISK)
-    CMDLINE="$CMDLINE rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=${MD_UUID}"
+    eval $(mdadm --detail --export $ROOT_DISK) && CMDLINE="$CMDLINE rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=${MD_UUID}" || true
 fi
 
 # only add /var/lib filesystem if created.
