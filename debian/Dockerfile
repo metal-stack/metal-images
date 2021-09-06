@@ -98,7 +98,7 @@ RUN set -ex \
  && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- && locale-gen \
+ && /usr/sbin/locale-gen \
  # Switch to use iptables-legacy on worker nodes
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
