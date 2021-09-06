@@ -29,7 +29,13 @@ readonly ROOT_FS=$(jq -r '.Partitions[] | select(.Label=="root").Filesystem' "$D
 readonly VARLIB_UUID=$(jq -r '.Partitions[] | select(.Label=="varlib").Properties.UUID' "$DISK_JSON")
 readonly VARLIB_FS=$(jq -r '.Partitions[] | select(.Label=="varlib").Filesystem' "$DISK_JSON")
 
-readonly CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0"
+CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/usr/sbin/init net.ifnames=0 biosdevname=0"
+
+if [[ $(mdadm --examine --scan) ]]; then
+    echo "raid is configured"
+    ROOT_DISK=$(blkid | grep "${ROOT_UUID}" | awk -F':' '{ print $1 }')
+    eval "$(mdadm --detail --export "${ROOT_DISK}")" && CMDLINE="$CMDLINE rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=${MD_UUID}" || true
+fi
 
 # only add /var/lib filesystem if created.
 VARLIB=""
@@ -79,7 +85,30 @@ if [ -d /sys/firmware/efi ]
 then
     echo "System was booted with UEFI"
     grub2-mkconfig -o /boot/grub2/grub.cfg
-    grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}"
+    if [[ $(mdadm --examine --scan) ]]; then
+        mdadm --examine --scan > /etc/mdadm.conf
+        echo "MAILADDR root" >>  /etc/mdadm.conf
+
+        grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}" --no-nvram
+
+        EFI_DISKS=$(blkid | grep "PARTLABEL=\"efi\"" | awk -F':' '{ print $1 }')
+        for EFI_DISK in $EFI_DISKS; do
+            efibootmgr -c -d "${EFI_DISK}" -p1 -l \\EFI\\centos\\shimx64.efi -L "${BOOTLOADER_ID}"
+        done
+
+        KERNEL_VERSION=$(ls /lib/modules | head -1)
+        dracut --mdadm \
+            --kver "${KERNEL_VERSION}" \
+            --kmoddir "/lib/modules/${KERNEL_VERSION}" \
+            --include "/lib/modules/${KERNEL_VERSION}" "/lib/modules/${KERNEL_VERSION}" \
+            --fstab \
+            --add="dm mdraid" \
+            --add-drivers="raid0 raid1" \
+            --hostonly \
+            --force
+    else
+        grub2-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" UUID="${ROOT_UUID}"
+    fi
 else
     echo "System was booted with Bios"
     grub2-mkconfig -o /boot/grub2/grub.cfg
