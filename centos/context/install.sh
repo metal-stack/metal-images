@@ -100,7 +100,7 @@ then
         dracut --mdadm \
             --kver "${KERNEL_VERSION}" \
             --kmoddir "/lib/modules/${KERNEL_VERSION}" \
-            --include "/lib/modules/${KERNEL_VERSION}" \
+            --include "/lib/modules/${KERNEL_VERSION}" "/lib/modules/${KERNEL_VERSION}" \
             --fstab \
             --add="dm mdraid" \
             --add-drivers="raid0 raid1" \
