@@ -42,6 +42,7 @@ RUN set -ex \
     ipmitool \
     jq \
     kernel \
+    mdadm \
     openssl \
     openssh-server \
     passwd \
