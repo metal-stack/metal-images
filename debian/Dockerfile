@@ -66,6 +66,7 @@ RUN set -ex \
     iproute2 \
     isc-dhcp-client \
     jq \
+    locales \
     lsb-release \
     lvm2 \
     mdadm \
