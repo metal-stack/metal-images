@@ -22,12 +22,7 @@ else
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME} contrib" > /etc/apt/sources.list.d/contrib.list
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
     apt-get update --quiet
-    apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES}
-    echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
-    apt-get update --quiet
-    apt-get install --yes -t testing linux-image-amd64
-    # remove testing list, otherwise doing update on the machine will show 100s of missing updates.
-    rm -f /etc/apt/sources.list.d/testing.list
+    apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES} linux-image-amd64
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
