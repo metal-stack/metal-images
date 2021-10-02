@@ -74,3 +74,6 @@ RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/downloa
  # TODO remove once metal-networker adopted systemd service template to new binary location
  && ln -s /usr/bin/nftables-exporter /usr/local/bin/nftables_exporter \
  && rm -rf /tmp/*
+
+# Remove getty overrides to enable console password again
+RUN rm -rf /etc/systemd/system/getty@.service.d /etc/systemd/system/serial-getty@.service.d
