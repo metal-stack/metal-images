@@ -22,11 +22,11 @@ if [ "${VERSION_CODENAME}" = "buster" ] ; then
     # audit: type=1326 audit(1595317960.526:2): auid=4294967295 uid=107 gid=65534 ses=4294967295 subj=kernel pid=1177 comm="sshd" exe="/usr/sbin/sshd" sig=31 arch=c000003e syscall=230 compat=0 ip=0x7fc40d5eebea code=0x0
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME} contrib" > /etc/apt/sources.list.d/contrib.list
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
+    echo "deb https://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list.d/bullseye.list
     apt-get update --quiet
-    apt-get install --yes -t ${VERSION_CODENAME}-backports ${ADDITIONAL_PACKAGES} intel-microcode
-    echo "deb https://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list
-    apt-get update --quiet
-    apt-get install --yes -t testing linux-image-amd64
+    apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES}
+    apt-get install --yes linux-image-amd64
+    rm -f /etc/apt/sources.list.d/bullseye.list
 fi
 if [ "${VERSION_CODENAME}" = "bullseye" ] ; then
     echo "Debian ${VERSION_CODENAME} - Install kernel, openssh-server and systemd-timesyncd repository"
