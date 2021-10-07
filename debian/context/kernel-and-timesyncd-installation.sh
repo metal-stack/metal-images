@@ -25,7 +25,9 @@ if [ "${VERSION_CODENAME}" = "buster" ] ; then
     echo "deb https://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list.d/bullseye.list
     apt-get update --quiet
     apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES}
-    apt-get install --yes linux-image-amd64
+    # you can get list of installable versions with 
+    # apt list -a linux-image-amd64
+    apt-get install --yes linux-image-amd64="${KERNEL_VERSION}"
     rm -f /etc/apt/sources.list.d/bullseye.list
 fi
 if [ "${VERSION_CODENAME}" = "bullseye" ] ; then
