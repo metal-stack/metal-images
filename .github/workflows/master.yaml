@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    # build every sunday night at 1:10 o'clock
-    - cron: '10 1 * * 0'
 
 env:
   GCS_BUCKET: images.metal-pod.io
