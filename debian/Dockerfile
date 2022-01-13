@@ -28,13 +28,15 @@ ARG DOCKER_APT_CHANNEL
 ARG CRI_VERSION
 ARG SEMVER_MAJOR_MINOR
 ARG KERNEL_VERSION
+ARG UBUNTU_MAINLINE_KERNEL_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
     YQ=/usr/local/bin/yq \
     DOCKER_URL=https://download.docker.com \
-    SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR}
+    SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} \
+    UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
