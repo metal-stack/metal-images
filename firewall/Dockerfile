@@ -12,26 +12,13 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NODE_EXPORTER_VERSION=1.3.1 \
-    NFTABLES_EXPORTER_VERSION=v0.1.4 \
-    UBUNTU_MAINLINE_KERNEL_VERSION=v5.15.14
-
-# Download mainline kernel packages, kernel up to 5.13 available in ubuntu 20.04 and 22.04 have a broken NAT implementation.
-RUN cd /tmp \
- && wget --no-directories \
-         --no-parent \
-         --accept-regex generic \
-         --recursive \
-         --execute robots=off \
-    https://kernel.ubuntu.com/~kernel-ppa/mainline/${UBUNTU_MAINLINE_KERNEL_VERSION}/amd64/
+    NFTABLES_EXPORTER_VERSION=v0.1.4
 
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
-    /tmp/linux-image* \
-    /tmp/linux-modules* \
     tcpdump \
- && apt-get remove --yes iptables linux-generic-hwe-${SEMVER_MAJOR_MINOR} \
  && apt --yes autoremove
 
 # Context:
