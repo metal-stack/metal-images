@@ -19,6 +19,7 @@ RUN apt-get update --quiet \
     bridge-utils \
     fever \
     tcpdump \
+ && apt-get remove --yes iptables \
  && apt --yes autoremove
 
 # Context:
