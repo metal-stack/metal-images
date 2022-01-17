@@ -55,6 +55,10 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/metal-os
+
+    - uses: release-drafter/release-drafter@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   centos:
     name: Build Centos based OS image
     runs-on: self-hosted
