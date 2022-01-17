@@ -14,6 +14,7 @@ default-build-args:
   - DOCKER_APT_OS=ubuntu
   - DOCKER_APT_CHANNEL=focal
   - CRI_VERSION=v1.22.0
+  - UBUNTU_MAINLINE_KERNEL_VERSION=v5.10.92
 builds:
   -
     name: "Ubuntu 20.04"
