@@ -8,6 +8,7 @@ default-build-args:
   - YQ_VERSION=v4.6.3
   - GOLLDPD_VERSION=v0.3.6
   - METAL_NETWORKER_VERSION=v0.8.2
+  - FRR_VERSION=frr-8
   - SEMVER_PATCH=${SEMVER_PATCH}
 builds:
   -
