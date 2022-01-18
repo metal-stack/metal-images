@@ -21,6 +21,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ARG YQ_VERSION
 ARG FRR_VERSION
+ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
@@ -104,10 +105,9 @@ RUN set -ex \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  # install frr from frrouting debian package repo
  && curl -fLsS https://deb.frrouting.org/frr/keys.asc | apt-key add - \
- && echo ${FRR_VERSION} \
  && add-apt-repository "deb [arch=amd64] https://deb.frrouting.org/frr $(lsb_release -s -c) ${FRR_VERSION}" \
  && apt update \
- && apt install --yes --no-install-recommends frr frr-pythontools \
+ && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # install kernel and stuff
  && /kernel-and-timesyncd-installation.sh \
  # Remove devel and orphaned packages
