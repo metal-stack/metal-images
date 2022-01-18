@@ -71,7 +71,8 @@ jobs:
           --file docker-make.yaml \
           --no-cache \
           --summary \
-          --no-lint
+          --no-lint \
+          --no-push
     - uses: google-github-actions/setup-gcloud@master
       with:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
