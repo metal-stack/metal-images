@@ -34,6 +34,7 @@ else
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME} contrib" > /etc/apt/sources.list.d/contrib.list
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
     echo "deb https://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list.d/bullseye.list
+    echo "deb https://deb.debian.org/debian-security bullseye-security main contrib non-free" > /etc/apt/sources.list.d/bullseye-security.list
     apt-get update --quiet
     apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES}
     # you can get list of installable versions with 
