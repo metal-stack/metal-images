@@ -26,4 +26,4 @@ md5sum ${LZ4} > ${MD5}
 
 # export a list with the generated fqdn image names
 # mkdir -p workdir
-echo "${OS_NAME}-${SEMVER_MAJOR_MINOR}-${SEMVER_PATCH}" 
+echo "${OS_NAME}-${SEMVER_MAJOR_MINOR}-${SEMVER_PATCH}"
