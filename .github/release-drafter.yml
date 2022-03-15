@@ -1,5 +1,5 @@
-name-template: '$PREVIOUS_TAG'
-tag-template: '$PREVIOUS_TAG'
+name-template: '<YYYYMMDD>'
+tag-template: '<YYYYMMDD>'
 
 template: |
   ## General Changes
