@@ -1,5 +1,5 @@
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
+name-template: '<YYYYMMDD>'
+tag-template: '<YYYYMMDD>'
 
 template: |
   ## General Changes
