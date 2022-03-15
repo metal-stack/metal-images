@@ -1,5 +1,5 @@
-name-template: 'v$RESOLVED_VERSION'
-tag-template: 'v$RESOLVED_VERSION'
+name-template: '$PREVIOUS_TAG'
+tag-template: '$PREVIOUS_TAG'
 
 template: |
   ## General Changes
