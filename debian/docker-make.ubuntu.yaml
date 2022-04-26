@@ -7,7 +7,7 @@ default-build-args:
   - IGNITION_BRANCH=v0.35.0
   - YQ_VERSION=v4.6.3
   - GOLLDPD_VERSION=v0.3.8
-  - METAL_NETWORKER_VERSION=raise-timers
+  - METAL_NETWORKER_VERSION=v0.8.3
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=ubuntu
   - OS_NAME=ubuntu
