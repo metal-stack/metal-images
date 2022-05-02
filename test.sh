@@ -27,7 +27,10 @@ fi
 echo "import image oci to ignite: ${IMAGE}"
 sudo ignite stop "${VM_NAME}" || true
 sudo ignite rm "${VM_NAME}" || true
-sudo ignite image rm -f "${IMAGE}" || true
+# cleaning up all prior images to prevent ambigious image names
+for image in $(sudo ignite images -q); do
+  sudo ignite image rm -f "$image"
+done
 sudo ignite image import --runtime=docker --log-level debug "${IMAGE}"
 
 echo "create ignite / firecracker vm"
@@ -42,9 +45,10 @@ sudo ignite run "${IMAGE}" \
   --log-level debug
 
 echo "determine ip address of vm"
-IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.IPAddresses }}")
+# this is for ignite < v0.9.0
+# IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.IPAddresses }}")
 # for version >= v0.9.0
-# IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.Network.IPAddresses }}")
+IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.Network.IPAddresses }}")
 
 while ! nc -z "${IP}" 22; do
   echo "ssh is not available yet"
