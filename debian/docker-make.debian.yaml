@@ -7,7 +7,7 @@ default-build-args:
   - IGNITION_BRANCH=v0.35.0
   - YQ_VERSION=v4.6.3
   - GOLLDPD_VERSION=v0.3.8
-  - METAL_NETWORKER_VERSION=v0.7.2
+  - METAL_NETWORKER_VERSION=v0.8.3
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - OS_NAME=debian
@@ -22,7 +22,8 @@ builds:
     build-args:
       - BASE_OS_VERSION=10
       - DOCKER_APT_CHANNEL=buster
-      - FRR_VERSION=7.5-debian-10
+      - FRR_VERSION=frr-8
+      - FRR_VERSION_DETAIL=8.2.2-0~deb10u1
       - SEMVER_MAJOR_MINOR=10
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
       - KERNEL_VERSION=5.10.103-1

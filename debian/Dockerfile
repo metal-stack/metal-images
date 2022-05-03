@@ -1,12 +1,10 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG FRR_VERSION
 ARG METAL_NETWORKER_VERSION
 
-FROM ghcr.io/metal-stack/frr:${FRR_VERSION} AS frr-artifacts
 FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
-FROM golang:1.15-buster as ignition-builder
+FROM golang:1.18-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -15,12 +13,15 @@ RUN set -ex \
  && git clone https://github.com/coreos/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && make
+ && GO111MODULE=off make \
+ && strip bin/amd64/ignition
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
 ARG YQ_VERSION
+ARG FRR_VERSION
+ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
@@ -39,7 +40,6 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
-COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 COPY context/kernel-and-timesyncd-installation.sh /
 
@@ -82,17 +82,12 @@ RUN set -ex \
     tzdata \
     watchdog \
     wget \
-    /tmp/frr_*.deb \
-    /tmp/frr-pythontools_*.deb \
-    /tmp/libyang*.deb \
     vim \
  && curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && chmod +x ${YQ} \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
- && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg > docker.key \
- && apt-key add docker.key \
- && rm -f docker.key \
+ && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
  && add-apt-repository "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" \
  && apt-get update \
  && apt-get install --yes --no-install-recommends docker-ce \
@@ -108,14 +103,14 @@ RUN set -ex \
  # Switch to use iptables-legacy on worker nodes
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
+ # install frr from frrouting debian package repo
+ && curl -fLsS https://deb.frrouting.org/frr/keys.asc | apt-key add - \
+ && add-apt-repository "deb [arch=amd64] https://deb.frrouting.org/frr $(lsb_release -s -c) ${FRR_VERSION}" \
+ && apt update \
+ && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
+ # install kernel and stuff
  && /kernel-and-timesyncd-installation.sh \
  # Remove devel and orphaned packages
- && apt remove --yes \
-    libc-dev-bin \
-    libc6-dev \
-    libpcre3-dev \
-    libyang-dev \
-    linux-libc-dev \
  && apt autoremove --yes \
  && rm -rf /tmp/*
 
@@ -125,12 +120,8 @@ COPY context/ /
 COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
 COPY /cloud-init/cloud-init-custom.sh /etc/metal/
 
-# Set default target to multi-user.target - otherwise it will be graphical.target
-# Fix WantedBy= definition of frr.service - network-online
-# is a target that is not pulled in per default during startup
+# Enable all required systemd services
 RUN systemctl set-default multi-user.target \
- && sed -i "s/^WantedBy=network-online\.target/WantedBy=network\.target/" \
-           /lib/systemd/system/frr.service \
  && systemctl enable lldpd.service \
                      docker.service \
                      frr.service \
