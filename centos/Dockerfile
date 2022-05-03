@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.15-buster as ignition-builder
+FROM golang:1.18-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -9,7 +9,8 @@ RUN set -ex \
  && git clone https://github.com/coreos/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && make
+ && GO111MODULE=off make \
+ && strip bin/amd64/ignition
 
 FROM centos:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
@@ -17,6 +18,7 @@ FROM centos:${BASE_OS_VERSION}
 ARG YQ_VERSION
 ARG GOLLDPD_VERSION
 ARG METAL_NETWORKER_VERSION
+ARG FRR_VERSION
 
 ENV YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
     YQ=/usr/local/bin/yq
@@ -68,7 +70,7 @@ RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
 
 # Install FRR see https://rpm.frrouting.org/ for available channels
 RUN set -ex \
- && curl -fLsS https://rpm.frrouting.org/repo/frr-stable-repo-1-0.el7.noarch.rpm -o /tmp/frr-repo.rpm \
+ && curl -fLsS https://rpm.frrouting.org/repo/${FRR_VERSION}-repo-1-0.el7.noarch.rpm -o /tmp/frr-repo.rpm \
  && yum install -y /tmp/frr-repo.rpm \
  && yum install -y frr frr-pythontools
 

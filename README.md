@@ -28,6 +28,9 @@ cd debian && docker-make -nNL -f docker-make.debian.yaml
 # for ubuntu images
 cd debian && docker-make -nNL -f docker-make.ubuntu.yaml
 
+# for centos images
+cd centos && docker-make -nNL docker-make.yaml
+
 # for firewall images
 cd firewall && docker-make -nNL docker-make.yaml
 ```
@@ -40,8 +43,11 @@ Currently these images are supported:
 
 1. Debian 10
 1. Ubuntu 20.04
-1. Firewall 2.0 (based on Debian 10)
 1. Firewall 2.0-ubuntu (based on Ubuntu 20.04)
+
+Unsupported images:
+
+1. Centos 7.0
 
 ## Schedule
 
