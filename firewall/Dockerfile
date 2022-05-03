@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=pr-log-on-accept
-ARG FIREWALL_CONTROLLER_VERSION=v1.1.3
+ARG FIREWALL_CONTROLLER_VERSION=log-on-accept
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
