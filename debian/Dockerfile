@@ -30,6 +30,8 @@ ARG CRI_VERSION
 ARG SEMVER_MAJOR_MINOR
 ARG KERNEL_VERSION
 ARG UBUNTU_MAINLINE_KERNEL_VERSION
+ARG ICE_VERSION
+ARG ICE_PKG_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -110,6 +112,11 @@ RUN set -ex \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # install kernel and stuff
  && /kernel-and-timesyncd-installation.sh \
+ # Install Intel Firmware for e800 based network cards
+ && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
+ && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
+ && mkdir -p /lib/firmware/intel/ice/ddp/ \
+ && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
  && rm -rf /tmp/*
