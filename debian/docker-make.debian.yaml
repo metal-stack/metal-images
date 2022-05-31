@@ -13,6 +13,8 @@ default-build-args:
   - OS_NAME=debian
   - DOCKER_APT_OS=debian
   - CRI_VERSION=v1.23.0
+  - ICE_VERSION=1.8.8
+  - ICE_PKG_VERSION=1.3.28.0
 builds:
   -
     name: "Debian 10"
