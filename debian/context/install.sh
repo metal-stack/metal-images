@@ -159,7 +159,7 @@ then
 
         EFI_DISKS=$(blkid | grep "PARTLABEL=\"efi\"" | awk -F':' '{ print $1 }')
         for EFI_DISK in $EFI_DISKS; do
-            efibootmgr -c -d "${EFI_DISK}" -p1 -l \\EFI\\centos\\shimx64.efi -L "${BOOTLOADER_ID}"
+            efibootmgr -c -d "${EFI_DISK}" -p1 -l "\\EFI\\${BOOTLOADER_ID}\\grubx64.efi" -L "${BOOTLOADER_ID}"
         done
 
         grub-install --target=x86_64-efi --efi-directory=${EFI_MOUNTPOINT} --boot-directory=/boot --bootloader-id="${BOOTLOADER_ID}" --no-nvram
