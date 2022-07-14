@@ -115,15 +115,6 @@ else
     echo "no userdata present"
 fi
 
-# connect to VPN if needed
-readonly vpn_addr=$(yq e '.vpn.address' "$INSTALL_YAML")
-readonly vpn_auth_key=$(yq e '.vpn.auth_key' "$INSTALL_YAML")
-
-if [ "$vpn_addr" != "null" ]; then
-    curl -fsSL https://tailscale.com/install.sh | sh
-    tailscale up --auth-key $vpn_auth_key --login-server=$vpn_addr
-fi
-
 echo "write boot-info.yaml"
 # ubuntu-19.04 and before placed a legacy /vmlinuz link to /boot/vmlinux-<actual-version>
 if [ -e /vmlinuz ]; then
