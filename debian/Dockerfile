@@ -117,6 +117,8 @@ RUN set -ex \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
  # install kernel and stuff
  && /kernel-and-timesyncd-installation.sh \
+ # remove dhclient which could lead to dangerous configurations
+ && apt-get remove --yes isc-dhcp-client \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
  && rm -rf /tmp/*
