@@ -1,0 +1,7 @@
+# Method to wait for the network to become online,
+# for services that depend on a working network:
+# - ifup: wait for ifup to have configured an interface.
+# - route: wait for a route to a given address to appear.
+# - ping/ping6: wait for a host to respond to ping packets.
+# - none: don't wait.
+WAIT_ONLINE_METHOD=route
