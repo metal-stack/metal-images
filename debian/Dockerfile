@@ -120,7 +120,7 @@ RUN set -ex \
  # remove dhclient which could lead to dangerous configurations
  && apt-get remove --yes isc-dhcp-client \
  # Install bootloader fix
- && curl -fLsS https://mwennrich.github.io/metal-bootloader/metal-bootloader_0.2.0_amd64.deb -o /tmp/metal-bootloader.deb \
+ && curl -fLsS https://mwennrich.github.io/metal-bootloader/metal-bootloader_0.3.0_amd64.deb -o /tmp/metal-bootloader.deb \
  && dpkg -i /tmp/metal-bootloader.deb \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
