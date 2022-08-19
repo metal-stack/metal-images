@@ -1,0 +1,4 @@
+# this configuration is for networking.service
+# without this option it tries to bring up the interfaces with dhcp,
+# but dhclient is removed to prevent accidential dhcp configurations
+CONFIGURE_INTERFACES=no
