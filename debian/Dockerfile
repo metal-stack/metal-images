@@ -121,6 +121,8 @@ RUN set -ex \
  && apt-get remove --yes isc-dhcp-client \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
+ # generate locale
+ && locale-gen \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
  && rm -rf /tmp/*
