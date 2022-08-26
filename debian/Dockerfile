@@ -119,6 +119,8 @@ RUN set -ex \
  && /kernel-and-timesyncd-installation.sh \
  # remove dhclient which could lead to dangerous configurations
  && apt-get remove --yes isc-dhcp-client \
+ # restore a fake dhclient binary to make networking.service happy
+ && ln -sf /usr/bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
  && rm -rf /tmp/*
@@ -139,8 +141,6 @@ RUN systemctl set-default multi-user.target \
                      systemd-timesyncd \
                      watchdog.service \
                      cloud-init-custom.service \
- # networking.service is not required because of systemd-networkd
- && systemctl disable networking.service \
  && update-ca-certificates
 
 # Provide metal-networker that is called during the install routine to setup networking.
