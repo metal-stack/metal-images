@@ -121,8 +121,6 @@ RUN set -ex \
  && apt-get remove --yes isc-dhcp-client \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
- # generate locale
- && locale-gen \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
  && rm -rf /tmp/*
@@ -143,7 +141,9 @@ RUN systemctl set-default multi-user.target \
                      systemd-timesyncd \
                      watchdog.service \
                      cloud-init-custom.service \
- && update-ca-certificates
+ && update-ca-certificates \
+ # generate locale
+ && locale-gen
 
 # Provide metal-networker that is called during the install routine to setup networking.
 COPY --from=metal-networker /metal-networker /etc/metal/networker/
