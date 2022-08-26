@@ -70,9 +70,9 @@ RUN set -ex \
     iptables \
     iputils-ping \
     iproute2 \
-    isc-dhcp-client \
     jq \
     lsb-release \
+    locales \
     lvm2 \
     mdadm \
     procps \
