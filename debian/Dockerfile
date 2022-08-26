@@ -120,7 +120,7 @@ RUN set -ex \
  # remove dhclient which could lead to dangerous configurations
  && apt-get remove --yes isc-dhcp-client \
  # restore a fake dhclient binary to make networking.service happy
- && ln -sf /usr/bin/true /usr/sbin/dhclient \
+ && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
  && rm -rf /tmp/*
