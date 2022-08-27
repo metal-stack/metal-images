@@ -1,0 +1,8 @@
+IMPORTANT
+
+if you have problems with correct display via serial console
+you can always adjust the terminal size with:
+
+stty cols 50 rows 130
+
+adjust the values which fits your screen best.
