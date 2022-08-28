@@ -15,7 +15,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     NFTABLES_EXPORTER_VERSION=v0.1.5
 
 RUN apt-get update --quiet \
- && apt-get install --yes \
+ && apt-get install --yes --no-install-recommends \
     bridge-utils \
     fever \
     tcpdump \
