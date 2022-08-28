@@ -4,7 +4,7 @@ ARG METAL_NETWORKER_VERSION
 
 FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
 
-FROM golang:1.18-buster as ignition-builder
+FROM golang:1.19-bullseye as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -75,12 +75,14 @@ RUN set -ex \
     locales \
     lvm2 \
     mdadm \
+    openssh-server \
     procps \
     socat \
     software-properties-common \
     sudo \
     systemd \
     systemd-sysv \
+    systemd-timesyncd \
     tzdata \
     watchdog \
     wget \
