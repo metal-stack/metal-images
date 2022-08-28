@@ -2,10 +2,8 @@
 set -e
 source /etc/os-release
 
-ADDITIONAL_PACKAGES="openssh-server systemd-timesyncd intel-microcode"
-
 if [ "${ID}" = "ubuntu" ] ; then
-    echo "Ubuntu - Install kernel, openssh-server and systemd-timesyncd from ubuntu repository"
+    echo "Ubuntu - Install kernel"
     # Download mainline kernel packages, kernel up to 5.13 available in ubuntu 20.04 and 22.04 have a broken NAT implementation.
     cd /tmp
     wget --no-directories \
@@ -18,10 +16,9 @@ if [ "${ID}" = "ubuntu" ] ; then
     apt-get install --yes \
         /tmp/linux-image* \
         /tmp/linux-modules* \
-        ${ADDITIONAL_PACKAGES}
+        intel-microcode
 else
     echo "Debian - Install kernel"
-
 
     echo "deb http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list.d/contrib-and-nonfree.list
     echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list.d/contrib-and-nonfree.list
