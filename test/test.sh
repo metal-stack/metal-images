@@ -11,6 +11,7 @@ echo "do machine test"
 ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     # disable detection of running inside container
     ln -sf /bin/false /usr/bin/systemd-detect-virt
+    systemctl stop chrony
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     /install.sh
     systemctl restart systemd-networkd
