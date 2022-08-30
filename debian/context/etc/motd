@@ -1,8 +1,7 @@
-IMPORTANT
+connected to a metal-stack machine console
 
-if you have problems with correct display via serial console
-you can always adjust the terminal size with:
+if you have display issues with your terminal, please enter:
 
-stty cols 150 rows 50
+resize
 
-adjust the values which fits your screen best.
+to adjust the tty size to your terminal.
