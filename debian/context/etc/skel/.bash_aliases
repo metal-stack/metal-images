@@ -16,7 +16,7 @@ resize() {
 }
 
 case $(/usr/bin/tty) in
-/dev/ttyS1)
+/dev/ttyS0|/dev/ttyS1)
     export LANG=C
 	resize
 	;;
