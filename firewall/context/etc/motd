@@ -1,0 +1,13 @@
+------------------------------------------------------------
+connected to a metal-stack firewall console,
+
+you can grab the password for metal with:
+
+metalctl machine consolepassword <machineid>
+
+if you have display issues with your terminal, please enter:
+
+resize
+
+to adjust the tty size to your terminal.
+------------------------------------------------------------
