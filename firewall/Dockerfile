@@ -2,7 +2,7 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.9
 ARG FIREWALL_CONTROLLER_VERSION=v1.1.5
-ARG TAILSCALE_VERSION=v1.28.0
+ARG TAILSCALE_VERSION=v1.30.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -22,9 +22,8 @@ RUN apt-get update --quiet \
     bridge-utils \
     fever \
     tcpdump \
- && apt-get remove --yes iptables \
- && apt --yes autoremove \
- && apt install --yes iptables
+    iptables \
+ && apt --yes autoremove
 
 # Context:
 # - chrony.conf provides default configuration for chrony
