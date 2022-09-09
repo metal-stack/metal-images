@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 resize() {
 	if [[ -t 0 && $# -eq 0 ]]; then
 		local IFS='[;' escape geometry x y
@@ -14,10 +16,3 @@ resize() {
 		print 'Usage: resize'
 	fi
 }
-
-case $(/usr/bin/tty) in
-/dev/ttyS0|/dev/ttyS1)
-    export LANG=C
-	resize
-	;;
-esac
