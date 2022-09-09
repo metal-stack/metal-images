@@ -7,7 +7,7 @@ default-build-args:
   - IGNITION_BRANCH=v0.35.0
   - YQ_VERSION=v4.6.3
   - GOLLDPD_VERSION=v0.4.0
-  - METAL_NETWORKER_VERSION=set-vpn-connection
+  - METAL_NETWORKER_VERSION=v0.20.0
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=ubuntu
   - OS_NAME=ubuntu
