@@ -22,8 +22,9 @@ RUN apt-get update --quiet \
     bridge-utils \
     fever \
     tcpdump \
-    iptables \
- && apt --yes autoremove
+ && apt-get remove --yes iptables \
+ && apt --yes autoremove \
+ && apt install --yes iptables
 
 # Context:
 # - chrony.conf provides default configuration for chrony
