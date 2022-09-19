@@ -17,6 +17,8 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     NODE_EXPORTER_VERSION=1.3.1 \
     NFTABLES_EXPORTER_VERSION=v0.1.5
 
+# iptables reinstallation is required, so that image works in mini-lab environment.
+# Most likely the reason is that old config is removed during deletion.
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
