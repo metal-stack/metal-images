@@ -2,10 +2,13 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.9
 ARG FIREWALL_CONTROLLER_VERSION=v1.1.5
+ARG TAILSCALE_VERSION=v1.30.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
+
+FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
@@ -14,13 +17,16 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     NODE_EXPORTER_VERSION=1.3.1 \
     NFTABLES_EXPORTER_VERSION=v0.1.5
 
+# iptables reinstallation is required, so that image works in mini-lab environment.
+# Most likely the reason is that old config is removed during deletion.
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
     tcpdump \
  && apt-get remove --yes iptables \
- && apt --yes autoremove
+ && apt --yes autoremove \
+ && apt install --yes iptables
 
 # Context:
 # - chrony.conf provides default configuration for chrony
@@ -58,6 +64,10 @@ COPY --from=firewall-controller-artifacts /firewall-controller /usr/local/bin/fi
 
 # Install droptailer-client
 COPY --from=droptailer-artifacts /client /usr/local/bin/droptailer-client
+
+# Install tailscaled and Tailscale client
+COPY --from=tailscale-artifacts /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=tailscale-artifacts /usr/local/bin/tailscale /usr/local/bin/tailscale
 
 # Install node_exporter
 WORKDIR /tmp/node_exporter
