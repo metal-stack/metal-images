@@ -34,6 +34,24 @@ func (o operatingsystem) BootloaderID() string {
 	return fmt.Sprintf("metal-%s", o)
 }
 
+func operatingSystemFromString(s string) (operatingsystem, error) {
+	unquoted, err := strconv.Unquote(s)
+	if err == nil {
+		s = unquoted
+	}
+
+	switch operatingsystem(strings.ToLower(s)) {
+	case OSUbuntu:
+		return OSUbuntu, nil
+	case OSDebian:
+		return OSDebian, nil
+	case OSCentos:
+		return OSCentos, nil
+	default:
+		return operatingsystem(""), fmt.Errorf("unsupported operating system")
+	}
+}
+
 type installer struct {
 	log    *zap.SugaredLogger
 	fs     afero.Fs
@@ -47,7 +65,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	fs := afero.NewOsFs()
+
 	oss, err := detectOS(fs)
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +84,7 @@ func main() {
 
 	i := installer{
 		log:    log,
-		fs:     fs, // for testing use afero.MemFS
+		fs:     fs,
 		oss:    oss,
 		config: config,
 		disk:   disk,
@@ -175,12 +195,23 @@ func detectOS(fs afero.Fs) (operatingsystem, error) {
 	if err != nil {
 		return operatingsystem(""), err
 	}
+
+	env := map[string]string{}
 	for _, line := range strings.Split(string(content), "\n") {
-		_, os, found := strings.Cut(line, "ID=")
+		k, v, found := strings.Cut(line, "=")
 		if found {
-			return operatingsystem(strings.ToLower(os)), nil
+			env[k] = v
 		}
 	}
+
+	if os, ok := env["ID"]; ok {
+		oss, err := operatingSystemFromString(os)
+		if err != nil {
+			return operatingsystem(""), err
+		}
+		return oss, nil
+	}
+
 	return operatingsystem(""), fmt.Errorf("unable to detect OS")
 }
 
