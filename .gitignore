@@ -1,5 +1,6 @@
 *.tar*
 .idea
 .vagrant
+bin
 images
 footloose.*yaml
