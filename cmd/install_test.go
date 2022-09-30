@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/metal-stack/metal-hammer/cmd/storage"
+	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
@@ -235,7 +235,7 @@ func Test_installer_rootUUID(t *testing.T) {
 	}
 }
 
-func mustParseDiskJSON(t *testing.T, fs afero.Fs, json string) *storage.Disk {
+func mustParseDiskJSON(t *testing.T, fs afero.Fs, json string) *api.Disk {
 	require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(json), 0700))
 	disk, err := parseDiskJSON(fs)
 	require.NoError(t, err)

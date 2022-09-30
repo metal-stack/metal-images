@@ -13,9 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/metal-stack/metal-hammer/cmd"
-	"github.com/metal-stack/metal-hammer/cmd/storage"
-	"github.com/metal-stack/metal-hammer/pkg/kernel"
+	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -56,8 +54,8 @@ type installer struct {
 	log    *zap.SugaredLogger
 	fs     afero.Fs
 	oss    operatingsystem
-	config *cmd.InstallerConfig
-	disk   *storage.Disk
+	config *api.InstallerConfig
+	disk   *api.Disk
 }
 
 func main() {
@@ -226,8 +224,8 @@ nameserver 8.8.4.4
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, os.ModeDir)
 }
 
-func parseInstallYAML(fs afero.Fs) (*cmd.InstallerConfig, error) {
-	var config cmd.InstallerConfig
+func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
+	var config api.InstallerConfig
 	content, err := afero.ReadFile(fs, "/etc/metal/install.yaml")
 	if err != nil {
 		return nil, err
@@ -239,8 +237,8 @@ func parseInstallYAML(fs afero.Fs) (*cmd.InstallerConfig, error) {
 	return &config, nil
 }
 
-func parseDiskJSON(fs afero.Fs) (*storage.Disk, error) {
-	var disk storage.Disk
+func parseDiskJSON(fs afero.Fs) (*api.Disk, error) {
+	var disk api.Disk
 	content, err := afero.ReadFile(fs, "/etc/metal/disk.json")
 	if err != nil {
 		return nil, err
@@ -507,7 +505,7 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 		return err
 	}
 
-	content, err := yaml.Marshal(kernel.Bootinfo{
+	content, err := yaml.Marshal(api.Bootinfo{
 		Initrd:       initrd,
 		Cmdline:      cmdLine,
 		Kernel:       kern,
