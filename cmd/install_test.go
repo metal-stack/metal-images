@@ -102,7 +102,7 @@ BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
 PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
 UBUNTU_CODENAME=jammy`), 0755))
 			},
-			want:    OSUbuntu,
+			want:    osUbuntu,
 			wantErr: nil,
 		},
 		{
@@ -124,7 +124,7 @@ CENTOS_MANTISBT_PROJECT_VERSION="7"
 REDHAT_SUPPORT_PRODUCT="centos"
 REDHAT_SUPPORT_PRODUCT_VERSION="7"`), 0755))
 			},
-			want:    OSCentos,
+			want:    osCentos,
 			wantErr: nil,
 		},
 		{
@@ -140,7 +140,7 @@ HOME_URL="https://www.debian.org/"
 SUPPORT_URL="https://www.debian.org/support"
 BUG_REPORT_URL="https://bugs.debian.org/"`), 0755))
 			},
-			want:    OSDebian,
+			want:    osDebian,
 			wantErr: nil,
 		},
 	}

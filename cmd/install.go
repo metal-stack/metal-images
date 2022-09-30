@@ -25,9 +25,13 @@ import (
 type operatingsystem string
 
 const (
-	OSUbuntu = operatingsystem("ubuntu")
-	OSDebian = operatingsystem("debian")
-	OSCentos = operatingsystem("centos")
+	installYAML = "/etc/metal/install.yaml"
+	diskJSON    = "/etc/metal/disk.json"
+	userdata    = "/etc/metal/userdata"
+
+	osUbuntu = operatingsystem("ubuntu")
+	osDebian = operatingsystem("debian")
+	osCentos = operatingsystem("centos")
 )
 
 func (o operatingsystem) BootloaderID() string {
@@ -41,12 +45,12 @@ func operatingSystemFromString(s string) (operatingsystem, error) {
 	}
 
 	switch operatingsystem(strings.ToLower(s)) {
-	case OSUbuntu:
-		return OSUbuntu, nil
-	case OSDebian:
-		return OSDebian, nil
-	case OSCentos:
-		return OSCentos, nil
+	case osUbuntu:
+		return osUbuntu, nil
+	case osDebian:
+		return osDebian, nil
+	case osCentos:
+		return osCentos, nil
 	default:
 		return operatingsystem(""), fmt.Errorf("unsupported operating system")
 	}
@@ -61,6 +65,7 @@ type installer struct {
 }
 
 func main() {
+	start := time.Now()
 	log, err := newLogger(zapcore.InfoLevel)
 	if err != nil {
 		panic(err)
@@ -95,70 +100,76 @@ func main() {
 	os.Setenv("DEBCONF_NONINTERACTIVE_SEEN", "true")
 	os.Setenv("DEBIAN_FRONTEND", "noninteractive")
 
-	i.do()
-}
-
-func (i *installer) do() {
-	err := i.detectFirmware()
+	err = i.do()
 	if err != nil {
 		i.log.Fatal(err)
 	}
+	i.log.Infow("installation succeeded", "duration", time.Since(start))
+}
 
-	if !i.fileExists("/etc/metal/install.yaml") {
-		i.log.Fatalf("no install.yaml found")
+func (i *installer) do() error {
+	err := i.detectFirmware()
+	if err != nil {
+		return err
+	}
+
+	if !i.fileExists(installYAML) {
+		return fmt.Errorf("no install.yaml found")
 	}
 
 	err = i.writeResolvConf()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.createMetalUser()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 	err = i.configureNetwork()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.copySSHKeys()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.fixPermissions()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.processUserdata()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	cmdLine, err := i.buildCMDLine()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.writeBootInfo(cmdLine)
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.grubInstall(cmdLine)
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
 
 	err = i.unsetMachineID()
 	if err != nil {
-		i.log.Error(err)
+		return err
 	}
+	return nil
 }
 
 func (i *installer) detectFirmware() error {
+	i.log.Infow("detect firmware")
 	if !i.fileExists("/sys/firmware/efi") {
 		return fmt.Errorf("not running efi mode")
 	}
@@ -166,6 +177,7 @@ func (i *installer) detectFirmware() error {
 }
 
 func (i *installer) unsetMachineID() error {
+	i.log.Infow("unset machine-id")
 	for _, p := range []string{"/etc/machine-id", "/var/lib/dbus/machine-id"} {
 		f, err := i.fs.Create(p)
 		if err != nil {
@@ -222,6 +234,7 @@ func detectOS(fs afero.Fs) (operatingsystem, error) {
 }
 
 func (i *installer) writeResolvConf() error {
+	i.log.Infow("write /etc/resolv.conf")
 	// Must be written here because during docker build this file is synthetic
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
@@ -234,7 +247,7 @@ nameserver 8.8.4.4
 
 func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
 	var config api.InstallerConfig
-	content, err := afero.ReadFile(fs, "/etc/metal/install.yaml")
+	content, err := afero.ReadFile(fs, installYAML)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +260,7 @@ func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
 
 func parseDiskJSON(fs afero.Fs) (*api.Disk, error) {
 	var disk api.Disk
-	content, err := afero.ReadFile(fs, "/etc/metal/disk.json")
+	content, err := afero.ReadFile(fs, diskJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -259,6 +272,7 @@ func parseDiskJSON(fs afero.Fs) (*api.Disk, error) {
 }
 
 func (i *installer) buildCMDLine() (string, error) {
+	i.log.Infow("build kernel cmdline")
 	// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 
 	rootUUID, err := i.rootUUID()
@@ -304,6 +318,7 @@ func (i *installer) rootUUID() (string, error) {
 }
 
 func (i *installer) checkForMD() bool {
+	i.log.Infow("check for software raid")
 	_, err := exec.Command("mdadm", "--examine", "--scan").Output()
 	if err != nil {
 		i.log.Error(err)
@@ -314,6 +329,7 @@ func (i *installer) checkForMD() bool {
 }
 
 func (i *installer) findMDUUID() (mdUUID string, found bool) {
+	i.log.Infow("detect software raid uuid")
 	if found := i.checkForMD(); !found {
 		return "", false
 	}
@@ -394,7 +410,8 @@ func (i *installer) createMetalUser() error {
 }
 
 func (i *installer) configureNetwork() error {
-	kb := netconf.NewKnowledgeBase("/etc/metal/install.yaml")
+	i.log.Infow("configure network")
+	kb := netconf.NewKnowledgeBase(installYAML)
 
 	var kind netconf.BareMetalType
 	switch i.config.Role {
@@ -416,6 +433,7 @@ func (i *installer) configureNetwork() error {
 }
 
 func (i *installer) copySSHKeys() error {
+	i.log.Infow("copy ssh keys")
 	err := i.fs.MkdirAll("/home/metal/.ssh", 0700)
 	if err != nil {
 		return err
@@ -444,6 +462,7 @@ func (i *installer) copySSHKeys() error {
 }
 
 func (i *installer) fixPermissions() error {
+	i.log.Infow("fix permissions")
 	for p, perm := range map[string]fs.FileMode{
 		"/var/tmp":   1777,
 		"/etc/hosts": 0644,
@@ -458,12 +477,13 @@ func (i *installer) fixPermissions() error {
 }
 
 func (i *installer) processUserdata() error {
-	if ok := i.fileExists("/etc/metal/userdata"); !ok {
-		i.log.Infow("no userdata present, not processing userdata", "path", "/etc/metal/userdata")
+	i.log.Infow("process userdata")
+	if ok := i.fileExists(userdata); !ok {
+		i.log.Infow("no userdata present, not processing userdata", "path", userdata)
 		return nil
 	}
 
-	content, err := afero.ReadFile(i.fs, "/etc/metal/userdata")
+	content, err := afero.ReadFile(i.fs, userdata)
 	if err != nil {
 		return err
 	}
@@ -476,7 +496,7 @@ func (i *installer) processUserdata() error {
 	}()
 
 	if isCloudInitFile(content) {
-		out, err := exec.Command("cloud-init", "devel", "schema", "--config-file", "/etc/metal/userdata").Output()
+		out, err := exec.Command("cloud-init", "devel", "schema", "--config-file", userdata).Output()
 		i.log.Infow("executed cloud-init userdata", "output", string(out))
 		if err != nil {
 			i.log.Errorw("error when running cloud-init userdata, continuing anyway", "error", err)
@@ -485,7 +505,7 @@ func (i *installer) processUserdata() error {
 		return nil
 	}
 
-	err = i.fs.Rename("/etc/metal/userdata", "/etc/metal/config.ign")
+	err = i.fs.Rename(userdata, "/etc/metal/config.ign")
 	if err != nil {
 		return err
 	}
@@ -522,6 +542,7 @@ func isCloudInitFile(content []byte) bool {
 }
 
 func (i *installer) writeBootInfo(cmdLine string) error {
+	i.log.Infow("write boot-info")
 	initrd, err := os.Readlink("/boot/initrd.img")
 	if err != nil {
 		return err
@@ -546,6 +567,7 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 }
 
 func (i *installer) grubInstall(cmdLine string) error {
+	i.log.Infow("install grub")
 	// ttyS1,115200n8
 	serialPort, serialSpeed, found := strings.Cut(i.config.Console, ",")
 	if !found {
