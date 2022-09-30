@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/metal-stack/metal-hammer/pkg/api"
+	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -140,6 +141,11 @@ func (i *installer) do() {
 	}
 
 	err = i.writeBootInfo(cmdLine)
+	if err != nil {
+		i.log.Error(err)
+	}
+
+	err = i.grubInstall(cmdLine)
 	if err != nil {
 		i.log.Error(err)
 	}
@@ -378,14 +384,33 @@ func (i *installer) createMetalUser() error {
 	if err != nil {
 		return err
 	}
-	io.WriteString(stdin, i.config.Password+"\n"+i.config.Password+"\n")
+	_, err = io.WriteString(stdin, i.config.Password+"\n"+i.config.Password+"\n")
+	if err != nil {
+		return err
+	}
 	return passwdCommand.Wait()
 }
 
 func (i *installer) configureNetwork() error {
-	// FIXME import networker here
-	_, err := exec.Command("/etc/metal/networker/metal-networker", i.config.Role, "configure", "/etc/metal/install.yaml").Output()
-	return err
+	kb := netconf.NewKnowledgeBase("/etc/metal/install.yaml")
+
+	var kind netconf.BareMetalType
+	switch i.config.Role {
+	case "firewall":
+		kind = netconf.Firewall
+	case "machine":
+		kind = netconf.Machine
+	default:
+		return fmt.Errorf("unknown role:%s", i.config.Role)
+	}
+
+	err := kb.Validate(kind)
+	if err != nil {
+		return err
+	}
+
+	netconf.NewConfigurator(kind, kb).Configure()
+	return nil
 }
 
 func (i *installer) copySSHKeys() error {
