@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	"github.com/spf13/afero"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
@@ -240,4 +242,47 @@ func mustParseDiskJSON(t *testing.T, fs afero.Fs, json string) *api.Disk {
 	disk, err := parseDiskJSON(fs)
 	require.NoError(t, err)
 	return disk
+}
+
+func Test_installer_fixPermissions(t *testing.T) {
+	tests := []struct {
+		name    string
+		fsMocks func(fs afero.Fs)
+		wantErr error
+	}{
+		{
+			name: "fix permissions",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, fs.MkdirAll("/var/tmp", 0000))
+				require.NoError(t, afero.WriteFile(fs, "/etc/hosts", []byte("127.0.0.1"), 0000))
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			i := &installer{
+				log: zaptest.NewLogger(t).Sugar(),
+				fs:  afero.NewMemMapFs(),
+			}
+
+			if tt.fsMocks != nil {
+				tt.fsMocks(i.fs)
+			}
+
+			err := i.fixPermissions()
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+
+			info, err := i.fs.Stat("/var/tmp")
+			require.NoError(t, err)
+			assert.Equal(t, fs.FileMode(1777).Perm(), info.Mode().Perm())
+
+			info, err = i.fs.Stat("/etc/hosts")
+			require.NoError(t, err)
+			assert.Equal(t, fs.FileMode(0644).Perm(), info.Mode().Perm())
+		})
+	}
 }

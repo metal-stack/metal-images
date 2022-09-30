@@ -124,7 +124,7 @@ func (i *installer) do() {
 		i.log.Error(err)
 	}
 
-	err = i.fixDirectoryPermissions()
+	err = i.fixPermissions()
 	if err != nil {
 		i.log.Error(err)
 	}
@@ -416,10 +416,10 @@ func (i *installer) copySSHKeys() error {
 	return afero.WriteFile(i.fs, "/home/metal/.ssh/authorized_keys", []byte(i.config.SSHPublicKey), 0600)
 }
 
-func (i *installer) fixDirectoryPermissions() error {
+func (i *installer) fixPermissions() error {
 	for p, perm := range map[string]fs.FileMode{
 		"/var/tmp":   1777,
-		"/etc/hosts": 644,
+		"/etc/hosts": 0644,
 	} {
 		err := i.fs.Chmod(p, perm)
 		if err != nil {
