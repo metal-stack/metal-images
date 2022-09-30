@@ -15,6 +15,7 @@ import (
 
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
+	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -64,6 +65,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Infof("running install version: %s", v.V.String())
 
 	fs := afero.NewOsFs()
 

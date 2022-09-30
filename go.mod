@@ -7,6 +7,7 @@ require (
 	github.com/metal-stack/metal-hammer v0.10.5-0.20220930055533-0d07067171b3
 	github.com/metal-stack/metal-lib v0.11.2
 	github.com/metal-stack/metal-networker v0.20.2
+	github.com/metal-stack/v v1.0.3
 	github.com/spf13/afero v1.9.2
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.23.0
@@ -31,7 +32,6 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/metal-stack/metal-go v0.21.2 // indirect
-	github.com/metal-stack/v v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
