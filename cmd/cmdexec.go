@@ -30,7 +30,7 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 	i.log.Infow("running command", "commmand", strings.Join(append([]string{p.name}, p.args...), " "), "start", start.String())
 
 	ctx := context.Background()
-	if p.timeout == 0 {
+	if p.timeout != 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, p.timeout)
 		defer cancel()
