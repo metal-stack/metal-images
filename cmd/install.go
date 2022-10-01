@@ -22,39 +22,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type operatingsystem string
-
 const (
 	installYAML = "/etc/metal/install.yaml"
 	diskJSON    = "/etc/metal/disk.json"
 	userdata    = "/etc/metal/userdata"
-
-	osUbuntu = operatingsystem("ubuntu")
-	osDebian = operatingsystem("debian")
-	osCentos = operatingsystem("centos")
 )
-
-func (o operatingsystem) BootloaderID() string {
-	return fmt.Sprintf("metal-%s", o)
-}
-
-func operatingSystemFromString(s string) (operatingsystem, error) {
-	unquoted, err := strconv.Unquote(s)
-	if err == nil {
-		s = unquoted
-	}
-
-	switch operatingsystem(strings.ToLower(s)) {
-	case osUbuntu:
-		return osUbuntu, nil
-	case osDebian:
-		return osDebian, nil
-	case osCentos:
-		return osCentos, nil
-	default:
-		return operatingsystem(""), fmt.Errorf("unsupported operating system")
-	}
-}
 
 type installer struct {
 	log    *zap.SugaredLogger
@@ -62,6 +34,7 @@ type installer struct {
 	oss    operatingsystem
 	config *api.InstallerConfig
 	disk   *api.Disk
+	exec   *cmdexec
 }
 
 func main() {
@@ -94,6 +67,10 @@ func main() {
 		oss:    oss,
 		config: config,
 		disk:   disk,
+		exec: &cmdexec{
+			log: log.Named("cmdexec"),
+			c:   exec.CommandContext,
+		},
 	}
 
 	// FIXME try without
@@ -208,31 +185,6 @@ func (i *installer) fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func detectOS(fs afero.Fs) (operatingsystem, error) {
-	content, err := afero.ReadFile(fs, "/etc/os-release")
-	if err != nil {
-		return operatingsystem(""), err
-	}
-
-	env := map[string]string{}
-	for _, line := range strings.Split(string(content), "\n") {
-		k, v, found := strings.Cut(line, "=")
-		if found {
-			env[k] = v
-		}
-	}
-
-	if os, ok := env["ID"]; ok {
-		oss, err := operatingSystemFromString(os)
-		if err != nil {
-			return operatingsystem(""), err
-		}
-		return oss, nil
-	}
-
-	return operatingsystem(""), fmt.Errorf("unable to detect OS")
-}
-
 func (i *installer) writeResolvConf() error {
 	i.log.Infow("write /etc/resolv.conf")
 	// Must be written here because during docker build this file is synthetic
@@ -319,7 +271,12 @@ func (i *installer) rootUUID() (string, error) {
 
 func (i *installer) checkForMD() bool {
 	i.log.Infow("check for software raid")
-	_, err := exec.Command("mdadm", "--examine", "--scan").Output()
+
+	_, err := i.exec.command(&cmdParams{
+		name:    "mdadm",
+		args:    []string{"--examine", "--scan"},
+		timeout: 10 * time.Second,
+	})
 	if err != nil {
 		i.log.Error(err)
 		return false
@@ -334,7 +291,10 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		return "", false
 	}
 
-	blkidOut, err := exec.Command("blkid").Output()
+	blkidOut, err := i.exec.command(&cmdParams{
+		name:    "blkid",
+		timeout: 10 * time.Second,
+	})
 	if err != nil {
 		i.log.Error(err)
 		return "", false
@@ -350,7 +310,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		if strings.Contains(line, rootUUID) {
 			rd, _, found := strings.Cut(line, ":")
 			if found {
-				rootDisk = rd
+				rootDisk = strings.TrimSpace(rd)
 				break
 			}
 		}
@@ -360,7 +320,11 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		return "", false
 	}
 
-	mdadmOut, err := exec.Command("mdadm", "--detail", "--export", rootDisk).Output()
+	mdadmOut, err := i.exec.command(&cmdParams{
+		name:    "mdadm",
+		args:    []string{"--detail", "--export", rootDisk},
+		timeout: 10 * time.Second,
+	})
 	if err != nil {
 		i.log.Error(err)
 		return "", false
@@ -385,12 +349,17 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 func (i *installer) createMetalUser() error {
 	i.log.Infow("create user", "user", "metal")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	_, err := exec.CommandContext(ctx, "useradd", "--create-home", "--gid", "sudo", "--shell", "/bin/bash", "metal").Output()
+	_, err := i.exec.command(&cmdParams{
+		name:    "useradd",
+		args:    []string{"--create-home", "--gid", "sudo", "--shell", "/bin/bash", "metal"},
+		timeout: 10 * time.Second,
+	})
 	if err != nil {
 		return err
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	passwdCommand := exec.CommandContext(ctx, "passwd", "metal")
 
 	stdin, err := passwdCommand.StdinPipe()
@@ -406,6 +375,7 @@ func (i *installer) createMetalUser() error {
 	if err != nil {
 		return err
 	}
+
 	return passwdCommand.Wait()
 }
 
@@ -489,15 +459,20 @@ func (i *installer) processUserdata() error {
 	}
 
 	defer func() {
-		out, err := exec.Command("systemctl", "preset-all").Output()
+		out, err := i.exec.command(&cmdParams{
+			name: "systemctl",
+			args: []string{"preset-all"},
+		})
 		if err != nil {
 			i.log.Errorw("error when running systemctl preset-all, continuing anyway", "error", err, "output", string(out))
 		}
 	}()
 
 	if isCloudInitFile(content) {
-		out, err := exec.Command("cloud-init", "devel", "schema", "--config-file", userdata).Output()
-		i.log.Infow("executed cloud-init userdata", "output", string(out))
+		_, err := i.exec.command(&cmdParams{
+			name: "cloud-init",
+			args: []string{"devel", "schema", "--config-file", userdata},
+		})
 		if err != nil {
 			i.log.Errorw("error when running cloud-init userdata, continuing anyway", "error", err)
 		}
@@ -511,17 +486,20 @@ func (i *installer) processUserdata() error {
 	}
 
 	i.log.Infow("validating ignition config")
-	out, err := exec.Command("ignition-validate", "/etc/metal/config.ign").Output()
-	i.log.Infow("executed ignition config validation", "output", string(out))
+	_, err = i.exec.command(&cmdParams{
+		name: "ignition-validate",
+		args: []string{"/etc/metal/config.ign"},
+	})
 	if err != nil {
 		i.log.Errorw("error when validating ignition userdata, continuing anyway", "error", err)
 	}
 
 	i.log.Infow("executing ignition")
-	cmd := exec.Command("ignition", "-oem", "file", "-stage", "files", "-log-to-stdout")
-	cmd.Dir = "/etc/metal"
-	out, err = cmd.Output()
-	i.log.Infow("executed ignition config validation", "output", string(out))
+	_, err = i.exec.command(&cmdParams{
+		name: "ignition",
+		args: []string{"-oem", "file", "-stage", "files", "-log-to-stdout"},
+		dir:  "/etc/metal",
+	})
 	if err != nil {
 		i.log.Errorw("error when running ignition, continuing anyway", "error", err)
 	}
@@ -605,15 +583,18 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	}
 
 	if i.checkForMD() {
-		out, err := exec.Command("mdadm", "--examine", "--scan").Output()
+		out, err := i.exec.command(&cmdParams{
+			name:    "mdadm",
+			args:    []string{"--examine", "--scan"},
+			timeout: 10 * time.Second,
+		})
 		if err != nil {
 			return err
 		}
 
-		mail := "\nMAILADDR root\n"
-		out = append(out, []byte(mail)...)
+		out += "\nMAILADDR root\n"
 
-		err = afero.WriteFile(i.fs, "/etc/mdadm.conf", out, 0700)
+		err = afero.WriteFile(i.fs, "/etc/mdadm.conf", []byte(out), 0700)
 		if err != nil {
 			return err
 		}
@@ -623,13 +604,17 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 			return err
 		}
 
-		out, err = exec.Command("update-initramfs", "-u").Output()
-		i.log.Infow("executed update-initramfs", "output", string(out))
+		_, err = i.exec.command(&cmdParams{
+			name: "update-initramfs",
+			args: []string{"-u"},
+		})
 		if err != nil {
 			return err
 		}
 
-		out, err = exec.Command("blkid").Output()
+		out, err = i.exec.command(&cmdParams{
+			name: "blkid",
+		})
 		if err != nil {
 			return err
 		}
@@ -641,8 +626,10 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 					return fmt.Errorf("unable to process blkid output lines")
 				}
 
-				out, err = exec.Command("efibootmgr", "-c", "-d", disk, "-p1", "-l", fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID()), "-L", i.oss.BootloaderID()).Output()
-				i.log.Infow("executed dpkg-reconfigure", "output", string(out))
+				_, err = i.exec.command(&cmdParams{
+					name: "efibootmgr",
+					args: []string{"-c", "-d", disk, "-p1", "-l", fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID()), "-L", i.oss.BootloaderID()},
+				})
 				if err != nil {
 					return err
 				}
@@ -652,20 +639,25 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
 	}
 
-	out, err := exec.Command("grub-install", grubInstallArgs...).Output()
-	i.log.Infow("executed grub-install", "output", string(out))
+	_, err = i.exec.command(&cmdParams{
+		name: "grub-install",
+		args: grubInstallArgs,
+	})
 	if err != nil {
 		return err
 	}
 
-	out, err = exec.Command("update-grub2").Output()
-	i.log.Infow("executed update-grub2", "output", string(out))
+	_, err = i.exec.command(&cmdParams{
+		name: "update-grub2",
+	})
 	if err != nil {
 		return err
 	}
 
-	out, err = exec.Command("dpkg-reconfigure", "grub-efi-amd64-bin").Output()
-	i.log.Infow("executed dpkg-reconfigure", "output", string(out))
+	_, err = i.exec.command(&cmdParams{
+		name: "dpkg-reconfigure",
+		args: []string{"grub-efi-amd64-bin"},
+	})
 	if err != nil {
 		return err
 	}
