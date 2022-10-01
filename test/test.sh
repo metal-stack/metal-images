@@ -10,7 +10,7 @@ echo "do machine test"
 # somehow chrony@vrf104009 needs a double restart to work
 ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
-    /install.sh
+    /install-go
     systemctl restart systemd-networkd
     systemctl restart chrony@vrf104009
     systemctl daemon-reload

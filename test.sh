@@ -8,7 +8,7 @@ hash ignite 2>/dev/null || { echo >&2 "ignite not found please install from: htt
 IMAGE="${1}"
 VM_NAME="vm-${OS_NAME}"
 MACHINE_TYPE="machine"
-KERNEL_IMAGE="weaveworks/ignite-kernel:5.10.25"
+KERNEL_IMAGE="weaveworks/ignite-kernel:5.10.51"
 
 if [[ "$OS_NAME" == *firewall ]]; then
   MACHINE_TYPE="firewall"

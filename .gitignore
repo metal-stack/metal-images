@@ -2,5 +2,6 @@
 .idea
 .vagrant
 bin
+install-go
 images
 footloose.*yaml

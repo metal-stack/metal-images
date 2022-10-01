@@ -5,19 +5,23 @@ BUILDDATE := $(shell date -Iseconds)
 VERSION := $(or ${VERSION},devel)
 BINARY := install
 
+LINKMODE := -extldflags=-static \
+		 -X 'github.com/metal-stack/v.Version=$(VERSION)' \
+		 -X 'github.com/metal-stack/v.Revision=$(GITVERSION)' \
+		 -X 'github.com/metal-stack/v.GitSHA1=$(SHA)' \
+		 -X 'github.com/metal-stack/v.BuildDate=$(BUILDDATE)'
 
-.PHONY: all
-bin/$(BINARY):
+.PHONY: binary
+binary: test
 	GGO_ENABLED=0 \
-	GO111MODULE=on \
 		go build \
 			-trimpath \
-			-tags netgo \
+			-tags osusergo,netgo \
 			-o bin/$(BINARY) \
-			-ldflags "-X 'github.com/metal-stack/v.Version=$(VERSION)' \
-					  -X 'github.com/metal-stack/v.Revision=$(GITVERSION)' \
-					  -X 'github.com/metal-stack/v.GitSHA1=$(SHA)' \
-					  -X 'github.com/metal-stack/v.BuildDate=$(BUILDDATE)'" cmd/install.go && strip bin/$(BINARY)
+			-ldflags "$(LINKMODE)" \
+		github.com/metal-stack/metal-images/cmd
+	strip bin/$(BINARY)
+	cp bin/$(BINARY) debian/context/install-go
 
 .PHONY: test
 test:
