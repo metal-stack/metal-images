@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -15,10 +14,8 @@ import (
 
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
-	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,57 +28,11 @@ const (
 type installer struct {
 	log    *zap.SugaredLogger
 	fs     afero.Fs
+	link   afero.LinkReader
 	oss    operatingsystem
 	config *api.InstallerConfig
 	disk   *api.Disk
 	exec   *cmdexec
-}
-
-func main() {
-	start := time.Now()
-	log, err := newLogger(zapcore.InfoLevel)
-	if err != nil {
-		panic(err)
-	}
-	log.Infof("running install version: %s", v.V.String())
-
-	fs := afero.NewOsFs()
-
-	oss, err := detectOS(fs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config, err := parseInstallYAML(fs)
-	if err != nil {
-		log.Fatal(err)
-	}
-	disk, err := parseDiskJSON(fs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	i := installer{
-		log:    log,
-		fs:     fs,
-		oss:    oss,
-		config: config,
-		disk:   disk,
-		exec: &cmdexec{
-			log: log.Named("cmdexec"),
-			c:   exec.CommandContext,
-		},
-	}
-
-	// FIXME try without
-	os.Setenv("DEBCONF_NONINTERACTIVE_SEEN", "true")
-	os.Setenv("DEBIAN_FRONTEND", "noninteractive")
-
-	err = i.do()
-	if err != nil {
-		i.log.Fatal(err)
-	}
-	i.log.Infow("installation succeeded", "duration", time.Since(start))
 }
 
 func (i *installer) do() error {
@@ -167,18 +118,6 @@ func (i *installer) unsetMachineID() error {
 	return nil
 }
 
-func newLogger(level zapcore.Level) (*zap.SugaredLogger, error) {
-	cfg := zap.NewProductionConfig()
-	cfg.Level = zap.NewAtomicLevelAt(level)
-	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	zlog, err := cfg.Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return zlog.Sugar(), nil
-}
-
 func (i *installer) fileExists(filename string) bool {
 	info, err := i.fs.Stat(filename)
 	if os.IsNotExist(err) {
@@ -199,35 +138,8 @@ nameserver 8.8.4.4
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, os.ModeDir)
 }
 
-func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
-	var config api.InstallerConfig
-	content, err := afero.ReadFile(fs, installYAML)
-	if err != nil {
-		return nil, err
-	}
-	err = yaml.Unmarshal(content, &config)
-	if err != nil {
-		return nil, err
-	}
-	return &config, nil
-}
-
-func parseDiskJSON(fs afero.Fs) (*api.Disk, error) {
-	var disk api.Disk
-	content, err := afero.ReadFile(fs, diskJSON)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(content, &disk)
-	if err != nil {
-		return nil, err
-	}
-	return &disk, nil
-}
-
 func (i *installer) buildCMDLine() (string, error) {
 	i.log.Infow("build kernel cmdline")
-	// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 
 	rootUUID, err := i.rootUUID()
 	if err != nil {
@@ -523,12 +435,12 @@ func isCloudInitFile(content []byte) bool {
 
 func (i *installer) writeBootInfo(cmdLine string) error {
 	i.log.Infow("write boot-info")
-	initrd, err := os.Readlink("/boot/initrd.img")
+	initrd, err := i.link.ReadlinkIfPossible("/boot/initrd.img")
 	if err != nil {
 		return err
 	}
 
-	kern, err := os.Readlink("/boot/vmlinuz")
+	kern, err := i.link.ReadlinkIfPossible("/boot/vmlinuz")
 	if err != nil {
 		return err
 	}
