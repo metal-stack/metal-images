@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/google/go-cmp v0.5.9
-	github.com/metal-stack/metal-hammer v0.10.5-0.20220930055533-0d07067171b3
+	github.com/metal-stack/metal-hammer v0.10.5-0.20221002100014-702c4832cdaf
 	github.com/metal-stack/metal-lib v0.11.2
 	github.com/metal-stack/metal-networker v0.20.2
 	github.com/metal-stack/v v1.0.3

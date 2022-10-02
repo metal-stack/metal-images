@@ -183,25 +183,9 @@ func (i *installer) rootUUID() (string, error) {
 	return rootUUID, nil
 }
 
-func (i *installer) checkForMD() bool {
-	i.log.Infow("check for software raid")
-
-	_, err := i.exec.command(&cmdParams{
-		name:    "mdadm",
-		args:    []string{"--examine", "--scan"},
-		timeout: 10 * time.Second,
-	})
-	if err != nil {
-		i.log.Error(err)
-		return false
-	}
-
-	return true
-}
-
 func (i *installer) findMDUUID() (mdUUID string, found bool) {
 	i.log.Infow("detect software raid uuid")
-	if found := i.checkForMD(); !found {
+	if !i.config.RaidEnabled {
 		return "", false
 	}
 
@@ -496,7 +480,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		"--bootloader-id=" + i.oss.BootloaderID(),
 	}
 
-	if i.checkForMD() {
+	if i.config.RaidEnabled {
 		out, err := i.exec.command(&cmdParams{
 			name:    "mdadm",
 			args:    []string{"--examine", "--scan"},

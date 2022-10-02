@@ -49,6 +49,55 @@ sshpublickey: ssh-ed25519 key
 password: a-password
 devmode: false
 console: ttyS1,115200n8
+raidenabled: false
+timestamp: "2022-02-24T14:54:58Z"
+nics:
+-   mac: b4:96:91:cb:64:e0
+    name: eth4
+    neighbors:
+    -   mac: b8:6a:97:73:f8:5f
+        name: null
+        neighbors: []
+-   mac: b4:96:91:cb:64:e1
+    name: eth5
+    neighbors:
+    -   mac: b8:6a:97:74:00:5f
+        name: null
+        neighbors: []`
+	sampleInstallWithRaidYAML = `---
+hostname: test-machine
+networks:
+-   asn: 4210000000
+    destinationprefixes: []
+    ips:
+    - 192.168.0.1
+    nat: false
+    networkid: 931b1568-9f2b-4b83-8bcb-cfc8f2a99e85
+    networktype: privateprimaryshared
+    prefixes:
+    - 192.168.0.0/24
+    private: true
+    underlay: false
+    vrf: 1
+-   asn: 4210000000
+    destinationprefixes:
+    - 0.0.0.0/0
+    ips:
+    - 192.168.1.1
+    nat: true
+    networkid: internet
+    networktype: external
+    prefixes:
+    - 192.168.1.0/24
+    private: false
+    underlay: false
+    vrf: 104009
+machineuuid: c647818b-0573-45a1-bac4-e311db1df753
+sshpublickey: ssh-ed25519 key
+password: a-password
+devmode: false
+console: ttyS1,115200n8
+raidenabled: true
 timestamp: "2022-02-24T14:54:58Z"
 nics:
 -   mac: b4:96:91:cb:64:e0
@@ -293,51 +342,6 @@ func Test_installer_fixPermissions(t *testing.T) {
 	}
 }
 
-func Test_installer_checkForMD(t *testing.T) {
-	tests := []struct {
-		name      string
-		execMocks []fakeexecparams
-		want      bool
-	}{
-		{
-			name: "no mdadm command found",
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"mdadm", "--examine", "--scan"},
-					ExitCode: 127,
-				},
-			},
-			want: false,
-		},
-		{
-			name: "has mdadm",
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"mdadm", "--examine", "--scan"},
-					ExitCode: 0,
-				},
-			},
-			want: true,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			log := zaptest.NewLogger(t).Sugar()
-			i := &installer{
-				log: log,
-				exec: &cmdexec{
-					log: log,
-					c:   fakeCmd(t, tt.execMocks...),
-				},
-			}
-
-			got := i.checkForMD()
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func Test_installer_findMDUUID(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -347,31 +351,11 @@ func Test_installer_findMDUUID(t *testing.T) {
 		wantFound bool
 	}{
 		{
-			name: "no mdadm command found",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
-			},
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"mdadm", "--examine", "--scan"},
-					Output:   "",
-					ExitCode: 127,
-				},
-			},
-			want:      "",
-			wantFound: false,
-		},
-		{
 			name: "has mdadm",
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
 			},
 			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"mdadm", "--examine", "--scan"},
-					Output:   "",
-					ExitCode: 0,
-				},
 				{
 					WantCmd:  []string{"blkid"},
 					Output:   sampleBlkidOutput,
@@ -403,8 +387,9 @@ func Test_installer_findMDUUID(t *testing.T) {
 					log: log,
 					c:   fakeCmd(t, tt.execMocks...),
 				},
-				fs:   fs,
-				disk: mustParseDiskJSON(t, fs),
+				fs:     fs,
+				disk:   mustParseDiskJSON(t, fs),
+				config: &api.InstallerConfig{RaidEnabled: true},
 			}
 
 			uuid, found := i.findMDUUID()
@@ -425,17 +410,33 @@ func Test_installer_buildCMDLine(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			name: "with raid",
+			name: "without raid",
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
 			execMocks: []fakeexecparams{
 				{
-					WantCmd:  []string{"mdadm", "--examine", "--scan"},
-					Output:   "",
+					WantCmd:  []string{"blkid"},
+					Output:   sampleBlkidOutput,
 					ExitCode: 0,
 				},
+				{
+					WantCmd:  []string{"mdadm", "--detail", "--export", "/dev/md1"},
+					Output:   sampleMdadmDetailOutput,
+					ExitCode: 0,
+				},
+			},
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+		},
+		{
+			name: "with raid",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
+			},
+			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"blkid"},
 					Output:   sampleBlkidOutput,
