@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -40,6 +41,9 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 	if p.dir != "" {
 		cmd.Dir = "/etc/metal"
 	}
+
+	// show stderr
+	cmd.Stderr = os.Stderr
 
 	if p.combined {
 		output, err = cmd.CombinedOutput()

@@ -542,6 +542,8 @@ func Test_installer_writeBootInfo(t *testing.T) {
 			oss:     osUbuntu,
 			link: &linkMock{
 				mocks: map[string]string{
+					"/vmlinuz":         "linuz-test",
+					"/initrd.img":      "init-test",
 					"/boot/vmlinuz":    "linuz-test",
 					"/boot/initrd.img": "init-test",
 				},

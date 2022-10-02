@@ -419,14 +419,27 @@ func isCloudInitFile(content []byte) bool {
 
 func (i *installer) writeBootInfo(cmdLine string) error {
 	i.log.Infow("write boot-info")
-	initrd, err := i.link.ReadlinkIfPossible("/boot/initrd.img")
-	if err != nil {
-		return err
+	var (
+		initrd string
+		kern   string
+	)
+
+	kernsrc := "/vmlinuz"
+	initrdsrc := "/initrd.img"
+
+	if i.fileExists("/boot/vmlinuz") {
+		kernsrc = "/boot/vmlinuz"
+		initrdsrc = "/boot/initrd.img"
 	}
 
-	kern, err := i.link.ReadlinkIfPossible("/boot/vmlinuz")
+	initrd, err := i.link.ReadlinkIfPossible(initrdsrc)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to detect link source of initrd %w", err)
+	}
+
+	kern, err = i.link.ReadlinkIfPossible(kernsrc)
+	if err != nil {
+		return fmt.Errorf("unable to detect link source of vmlinuz %w", err)
 	}
 
 	content, err := yaml.Marshal(api.Bootinfo{
@@ -436,7 +449,7 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 		BootloaderID: i.oss.BootloaderID(),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to write boot-info.yaml %w", err)
 	}
 
 	return afero.WriteFile(i.fs, "/etc/metal/boot-info.yaml", content, 0700)
