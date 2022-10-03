@@ -36,8 +36,8 @@ type installer struct {
 func (i *installer) do() error {
 	err := i.detectFirmware()
 	if err != nil {
-		// FIXME return error, only ignored for goss tests
-		i.log.Warnw("no efi detected, ignoring", "error", err)
+		i.log.Warnw("no efi detected", "error", err)
+		return err
 	}
 
 	if !i.fileExists(installYAML) {
@@ -98,10 +98,39 @@ func (i *installer) do() error {
 
 func (i *installer) detectFirmware() error {
 	i.log.Infow("detect firmware")
-	if !i.fileExists("/sys/firmware/efi") {
+
+	isVirtual, err := i.isVirtual()
+	if err != nil {
+		return err
+	}
+
+	if !isVirtual && !i.fileExists("/sys/firmware/efi") {
 		return fmt.Errorf("not running efi mode")
 	}
 	return nil
+}
+
+func (i *installer) isVirtual() (bool, error) {
+	hostnameCtlOutput, err := i.exec.command(&cmdParams{
+		name:    "hostnamectl",
+		args:    []string{"status"},
+		timeout: 10 * time.Second,
+	})
+	if err != nil {
+		i.log.Error(err)
+		return false, err
+	}
+	for _, line := range strings.Split(string(hostnameCtlOutput), "\n") {
+		k, v, found := strings.Cut(line, ":")
+		if found {
+			key := strings.ToLower(strings.TrimSpace(k))
+			value := strings.ToLower(strings.TrimSpace(v))
+			if key == "virtualization" && value == "kvm" {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 func (i *installer) unsetMachineID() error {

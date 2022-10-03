@@ -133,6 +133,27 @@ MD_DEVICE_dev_sdb2_ROLE=1
 MD_DEVICE_dev_sdb2_DEV=/dev/sdb2
 MD_DEVICE_dev_sda2_ROLE=0
 MD_DEVICE_dev_sda2_DEV=/dev/sda2`
+	sampleHostnamectlPhysical = `Static hostname: badile
+Icon name: computer-laptop
+  Chassis: laptop
+Machine ID: 2ded0d71f52d4a73aeada73b65feda60
+  Boot ID: 1930639060b743a7907c7906a23b49d9
+Operating System: Ubuntu 22.04.1 LTS
+   Kernel: Linux 5.15.0-48-generic
+Architecture: x86-64
+Hardware Vendor: Lenovo
+Hardware Model: ThinkPad X1 Carbon Gen 10`
+	sampleHostnamectlVirtual = `Static hostname: badile
+Icon name: computer-laptop
+  Chassis: laptop
+Machine ID: 2ded0d71f52d4a73aeada73b65feda60
+  Boot ID: 1930639060b743a7907c7906a23b49d9
+Operating System: Ubuntu 22.04.1 LTS
+   Kernel: Linux 5.15.0-48-generic
+   Virtualization: kvm
+Architecture: x86-64
+Hardware Vendor: Lenovo
+Hardware Model: ThinkPad X1 Carbon Gen 10`
 )
 
 type linkMock struct {
@@ -155,28 +176,60 @@ func mustParseInstallYAML(t *testing.T, fs afero.Fs) *api.InstallerConfig {
 
 func Test_installer_detectFirmware(t *testing.T) {
 	tests := []struct {
-		name    string
-		fsMocks func(fs afero.Fs)
-		wantErr error
+		name      string
+		fsMocks   func(fs afero.Fs)
+		execMocks []fakeexecparams
+		wantErr   error
 	}{
 		{
 			name: "is efi",
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/sys/firmware/efi", []byte(""), 0755))
 			},
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"hostnamectl", "status"},
+					Output:   sampleHostnamectlPhysical,
+					ExitCode: 0,
+				},
+			},
 			wantErr: nil,
 		},
 		{
-			name:    "is not efi",
+			name: "is not efi",
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"hostnamectl", "status"},
+					Output:   sampleHostnamectlPhysical,
+					ExitCode: 0,
+				},
+			},
 			wantErr: fmt.Errorf("not running efi mode"),
+		},
+		{
+			name: "is not efi but virtual",
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"hostnamectl", "status"},
+					Output:   sampleHostnamectlVirtual,
+					ExitCode: 0,
+				},
+			},
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			log := zaptest.NewLogger(t).Sugar()
+
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: log,
 				fs:  afero.NewMemMapFs(),
+				exec: &cmdexec{
+					log: log,
+					c:   fakeCmd(t, tt.execMocks...),
+				},
 			}
 
 			if tt.fsMocks != nil {
