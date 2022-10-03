@@ -46,8 +46,8 @@ func (i *installer) do() error {
 
 	err = i.writeResolvConf()
 	if err != nil {
-		// FIXME return error, only ignored for goss tests
-		i.log.Warnw("writing resolv.conf failed, ignoring", "error", err)
+		i.log.Warnw("writing resolv.conf failed", "error", err)
+		return err
 	}
 
 	err = i.createMetalUser()
@@ -159,6 +159,8 @@ func (i *installer) writeResolvConf() error {
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
 	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+	// in ignite this file is a symlinkg to /proc/net/pnp, to pass integration test, remove this first
+	i.fs.Remove("/etc/resolv.conf")
 	content := []byte(`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
