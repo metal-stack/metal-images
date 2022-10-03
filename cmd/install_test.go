@@ -50,6 +50,7 @@ password: a-password
 devmode: false
 console: ttyS1,115200n8
 raidenabled: false
+root_uuid: "543eb7f8-98d4-d986-e669-824dbebe69e5"
 timestamp: "2022-02-24T14:54:58Z"
 nics:
 -   mac: b4:96:91:cb:64:e0
@@ -98,6 +99,7 @@ password: a-password
 devmode: false
 console: ttyS1,115200n8
 raidenabled: true
+root_uuid: "ace079b5-06be-4429-bbf0-081ea4d7d0d9"
 timestamp: "2022-02-24T14:54:58Z"
 nics:
 -   mac: b4:96:91:cb:64:e0
@@ -112,32 +114,6 @@ nics:
     -   mac: b8:6a:97:74:00:5f
         name: null
         neighbors: []`
-	sampleDiskJSON = `{
-    "Device": "legacy",
-    "Partitions": [
-        {
-        "Label": "root",
-        "Filesystem": "ext4",
-        "Properties": {
-            "UUID": "ace079b5-06be-4429-bbf0-081ea4d7d0d9"
-        }
-        },
-        {
-        "Label": "efi",
-        "Filesystem": "vfat",
-        "Properties": {
-            "UUID": "C236-297F"
-        }
-        },
-        {
-        "Label": "varlib",
-        "Filesystem": "ext4",
-        "Properties": {
-            "UUID": "385e8e8e-dbfd-481e-93a4-cba7f4d5fa02"
-        }
-        }
-    ]
-    }`
 	sampleBlkidOutput = `/dev/sda1: UUID="42d10089-ee1e-0399-445e-755062b63ec8" UUID_SUB="cc57c456-0b2f-6345-c597-d861cc6dd8ac" LABEL="any:0" TYPE="linux_raid_member" PARTLABEL="efi" PARTUUID="273985c8-d097-4123-bcd0-80b4e4e14728"
 /dev/sda2: UUID="543eb7f8-98d4-d986-e669-824dbebe69e5" UUID_SUB="54748c60-b566-f391-142c-fb78bb1fc6a9" LABEL="any:1" TYPE="linux_raid_member" PARTLABEL="root" PARTUUID="d7863f4e-af7c-47fc-8c03-6ecdc69bc72d"
 /dev/sda3: UUID="fc32a6f0-ee40-d9db-87c8-c9f3a8400c8b" UUID_SUB="582e9b4f-f191-e01e-85fd-2f7d969fbef6" LABEL="any:2" TYPE="linux_raid_member" PARTLABEL="varlib" PARTUUID="e8b44f09-b7f7-4e0d-a7c3-d909617d1f05"
@@ -169,12 +145,6 @@ func (l *linkMock) ReadlinkIfPossible(name string) (string, error) {
 		return "", fmt.Errorf("no mock for %s", name)
 	}
 	return v, nil
-}
-
-func mustParseDiskJSON(t *testing.T, fs afero.Fs) *api.Disk {
-	disk, err := parseDiskJSON(fs)
-	require.NoError(t, err)
-	return disk
 }
 
 func mustParseInstallYAML(t *testing.T, fs afero.Fs) *api.InstallerConfig {
@@ -258,47 +228,6 @@ nameserver 8.8.4.4
 	}
 }
 
-func Test_installer_rootUUID(t *testing.T) {
-	tests := []struct {
-		name    string
-		fsMocks func(fs afero.Fs)
-		want    string
-		wantErr error
-	}{
-		{
-			name: "find root uuid in disk.json",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
-			},
-			want:    "ace079b5-06be-4429-bbf0-081ea4d7d0d9",
-			wantErr: nil,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			fs := afero.NewMemMapFs()
-			if tt.fsMocks != nil {
-				tt.fsMocks(fs)
-			}
-
-			i := &installer{
-				log:  zaptest.NewLogger(t).Sugar(),
-				fs:   fs,
-				disk: mustParseDiskJSON(t, fs),
-			}
-
-			got, err := i.rootUUID()
-			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
-				t.Errorf("error diff (+got -want):\n %s", diff)
-			}
-			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Errorf("error diff (+got -want):\n %s", diff)
-			}
-		})
-	}
-}
-
 func Test_installer_fixPermissions(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -352,9 +281,6 @@ func Test_installer_findMDUUID(t *testing.T) {
 	}{
 		{
 			name: "has mdadm",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
-			},
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"blkid"},
@@ -388,8 +314,7 @@ func Test_installer_findMDUUID(t *testing.T) {
 					c:   fakeCmd(t, tt.execMocks...),
 				},
 				fs:     fs,
-				disk:   mustParseDiskJSON(t, fs),
-				config: &api.InstallerConfig{RaidEnabled: true},
+				config: &api.InstallerConfig{RaidEnabled: true, RootUUID: "ace079b5-06be-4429-bbf0-081ea4d7d0d9"},
 			}
 
 			uuid, found := i.findMDUUID()
@@ -412,7 +337,6 @@ func Test_installer_buildCMDLine(t *testing.T) {
 		{
 			name: "without raid",
 			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
 			execMocks: []fakeexecparams{
@@ -428,12 +352,11 @@ func Test_installer_buildCMDLine(t *testing.T) {
 				},
 			},
 			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
 		},
 		{
 			name: "with raid",
 			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/disk.json", []byte(sampleDiskJSON), 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
 			execMocks: []fakeexecparams{
@@ -469,7 +392,6 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					c:   fakeCmd(t, tt.execMocks...),
 				},
 				fs:     fs,
-				disk:   mustParseDiskJSON(t, fs),
 				config: mustParseInstallYAML(t, fs),
 			}
 

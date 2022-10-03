@@ -31,7 +31,6 @@ type installer struct {
 	link   afero.LinkReader
 	oss    operatingsystem
 	config *api.InstallerConfig
-	disk   *api.Disk
 	exec   *cmdexec
 }
 
@@ -141,10 +140,7 @@ nameserver 8.8.4.4
 func (i *installer) buildCMDLine() (string, error) {
 	i.log.Infow("build kernel cmdline")
 
-	rootUUID, err := i.rootUUID()
-	if err != nil {
-		return "", err
-	}
+	rootUUID := i.config.RootUUID
 
 	parts := []string{
 		fmt.Sprintf("console=%s", i.config.Console),
@@ -169,20 +165,6 @@ func (i *installer) buildCMDLine() (string, error) {
 	return strings.Join(parts, " "), nil
 }
 
-func (i *installer) rootUUID() (string, error) {
-	rootUUID := ""
-	for _, partition := range i.disk.Partitions {
-		if partition.Label == "root" {
-			rootUUID = partition.Properties["UUID"]
-			break
-		}
-	}
-	if rootUUID == "" {
-		return "", fmt.Errorf("did not find root uuid")
-	}
-	return rootUUID, nil
-}
-
 func (i *installer) findMDUUID() (mdUUID string, found bool) {
 	i.log.Infow("detect software raid uuid")
 	if !i.config.RaidEnabled {
@@ -197,11 +179,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		i.log.Error(err)
 		return "", false
 	}
-	rootUUID, err := i.rootUUID()
-	if err != nil {
-		i.log.Error(err)
-		return "", false
-	}
+	rootUUID := i.config.RootUUID
 
 	var rootDisk string
 	for _, line := range strings.Split(string(blkidOut), "\n") {

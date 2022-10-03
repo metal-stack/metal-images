@@ -32,10 +32,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	disk, err := parseDiskJSON(fs)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	i := installer{
 		log:    log,
@@ -43,7 +39,6 @@ func main() {
 		link:   fs,
 		oss:    oss,
 		config: config,
-		disk:   disk,
 		exec: &cmdexec{
 			log: log.Named("cmdexec"),
 			c:   exec.CommandContext,
