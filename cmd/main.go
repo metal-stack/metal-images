@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"os"
 	"os/exec"
 	"time"
@@ -69,17 +68,4 @@ func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
 		return nil, err
 	}
 	return &config, nil
-}
-
-func parseDiskJSON(fs afero.Fs) (*api.Disk, error) {
-	var disk api.Disk
-	content, err := afero.ReadFile(fs, diskJSON)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(content, &disk)
-	if err != nil {
-		return nil, err
-	}
-	return &disk, nil
 }

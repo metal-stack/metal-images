@@ -21,7 +21,6 @@ import (
 
 const (
 	installYAML = "/etc/metal/install.yaml"
-	diskJSON    = "/etc/metal/disk.json"
 	userdata    = "/etc/metal/userdata"
 )
 
