@@ -444,10 +444,12 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error) {
 	kernsrc := "/vmlinuz"
 	initrdsrc := "/" + i.oss.Initramdisk()
+	base := ""
 
 	if i.fileExists("/boot/vmlinuz") {
 		kernsrc = "/boot/vmlinuz"
 		initrdsrc = "/boot/" + i.oss.Initramdisk()
+		base = "/boot"
 	}
 
 	initrd, err = i.link.ReadlinkIfPossible(initrdsrc)
@@ -462,6 +464,9 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 
 	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
 
+	// Readlink does not return the full qualified path as `readlink` does
+	kern = base + kern
+	initrd = base + initrd
 	return
 }
 
