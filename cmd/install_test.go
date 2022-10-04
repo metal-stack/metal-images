@@ -137,27 +137,6 @@ MD_DEVICE_dev_sda2_DEV=/dev/sda2`
 	sampleMdadmScanOutput = `ARRAY /dev/md/0  metadata=1.0 UUID=42d10089:ee1e0399:445e7550:62b63ec8 name=any:0
 ARRAY /dev/md/1  metadata=1.0 UUID=543eb7f8:98d4d986:e669824d:bebe69e5 name=any:1
 ARRAY /dev/md/2  metadata=1.0 UUID=fc32a6f0:ee40d9db:87c8c9f3:a8400c8b name=any:2`
-	sampleHostnamectlPhysical = `Static hostname: badile
-Icon name: computer-laptop
-  Chassis: laptop
-Machine ID: 2ded0d71f52d4a73aeada73b65feda60
-  Boot ID: 1930639060b743a7907c7906a23b49d9
-Operating System: Ubuntu 22.04.1 LTS
-   Kernel: Linux 5.15.0-48-generic
-Architecture: x86-64
-Hardware Vendor: Lenovo
-Hardware Model: ThinkPad X1 Carbon Gen 10`
-	sampleHostnamectlVirtual = `Static hostname: badile
-Icon name: computer-laptop
-  Chassis: laptop
-Machine ID: 2ded0d71f52d4a73aeada73b65feda60
-  Boot ID: 1930639060b743a7907c7906a23b49d9
-Operating System: Ubuntu 22.04.1 LTS
-   Kernel: Linux 5.15.0-48-generic
-   Virtualization: kvm
-Architecture: x86-64
-Hardware Vendor: Lenovo
-Hardware Model: ThinkPad X1 Carbon Gen 10`
 	sampleCloudInit = `#cloud-config
 # Add groups to the system
 # The following example adds the ubuntu group with members 'root' and 'sys'

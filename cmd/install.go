@@ -460,6 +460,8 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 		return "", "", fmt.Errorf("unable to detect link source of vmlinuz %w", err)
 	}
 
+	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
+
 	return
 }
 
