@@ -11,6 +11,7 @@ import (
 
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
+	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
@@ -87,6 +88,12 @@ func (i *installer) do() error {
 	if err != nil {
 		return err
 	}
+
+	err = i.writeBuildMeta()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -156,7 +163,7 @@ func (i *installer) writeResolvConf() error {
 	// in ignite this file is a symlinkg to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove("/etc/resolv.conf")
 	if err != nil {
-		return err
+		i.log.Infow("no /etc/resolv.conf present")
 	}
 
 	content := []byte(`nameserver 8.8.8.8
@@ -572,4 +579,24 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	}
 
 	return nil
+}
+
+func (i *installer) writeBuildMeta() error {
+	type buildMeta struct {
+		BuildVersion string `yaml:"buildVersion"`
+		BuildDate    string `yaml:"buildDate"`
+		BuildSHA     string `yaml:"buildSHA"`
+	}
+	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
+
+	content, err := yaml.Marshal(buildMeta{
+		BuildVersion: v.Version,
+		BuildDate:    v.BuildDate,
+		BuildSHA:     v.GitSHA1,
+	})
+	if err != nil {
+		return err
+	}
+
+	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, os.ModePerm)
 }

@@ -247,11 +247,22 @@ func Test_installer_detectFirmware(t *testing.T) {
 func Test_installer_writeResolvConf(t *testing.T) {
 	tests := []struct {
 		name    string
+		fsMocks func(fs afero.Fs)
 		want    string
 		wantErr error
 	}{
 		{
 			name: "resolv.conf gets written",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/resolv.conf", []byte(""), 0755))
+			},
+			want: `nameserver 8.8.8.8
+nameserver 8.8.4.4
+`,
+			wantErr: nil,
+		},
+		{
+			name: "resolv.conf gets written, file is not present",
 			want: `nameserver 8.8.8.8
 nameserver 8.8.4.4
 `,
@@ -264,6 +275,10 @@ nameserver 8.8.4.4
 			i := &installer{
 				log: zaptest.NewLogger(t).Sugar(),
 				fs:  afero.NewMemMapFs(),
+			}
+
+			if tt.fsMocks != nil {
+				tt.fsMocks(i.fs)
 			}
 
 			err := i.writeResolvConf()
