@@ -154,6 +154,14 @@ Operating System: Ubuntu 22.04.1 LTS
 Architecture: x86-64
 Hardware Vendor: Lenovo
 Hardware Model: ThinkPad X1 Carbon Gen 10`
+	sampleCloudInit = `#cloud-config
+# Add groups to the system
+# The following example adds the ubuntu group with members 'root' and 'sys'
+# and the empty group cloud-users.
+groups:
+	- admingroup: [root,sys]
+	- cloud-users`
+	sampleIgnition = `{"ignition":{"config":{},"security":{"tls":{}},"timeouts":{},"version":"2.2.0"}}`
 )
 
 type linkMock struct {
@@ -567,6 +575,164 @@ func Test_installer_writeBootInfo(t *testing.T) {
 			require.NoError(t, err)
 
 			if diff := cmp.Diff(tt.want, &bootInfo); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+		})
+	}
+}
+
+func Test_installer_processUserdata(t *testing.T) {
+	tests := []struct {
+		name      string
+		fsMocks   func(fs afero.Fs)
+		execMocks []fakeexecparams
+		wantErr   error
+	}{
+		{
+			name: "no userdata given",
+		},
+		{
+			name: "cloud-init",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleCloudInit), 0700))
+			},
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"cloud-init", "devel", "schema", "--config-file", "/etc/metal/userdata"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"systemctl", "preset-all"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+		},
+		{
+			name: "ignition",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleIgnition), 0700))
+			},
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"ignition-validate", "/etc/metal/config.ign"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"ignition", "-oem", "file", "-stage", "files", "-log-to-stdout"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"systemctl", "preset-all"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			if tt.fsMocks != nil {
+				tt.fsMocks(fs)
+			}
+
+			log := zaptest.NewLogger(t).Sugar()
+
+			i := &installer{
+				log: log,
+				exec: &cmdexec{
+					log: log,
+					c:   fakeCmd(t, tt.execMocks...),
+				},
+				fs: fs,
+			}
+
+			err := i.processUserdata()
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+		})
+	}
+}
+
+func Test_installer_grubInstall(t *testing.T) {
+	tests := []struct {
+		name        string
+		fsMocks     func(fs afero.Fs)
+		cmdline     string
+		execMocks   []fakeexecparams
+		oss         operatingsystem
+		wantGrubCfg string
+		wantErr     error
+	}{
+		{
+			name: "cmdline",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
+			},
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			oss:     osUbuntu,
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"update-grub2"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"dpkg-reconfigure", "grub-efi-amd64-bin"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+			wantGrubCfg: `GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "metal-ubuntu")
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			if tt.fsMocks != nil {
+				tt.fsMocks(fs)
+			}
+
+			log := zaptest.NewLogger(t).Sugar()
+
+			i := &installer{
+				log: log,
+				exec: &cmdexec{
+					log: log,
+					c:   fakeCmd(t, tt.execMocks...),
+				},
+				fs:     fs,
+				oss:    tt.oss,
+				config: mustParseInstallYAML(t, fs),
+			}
+
+			err := i.grubInstall(tt.cmdline)
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+
+			content, err := afero.ReadFile(i.fs, "/etc/default/grub")
+			require.NoError(t, err)
+
+			if diff := cmp.Diff(tt.wantGrubCfg, string(content)); diff != "" {
 				t.Errorf("error diff (+got -want):\n %s", diff)
 			}
 		})
