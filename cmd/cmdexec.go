@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"io"
 	"os/exec"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ type cmdParams struct {
 	dir      string
 	timeout  time.Duration
 	combined bool
+	stdin    string
 }
 
 func (i *cmdexec) command(p *cmdParams) (out string, err error) {
@@ -44,6 +46,21 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 
 	// show stderr
 	cmd.Stderr = os.Stderr
+
+	if p.stdin != "" {
+		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			return "", err
+		}
+
+		go func() {
+			defer stdin.Close()
+			_, err = io.WriteString(stdin, p.stdin)
+			if err != nil {
+				i.log.Errorw("error when writing to command's stdin", "error", err)
+			}
+		}()
+	}
 
 	if p.combined {
 		output, err = cmd.CombinedOutput()

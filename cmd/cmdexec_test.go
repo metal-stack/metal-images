@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// tests were inspired by this blog article: https://npf.io/2015/06/testing-exec-command/
+
 type fakeexec struct {
 	t         *testing.T
 	mockCount int

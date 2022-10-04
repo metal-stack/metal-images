@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
-	"os/exec"
 	"os/user"
 	"strconv"
 	"strings"
@@ -264,25 +261,17 @@ func (i *installer) createMetalUser() error {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	passwdCommand := exec.CommandContext(ctx, "passwd", "metal")
-
-	stdin, err := passwdCommand.StdinPipe()
-	if err != nil {
-		return err
-	}
-	defer stdin.Close()
-	err = passwdCommand.Start()
-	if err != nil {
-		return err
-	}
-	_, err = io.WriteString(stdin, i.config.Password+"\n"+i.config.Password+"\n")
+	_, err = i.exec.command(&cmdParams{
+		name:    "passwd",
+		args:    []string{"metal"},
+		timeout: 10 * time.Second,
+		stdin:   i.config.Password + "\n" + i.config.Password + "\n",
+	})
 	if err != nil {
 		return err
 	}
 
-	return passwdCommand.Wait()
+	return nil
 }
 
 func (i *installer) configureNetwork() error {
