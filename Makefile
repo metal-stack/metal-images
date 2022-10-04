@@ -21,7 +21,7 @@ binary: test
 			-ldflags "$(LINKMODE)" \
 		github.com/metal-stack/metal-images/cmd
 	strip bin/$(BINARY)
-	cp bin/$(BINARY) debian/context/install-go
+	cp bin/$(BINARY) debian/context/install-go centos/context/install-go
 
 .PHONY: test
 test:
