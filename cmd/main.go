@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"os/exec"
 	"time"
 
@@ -43,10 +42,6 @@ func main() {
 			c:   exec.CommandContext,
 		},
 	}
-
-	// FIXME try without
-	os.Setenv("DEBCONF_NONINTERACTIVE_SEEN", "true")
-	os.Setenv("DEBIAN_FRONTEND", "noninteractive")
 
 	err = i.do()
 	if err != nil {

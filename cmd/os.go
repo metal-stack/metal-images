@@ -20,6 +20,50 @@ func (o operatingsystem) BootloaderID() string {
 	return fmt.Sprintf("metal-%s", o)
 }
 
+func (o operatingsystem) SudoGroup() string {
+	switch o {
+	case osCentos:
+		return "wheel"
+	case osDebian, osUbuntu:
+		return "sudo"
+	default:
+		return "sudo"
+	}
+}
+
+func (o operatingsystem) Initramdisk() string {
+	switch o {
+	case osCentos:
+		return "initramfs.img"
+	case osDebian, osUbuntu:
+		return "initrd.img"
+	default:
+		return "initrd.img"
+	}
+}
+
+func (o operatingsystem) GrubInstallCmd() string {
+	switch o {
+	case osCentos:
+		return "grub2-install"
+	case osDebian, osUbuntu:
+		return "grub-install"
+	default:
+		return "grub-install"
+	}
+}
+
+func (o operatingsystem) SupportsCloudInit() bool {
+	switch o {
+	case osCentos:
+		return false
+	case osDebian, osUbuntu:
+		return true
+	default:
+		return false
+	}
+}
+
 func operatingSystemFromString(s string) (operatingsystem, error) {
 	unquoted, err := strconv.Unquote(s)
 	if err == nil {

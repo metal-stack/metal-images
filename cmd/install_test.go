@@ -133,6 +133,9 @@ MD_DEVICE_dev_sdb2_ROLE=1
 MD_DEVICE_dev_sdb2_DEV=/dev/sdb2
 MD_DEVICE_dev_sda2_ROLE=0
 MD_DEVICE_dev_sda2_DEV=/dev/sda2`
+	sampleMdadmScanOutput = `ARRAY /dev/md/0  metadata=1.0 UUID=42d10089:ee1e0399:445e7550:62b63ec8 name=any:0
+ARRAY /dev/md/1  metadata=1.0 UUID=543eb7f8:98d4d986:e669824d:bebe69e5 name=any:1
+ARRAY /dev/md/2  metadata=1.0 UUID=fc32a6f0:ee40d9db:87c8c9f3:a8400c8b name=any:2`
 	sampleHostnamectlPhysical = `Static hostname: badile
 Icon name: computer-laptop
   Chassis: laptop
@@ -426,8 +429,8 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					ExitCode: 0,
 				},
 			},
-			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
 		},
 		{
 			name: "with raid",
@@ -446,8 +449,8 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					ExitCode: 0,
 				},
 			},
-			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0 rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=543eb7f8:98d4d986:e669824d:bebe69e5",
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0 rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=543eb7f8:98d4d986:e669824d:bebe69e5",
 		},
 	}
 	for _, tt := range tests {
@@ -536,10 +539,8 @@ func Test_installer_writeBootInfo(t *testing.T) {
 			oss:     osUbuntu,
 			link: &linkMock{
 				mocks: map[string]string{
-					"/vmlinuz":         "linuz-test",
-					"/initrd.img":      "init-test",
-					"/boot/vmlinuz":    "linuz-test",
-					"/boot/initrd.img": "init-test",
+					"/vmlinuz":    "linuz-test",
+					"/initrd.img": "init-test",
 				},
 			},
 			want: &api.Bootinfo{
@@ -586,6 +587,7 @@ func Test_installer_processUserdata(t *testing.T) {
 		name      string
 		fsMocks   func(fs afero.Fs)
 		execMocks []fakeexecparams
+		oss       operatingsystem
 		wantErr   error
 	}{
 		{
@@ -593,6 +595,7 @@ func Test_installer_processUserdata(t *testing.T) {
 		},
 		{
 			name: "cloud-init",
+			oss:  osDebian,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleCloudInit), 0700))
 			},
@@ -610,7 +613,23 @@ func Test_installer_processUserdata(t *testing.T) {
 			},
 		},
 		{
+			name: "cloud-init for centos is not supported",
+			oss:  osCentos,
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleCloudInit), 0700))
+			},
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"systemctl", "preset-all"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+			wantErr: fmt.Errorf("os does not support cloud-init userdata"),
+		},
+		{
 			name: "ignition",
+			oss:  osDebian,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleIgnition), 0700))
 			},
@@ -649,7 +668,8 @@ func Test_installer_processUserdata(t *testing.T) {
 					log: log,
 					c:   fakeCmd(t, tt.execMocks...),
 				},
-				fs: fs,
+				fs:  fs,
+				oss: tt.oss,
 			}
 
 			err := i.processUserdata()
@@ -667,15 +687,16 @@ func Test_installer_grubInstall(t *testing.T) {
 		cmdline     string
 		execMocks   []fakeexecparams
 		oss         operatingsystem
+		link        *linkMock
 		wantGrubCfg string
 		wantErr     error
 	}{
 		{
-			name: "cmdline",
+			name: "without raid debian/ubuntu",
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
 			oss:     osUbuntu,
 			execMocks: []fakeexecparams{
 				{
@@ -698,7 +719,149 @@ func Test_installer_grubInstall(t *testing.T) {
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "metal-ubuntu")
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/bin/systemd net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+		},
+		{
+			name: "with raid debian/ubuntu",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
+			},
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			oss:     osUbuntu,
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"mdadm", "--examine", "--scan"},
+					Output:   sampleMdadmScanOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"update-initramfs", "-u"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"blkid"},
+					Output:   sampleBlkidOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\metal-ubuntu\\\\grubx64.efi", "-L", "metal-ubuntu"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\metal-ubuntu\\\\grubx64.efi", "-L", "metal-ubuntu"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--no-nvram"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"update-grub2"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"dpkg-reconfigure", "grub-efi-amd64-bin"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+			wantGrubCfg: `GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "metal-ubuntu")
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+		},
+		{
+			name: "without raid centos",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
+			},
+			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			oss:     osCentos,
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
+					Output:   sampleBlkidOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-centos", "UUID=543eb7f8-98d4-d986-e669-824dbebe69e5"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+			wantGrubCfg: `GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "metal-centos")
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+		},
+		{
+			name: "with raid centos",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
+			},
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			oss:     osCentos,
+			link: &linkMock{
+				mocks: map[string]string{
+					"/vmlinuz":       "/boot/vmlinuz-4.14.252-001730324769e3ea3c709-rel-lb",
+					"/initramfs.img": "init-test",
+				},
+			},
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
+					Output:   sampleBlkidOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"mdadm", "--examine", "--scan"},
+					Output:   sampleMdadmScanOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"blkid"},
+					Output:   sampleBlkidOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\metal-centos\\\\shimx64.efi", "-L", "metal-centos"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\metal-centos\\\\shimx64.efi", "-L", "metal-centos"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-centos", "--no-nvram", "UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"dracut", "--mdadm", "--kver", "4.14.252-001730324769e3ea3c709-rel-lb", "--kmoddir", "/lib/modules/4.14.252-001730324769e3ea3c709-rel-lb", "--include", "/lib/modules/4.14.252-001730324769e3ea3c709-rel-lb", "/lib/modules/4.14.252-001730324769e3ea3c709-rel-lb", "--fstab", "--add=\"dm mdraid\"", "--add-drivers=\"raid0 raid1\"", "--hostonly", "--force"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+			wantGrubCfg: `GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "metal-centos")
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -721,6 +884,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				},
 				fs:     fs,
 				oss:    tt.oss,
+				link:   tt.link,
 				config: mustParseInstallYAML(t, fs),
 			}
 

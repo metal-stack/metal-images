@@ -180,7 +180,7 @@ func (i *installer) buildCMDLine() string {
 	parts := []string{
 		fmt.Sprintf("console=%s", i.config.Console),
 		fmt.Sprintf("root=UUID=%s", rootUUID),
-		"init=/bin/systemd",
+		"init=/sbin/init",
 		"net.ifnames=0",
 		"biosdevname=0",
 		"nvme_core.io_timeout=4294967295",
@@ -280,7 +280,7 @@ func (i *installer) createMetalUser() error {
 
 	_, err = i.exec.command(&cmdParams{
 		name:    "useradd",
-		args:    []string{"--create-home", "--uid", "1000", "--gid", "sudo", "--shell", "/bin/bash", "metal"},
+		args:    []string{"--create-home", "--uid", "1000", "--gid", i.oss.SudoGroup(), "--shell", "/bin/bash", "metal"},
 		timeout: 10 * time.Second,
 	})
 	if err != nil {
@@ -390,6 +390,10 @@ func (i *installer) processUserdata() error {
 	}()
 
 	if isCloudInitFile(content) {
+		if !i.oss.SupportsCloudInit() {
+			return fmt.Errorf("os does not support cloud-init userdata")
+		}
+
 		_, err := i.exec.command(&cmdParams{
 			name: "cloud-init",
 			args: []string{"devel", "schema", "--config-file", userdata},
@@ -442,27 +446,10 @@ func isCloudInitFile(content []byte) bool {
 
 func (i *installer) writeBootInfo(cmdLine string) error {
 	i.log.Infow("write boot-info")
-	var (
-		initrd string
-		kern   string
-	)
 
-	kernsrc := "/vmlinuz"
-	initrdsrc := "/initrd.img"
-
-	if i.fileExists("/boot/vmlinuz") {
-		kernsrc = "/boot/vmlinuz"
-		initrdsrc = "/boot/initrd.img"
-	}
-
-	initrd, err := i.link.ReadlinkIfPossible(initrdsrc)
+	kern, initrd, err := i.kernelAndInitrdPath()
 	if err != nil {
-		return fmt.Errorf("unable to detect link source of initrd %w", err)
-	}
-
-	kern, err = i.link.ReadlinkIfPossible(kernsrc)
-	if err != nil {
-		return fmt.Errorf("unable to detect link source of vmlinuz %w", err)
+		return err
 	}
 
 	content, err := yaml.Marshal(api.Bootinfo{
@@ -476,6 +463,28 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 	}
 
 	return afero.WriteFile(i.fs, "/etc/metal/boot-info.yaml", content, 0700)
+}
+
+func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error) {
+	kernsrc := "/vmlinuz"
+	initrdsrc := "/" + i.oss.Initramdisk()
+
+	if i.fileExists("/boot/vmlinuz") {
+		kernsrc = "/boot/vmlinuz"
+		initrdsrc = "/boot/" + i.oss.Initramdisk()
+	}
+
+	initrd, err = i.link.ReadlinkIfPossible(initrdsrc)
+	if err != nil {
+		return "", "", fmt.Errorf("unable to detect link source of initrd %w", err)
+	}
+
+	kern, err = i.link.ReadlinkIfPossible(kernsrc)
+	if err != nil {
+		return "", "", fmt.Errorf("unable to detect link source of vmlinuz %w", err)
+	}
+
+	return
 }
 
 func (i *installer) grubInstall(cmdLine string) error {
@@ -515,6 +524,21 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		"--boot-directory=/boot",
 		"--bootloader-id=" + i.oss.BootloaderID(),
 	}
+	if i.config.RaidEnabled {
+		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
+	}
+
+	if i.oss == osCentos {
+		_, err := i.exec.command(&cmdParams{
+			name: "grub2-mkconfig",
+			args: []string{"-o", "/boot/grub2/grub.cfg"},
+		})
+		if err != nil {
+			return err
+		}
+
+		grubInstallArgs = append(grubInstallArgs, fmt.Sprintf("UUID=%s", i.config.RootUUID))
+	}
 
 	if i.config.RaidEnabled {
 		out, err := i.exec.command(&cmdParams{
@@ -533,17 +557,19 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 			return err
 		}
 
-		err = i.fs.MkdirAll("/var/lib/initramfs-tools", os.ModeDir)
-		if err != nil {
-			return err
-		}
+		if i.oss != osCentos {
+			err = i.fs.MkdirAll("/var/lib/initramfs-tools", os.ModeDir)
+			if err != nil {
+				return err
+			}
 
-		_, err = i.exec.command(&cmdParams{
-			name: "update-initramfs",
-			args: []string{"-u"},
-		})
-		if err != nil {
-			return err
+			_, err = i.exec.command(&cmdParams{
+				name: "update-initramfs",
+				args: []string{"-u"},
+			})
+			if err != nil {
+				return err
+			}
 		}
 
 		out, err = i.exec.command(&cmdParams{
@@ -560,25 +586,59 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 					return fmt.Errorf("unable to process blkid output lines")
 				}
 
+				shim := fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID())
+				if i.oss == osCentos {
+					shim = fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
+				}
+
 				_, err = i.exec.command(&cmdParams{
 					name: "efibootmgr",
-					args: []string{"-c", "-d", disk, "-p1", "-l", fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID()), "-L", i.oss.BootloaderID()},
+					args: []string{"-c", "-d", disk, "-p1", "-l", shim, "-L", i.oss.BootloaderID()},
 				})
 				if err != nil {
 					return err
 				}
 			}
 		}
-
-		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
 	}
 
 	_, err = i.exec.command(&cmdParams{
-		name: "grub-install",
+		name: i.oss.GrubInstallCmd(),
 		args: grubInstallArgs,
 	})
 	if err != nil {
 		return err
+	}
+
+	if i.oss == osCentos {
+		if !i.config.RaidEnabled {
+			return nil
+		}
+
+		v, err := i.getKernelVersion()
+		if err != nil {
+			return err
+		}
+
+		_, err = i.exec.command(&cmdParams{
+			name: "dracut",
+			args: []string{
+				"--mdadm",
+				"--kver", v,
+				"--kmoddir", "/lib/modules/" + v,
+				"--include", "/lib/modules/" + v, "/lib/modules/" + v,
+				"--fstab",
+				`--add="dm mdraid"`,
+				`--add-drivers="raid0 raid1"`,
+				"--hostonly",
+				"--force",
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	_, err = i.exec.command(&cmdParams{
@@ -617,4 +677,18 @@ func (i *installer) writeBuildMeta() error {
 	}
 
 	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, os.ModePerm)
+}
+
+func (i *installer) getKernelVersion() (string, error) {
+	kern, _, err := i.kernelAndInitrdPath()
+	if err != nil {
+		return "", err
+	}
+
+	_, version, found := strings.Cut(kern, "vmlinuz-")
+	if !found {
+		return "", fmt.Errorf("unable to determine kernel version from: %s", kern)
+	}
+
+	return version, nil
 }
