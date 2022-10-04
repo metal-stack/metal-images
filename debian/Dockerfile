@@ -123,7 +123,16 @@ echo "---" >> /etc/metal/build-meta.yaml
 echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml
 echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml
 echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
+echo "osName: ${SEMVER}" >> /etc/metal/build-meta.yaml
+echo "osSemver: ${BASE_OS_VERSION}" >> /etc/metal/build-meta.yaml
 echo "baseOSVersion: ${BASE_OS_VERSION}" >> /etc/metal/build-meta.yaml
+echo "dockerAptOS: ${DOCKER_APT_OS}" >> /etc/metal/build-meta.yaml
+echo "dockerAptChannel: ${DOCKER_APT_CHANNEL}" >> /etc/metal/build-meta.yaml
+echo "criVersion: ${CRI_VERSION}" >> /etc/metal/build-meta.yaml
+echo "ubuntuMainlineKernel: ${CRI_VERSION}" >> /etc/metal/build-meta.yaml
+echo "kernelVersion: ${KERNEL_VERSION}" >> /etc/metal/build-meta.yaml
+echo "iceVersion: ${ICE_VERSION}" >> /etc/metal/build-meta.yaml
+echo "icePkgVersion: ${ICE_PKG_VERSION}" >> /etc/metal/build-meta.yaml
 EOF
 
 COPY context/ /
