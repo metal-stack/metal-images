@@ -660,21 +660,31 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 }
 
 func (i *installer) writeBuildMeta() error {
-	type buildMeta struct {
-		BuildVersion string `yaml:"buildVersion"`
-		BuildDate    string `yaml:"buildDate"`
-		BuildSHA     string `yaml:"buildSHA"`
-	}
 	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
 
-	content, err := yaml.Marshal(buildMeta{
-		BuildVersion: v.Version,
-		BuildDate:    v.BuildDate,
-		BuildSHA:     v.GitSHA1,
-	})
+	meta := map[string]interface{}{}
+	if i.fileExists("/etc/metal/build-meta.yaml") {
+		content, err := afero.ReadFile(i.fs, "/etc/metal/build-meta.yaml")
+		if err != nil {
+			return err
+		}
+
+		err = yaml.Unmarshal(content, &meta)
+		if err != nil {
+			return err
+		}
+	}
+
+	meta["buildVersion"] = v.Version
+	meta["buildDate"] = v.BuildDate
+	meta["buildSHA"] = v.GitSHA1
+
+	content, err := yaml.Marshal(meta)
 	if err != nil {
 		return err
 	}
+
+	content = append([]byte("---\n"), content...)
 
 	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, os.ModePerm)
 }

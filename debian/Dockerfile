@@ -118,6 +118,14 @@ RUN set -ex \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker
 
+RUN <<EOF
+echo "---" >> /etc/metal/build-meta.yaml
+echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml
+echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml
+echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
+echo "baseOSVersion: ${BASE_OS_VERSION}" >> /etc/metal/build-meta.yaml
+EOF
+
 COPY context/ /
 
 # Copy the dependencies of `cloud-init-custom.service` into the image.
@@ -137,4 +145,3 @@ RUN systemctl set-default multi-user.target \
  && update-ca-certificates \
  # generate locale
  && locale-gen
-

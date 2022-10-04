@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
+	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -899,6 +900,62 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			if diff := cmp.Diff(tt.wantGrubCfg, string(content)); diff != "" {
 				t.Errorf("error diff (+got -want):\n %s", diff)
 			}
+		})
+	}
+}
+
+func Test_installer_writeBuildMeta(t *testing.T) {
+	tests := []struct {
+		name    string
+		fsMocks func(fs afero.Fs)
+		want    string
+		wantErr error
+	}{
+		{
+			name: "create file",
+			want: `---
+buildDate: ""
+buildSHA: abc
+buildVersion: "456"
+`,
+		},
+		{
+			name: "append to existing file",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/build-meta.yaml", []byte("---\nfrrVersion: 123"), 0700))
+			},
+			want: `---
+buildDate: ""
+buildSHA: abc
+buildVersion: "456"
+frrVersion: 123
+`,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			if tt.fsMocks != nil {
+				tt.fsMocks(fs)
+			}
+
+			i := &installer{
+				log: zaptest.NewLogger(t).Sugar(),
+				fs:  fs,
+			}
+
+			v.Version = "456"
+			v.GitSHA1 = "abc"
+
+			err := i.writeBuildMeta()
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+
+			content, err := afero.ReadFile(i.fs, "/etc/metal/build-meta.yaml")
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, string(content))
 		})
 	}
 }
