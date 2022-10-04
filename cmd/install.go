@@ -443,31 +443,28 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 }
 
 func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error) {
-	kernsrc := "/vmlinuz"
-	initrdsrc := "/" + i.oss.Initramdisk()
-	base := ""
+	var (
+		bootPartition = "/boot"
+		kernelLink    = path.Join(bootPartition, "vmlinuz")
+		initrdLink    = path.Join(bootPartition, i.oss.Initramdisk())
+	)
 
-	if i.fileExists("/boot/vmlinuz") {
-		kernsrc = "/boot/vmlinuz"
-		initrdsrc = "/boot/" + i.oss.Initramdisk()
-		base = "/boot"
-	}
-
-	initrd, err = i.link.ReadlinkIfPossible(initrdsrc)
+	initrd, err = i.link.ReadlinkIfPossible(initrdLink)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to detect link source of initrd %w", err)
 	}
 
-	kern, err = i.link.ReadlinkIfPossible(kernsrc)
+	kern, err = i.link.ReadlinkIfPossible(kernelLink)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to detect link source of vmlinuz %w", err)
 	}
 
 	// Readlink does not return the full qualified path as `readlink` does
-	kern = path.Join(base, kern)
-	initrd = path.Join(base, initrd)
+	kern = path.Join(bootPartition, kern)
+	initrd = path.Join(bootPartition, initrd)
 
 	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
+
 	return
 }
 

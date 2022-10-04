@@ -502,14 +502,14 @@ func Test_installer_writeBootInfo(t *testing.T) {
 			oss:     osUbuntu,
 			link: &linkMock{
 				mocks: map[string]string{
-					"/vmlinuz":    "linuz-test",
-					"/initrd.img": "init-test",
+					"/boot/vmlinuz":    "vmlinuz-test",
+					"/boot/initrd.img": "init-test",
 				},
 			},
 			want: &api.Bootinfo{
-				Initrd:       "init-test",
+				Initrd:       "/boot/init-test",
 				Cmdline:      "a-cmd-line",
-				Kernel:       "linuz-test",
+				Kernel:       "/boot/vmlinuz-test",
 				BootloaderID: "metal-ubuntu",
 			},
 		},
@@ -779,8 +779,8 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			oss:     osCentos,
 			link: &linkMock{
 				mocks: map[string]string{
-					"/vmlinuz":       "/boot/vmlinuz-4.14.252-001730324769e3ea3c709-rel-lb",
-					"/initramfs.img": "init-test",
+					"/boot/vmlinuz":       "/boot/vmlinuz-4.14.252-001730324769e3ea3c709-rel-lb",
+					"/boot/initramfs.img": "/boot/init-test",
 				},
 			},
 			execMocks: []fakeexecparams{
