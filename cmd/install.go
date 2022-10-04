@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -449,19 +450,28 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 		initrdLink    = path.Join(bootPartition, i.oss.Initramdisk())
 	)
 
-	initrd, err = i.link.ReadlinkIfPossible(initrdLink)
+	lookup := func(link string) (string, error) {
+		unlinked, err := i.link.ReadlinkIfPossible(link)
+		if err != nil {
+			return "", err
+		}
+
+		if filepath.IsAbs(unlinked) {
+			return unlinked, nil
+		}
+
+		return path.Join(path.Dir(link), unlinked), nil
+	}
+
+	initrd, err = lookup(initrdLink)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to detect link source of initrd %w", err)
 	}
 
-	kern, err = i.link.ReadlinkIfPossible(kernelLink)
+	kern, err = lookup(kernelLink)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to detect link source of vmlinuz %w", err)
 	}
-
-	// Readlink does not return the full qualified path as `readlink` does
-	kern = path.Join(bootPartition, kern)
-	initrd = path.Join(bootPartition, initrd)
 
 	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
 
