@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"os/user"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -462,11 +463,11 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 		return "", "", fmt.Errorf("unable to detect link source of vmlinuz %w", err)
 	}
 
-	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
-
 	// Readlink does not return the full qualified path as `readlink` does
-	kern = base + kern
-	initrd = base + initrd
+	kern = path.Join(base, kern)
+	initrd = path.Join(base, initrd)
+
+	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
 	return
 }
 
