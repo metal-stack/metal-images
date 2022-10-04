@@ -128,7 +128,7 @@ RUN echo "---" >> /etc/metal/build-meta.yaml \
  && echo "dockerAptOS: ${DOCKER_APT_OS}" >> /etc/metal/build-meta.yaml \
  && echo "dockerAptChannel: ${DOCKER_APT_CHANNEL}" >> /etc/metal/build-meta.yaml \
  && echo "criVersion: ${CRI_VERSION}" >> /etc/metal/build-meta.yaml \
- && echo "ubuntuMainlineKernel: ${CRI_VERSION}" >> /etc/metal/build-meta.yaml \
+ && echo "ubuntuMainlineKernel: ${UBUNTU_MAINLINE_KERNEL_VERSION}}" >> /etc/metal/build-meta.yaml \
  && echo "kernelVersion: ${KERNEL_VERSION}" >> /etc/metal/build-meta.yaml \
  && echo "iceVersion: ${ICE_VERSION}" >> /etc/metal/build-meta.yaml \
  && echo "icePkgVersion: ${ICE_PKG_VERSION}" >> /etc/metal/build-meta.yaml

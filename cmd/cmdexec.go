@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"os"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -23,6 +23,7 @@ type cmdParams struct {
 	timeout  time.Duration
 	combined bool
 	stdin    string
+	env      []string
 }
 
 func (i *cmdexec) command(p *cmdParams) (out string, err error) {
@@ -43,6 +44,8 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 	if p.dir != "" {
 		cmd.Dir = "/etc/metal"
 	}
+
+	cmd.Env = append(cmd.Env, p.env...)
 
 	// show stderr
 	cmd.Stderr = os.Stderr

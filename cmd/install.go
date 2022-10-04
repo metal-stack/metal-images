@@ -627,6 +627,10 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	_, err = i.exec.command(&cmdParams{
 		name: "dpkg-reconfigure",
 		args: []string{"grub-efi-amd64-bin"},
+		env: []string{
+			"DEBCONF_NONINTERACTIVE_SEEN=true",
+			"DEBIAN_FRONTEND=noninteractive",
+		},
 	})
 	if err != nil {
 		return err
