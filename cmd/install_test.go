@@ -197,36 +197,19 @@ func Test_installer_detectFirmware(t *testing.T) {
 			name: "is efi",
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/sys/firmware/efi", []byte(""), 0755))
-			},
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"hostnamectl", "status"},
-					Output:   sampleHostnamectlPhysical,
-					ExitCode: 0,
-				},
+				require.NoError(t, afero.WriteFile(fs, "/sys/class/dmi", []byte(""), 0755))
 			},
 			wantErr: nil,
 		},
 		{
 			name: "is not efi",
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"hostnamectl", "status"},
-					Output:   sampleHostnamectlPhysical,
-					ExitCode: 0,
-				},
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/sys/class/dmi", []byte(""), 0755))
 			},
 			wantErr: fmt.Errorf("not running efi mode"),
 		},
 		{
-			name: "is not efi but virtual",
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"hostnamectl", "status"},
-					Output:   sampleHostnamectlVirtual,
-					ExitCode: 0,
-				},
-			},
+			name:    "is not efi but virtual",
 			wantErr: nil,
 		},
 	}
