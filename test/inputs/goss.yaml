@@ -2,6 +2,11 @@
 user:
   metal:
     exists: true
+    groups:
+      - sudo
+    shell: /bin/bash
+    home: /home/metal
+    uid: 1000
 file:
   "/etc/systemd/network/10-lan0.link":
     exists: true
@@ -26,6 +31,10 @@ file:
     contains:
     - {{ .Env.PUB_KEY }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
+  "/etc/hostname":
+    exists: true
+    contains:
+    - machine
   "/var/lib/cloud-config-downloader/credentials/server":
     exists: true
     contains:
@@ -48,6 +57,10 @@ file:
     - "#!/bin/bash"
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
+  "/etc/hostname":
+    exists: true
+    contains:
+    - firewall
   "/etc/logrotate.d/suricata":
     exists: true
     contains:
@@ -101,11 +114,6 @@ dns:
   google.com:
     resolvable: true
 command:
-  "hostname is set":
-    exec: "hostnamectl --static"
-    exit-status: 0
-    stdout:
-    - machine
   "internet is reachable":
     exec: "ping -W 1 -c 1 -n 8.8.8.8"
     exit-status: 0

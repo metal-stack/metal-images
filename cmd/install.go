@@ -260,9 +260,27 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 func (i *installer) createMetalUser() error {
 	i.log.Infow("create user", "user", "metal")
 
-	_, err := i.exec.command(&cmdParams{
+	u, err := user.Lookup("metal")
+	if err != nil {
+		if err.Error() != user.UnknownUserError("metal").Error() {
+			return err
+		}
+	}
+	if u != nil {
+		i.log.Infow("user already exists, recreating")
+		_, err = i.exec.command(&cmdParams{
+			name:    "userdel",
+			args:    []string{"metal"},
+			timeout: 10 * time.Second,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = i.exec.command(&cmdParams{
 		name:    "useradd",
-		args:    []string{"--create-home", "--gid", "sudo", "--shell", "/bin/bash", "metal"},
+		args:    []string{"--create-home", "--uid", "1000", "--gid", "sudo", "--shell", "/bin/bash", "metal"},
 		timeout: 10 * time.Second,
 	})
 	if err != nil {
