@@ -385,7 +385,6 @@ func Test_installer_buildCMDLine(t *testing.T) {
 		fsMocks   func(fs afero.Fs)
 		execMocks []fakeexecparams
 		want      string
-		wantErr   error
 	}{
 		{
 			name: "without raid",
@@ -448,10 +447,7 @@ func Test_installer_buildCMDLine(t *testing.T) {
 				config: mustParseInstallYAML(t, fs),
 			}
 
-			got, err := i.buildCMDLine()
-			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
-				t.Errorf("error diff (+got -want):\n %s", diff)
-			}
+			got := i.buildCMDLine()
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("error diff (+got -want):\n %s", diff)
 			}

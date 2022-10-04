@@ -71,10 +71,7 @@ func (i *installer) do() error {
 		return err
 	}
 
-	cmdLine, err := i.buildCMDLine()
-	if err != nil {
-		return err
-	}
+	cmdLine := i.buildCMDLine()
 
 	err = i.writeBootInfo(cmdLine)
 	if err != nil {
@@ -157,14 +154,18 @@ func (i *installer) writeResolvConf() error {
 	// most probably because the resolved must be running in the internet facing vrf.
 	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 	// in ignite this file is a symlinkg to /proc/net/pnp, to pass integration test, remove this first
-	i.fs.Remove("/etc/resolv.conf")
+	err := i.fs.Remove("/etc/resolv.conf")
+	if err != nil {
+		return err
+	}
+
 	content := []byte(`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, os.ModeDir)
 }
 
-func (i *installer) buildCMDLine() (string, error) {
+func (i *installer) buildCMDLine() string {
 	i.log.Infow("build kernel cmdline")
 
 	rootUUID := i.config.RootUUID
@@ -189,7 +190,7 @@ func (i *installer) buildCMDLine() (string, error) {
 		parts = append(parts, mdParts...)
 	}
 
-	return strings.Join(parts, " "), nil
+	return strings.Join(parts, " ")
 }
 
 func (i *installer) findMDUUID() (mdUUID string, found bool) {
