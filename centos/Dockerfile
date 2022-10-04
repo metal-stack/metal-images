@@ -66,7 +66,9 @@ RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
  && yum install -y docker-ce docker-ce-cli containerd.io \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- && rm -rf /tmp/*
+ && rm -rf /tmp/* \
+ # create directory to store metal-networker tmp files
+ && mkdir -p /etc/metal/networker
 
 # Install FRR see https://rpm.frrouting.org/ for available channels
 RUN set -ex \
