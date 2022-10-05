@@ -300,7 +300,11 @@ func (i *installer) configureNetwork() error {
 		return err
 	}
 
-	netconf.NewConfigurator(kind, *kb).Configure()
+	c, err := netconf.NewConfigurator(kind, *kb)
+	if err != nil {
+		return err
+	}
+	c.Configure()
 	return nil
 }
 
