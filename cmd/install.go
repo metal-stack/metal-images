@@ -280,7 +280,10 @@ func (i *installer) createMetalUser() error {
 
 func (i *installer) configureNetwork() error {
 	i.log.Infow("configure network")
-	kb := netconf.NewKnowledgeBase(installYAML)
+	kb, err := netconf.New(i.log, installYAML)
+	if err != nil {
+		return err
+	}
 
 	var kind netconf.BareMetalType
 	switch i.config.Role {
@@ -292,12 +295,12 @@ func (i *installer) configureNetwork() error {
 		return fmt.Errorf("unknown role:%s", i.config.Role)
 	}
 
-	err := kb.Validate(kind)
+	err = kb.Validate(kind)
 	if err != nil {
 		return err
 	}
 
-	netconf.NewConfigurator(kind, kb).Configure()
+	netconf.NewConfigurator(kind, *kb).Configure()
 	return nil
 }
 
