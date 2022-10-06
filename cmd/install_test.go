@@ -491,39 +491,101 @@ func Test_installer_writeBootInfo(t *testing.T) {
 	tests := []struct {
 		name    string
 		cmdline string
+		fsMocks func(fs afero.Fs)
 		oss     operatingsystem
-		link    afero.LinkReader
 		want    *api.Bootinfo
 		wantErr error
 	}{
 		{
-			name:    "boot-info",
+			name:    "boot-info ubuntu",
 			cmdline: "a-cmd-line",
 			oss:     osUbuntu,
-			link: &linkMock{
-				mocks: map[string]string{
-					"/boot/vmlinuz":    "vmlinuz-test",
-					"/boot/initrd.img": "init-test",
-				},
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initrd.img-1.2.3", nil, 0700))
 			},
 			want: &api.Bootinfo{
-				Initrd:       "/boot/init-test",
+				Initrd:       "/boot/initrd.img-1.2.3",
 				Cmdline:      "a-cmd-line",
-				Kernel:       "/boot/vmlinuz-test",
+				Kernel:       "/boot/vmlinuz-1.2.3",
 				BootloaderID: "metal-ubuntu",
 			},
+		},
+		{
+			name:    "boot-info centos",
+			cmdline: "a-cmd-line",
+			oss:     osCentos,
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs.img-1.2.3", nil, 0700))
+			},
+			want: &api.Bootinfo{
+				Initrd:       "/boot/initramfs.img-1.2.3",
+				Cmdline:      "a-cmd-line",
+				Kernel:       "/boot/vmlinuz-1.2.3",
+				BootloaderID: "metal-centos",
+			},
+		},
+		{
+			name:    "more than one system.map present",
+			cmdline: "a-cmd-line",
+			oss:     osUbuntu,
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.4", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initrd.img-1.2.3", nil, 0700))
+			},
+			want:    nil,
+			wantErr: fmt.Errorf("more or less than a single System.map found([/boot/System.map-1.2.3 /boot/System.map-1.2.4]), probably no kernel or more than one kernel installed"),
+		},
+		{
+			name:    "no system.map present",
+			cmdline: "a-cmd-line",
+			oss:     osUbuntu,
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initrd.img-1.2.3", nil, 0700))
+			},
+			want:    nil,
+			wantErr: fmt.Errorf("more or less than a single System.map found([]), probably no kernel or more than one kernel installed"),
+		},
+		{
+			name:    "no vmlinuz present",
+			cmdline: "a-cmd-line",
+			oss:     osUbuntu,
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initrd.img-1.2.3", nil, 0700))
+			},
+			want:    nil,
+			wantErr: fmt.Errorf("kernel image \"/boot/vmlinuz-1.2.3\" not found"),
+		},
+		{
+			name:    "no ramdisk present",
+			cmdline: "a-cmd-line",
+			oss:     osUbuntu,
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+			},
+			want:    nil,
+			wantErr: fmt.Errorf("ramdisk \"/boot/initrd.img-1.2.3\" not found"),
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
-
+			if tt.fsMocks != nil {
+				tt.fsMocks(fs)
+			}
 			i := &installer{
-				log:  zaptest.NewLogger(t).Sugar(),
-				fs:   fs,
-				link: tt.link,
-				oss:  tt.oss,
+				log: zaptest.NewLogger(t).Sugar(),
+				fs:  fs,
+				oss: tt.oss,
 			}
 
 			err := i.writeBootInfo(tt.cmdline)
@@ -531,15 +593,17 @@ func Test_installer_writeBootInfo(t *testing.T) {
 				t.Errorf("error diff (+got -want):\n %s", diff)
 			}
 
-			content, err := afero.ReadFile(i.fs, "/etc/metal/boot-info.yaml")
-			require.NoError(t, err)
+			if tt.want != nil {
+				content, err := afero.ReadFile(i.fs, "/etc/metal/boot-info.yaml")
+				require.NoError(t, err)
 
-			var bootInfo api.Bootinfo
-			err = yaml.Unmarshal(content, &bootInfo)
-			require.NoError(t, err)
+				var bootInfo api.Bootinfo
+				err = yaml.Unmarshal(content, &bootInfo)
+				require.NoError(t, err)
 
-			if diff := cmp.Diff(tt.want, &bootInfo); diff != "" {
-				t.Errorf("error diff (+got -want):\n %s", diff)
+				if diff := cmp.Diff(tt.want, &bootInfo); diff != "" {
+					t.Errorf("error diff (+got -want):\n %s", diff)
+				}
 			}
 		})
 	}
@@ -746,6 +810,9 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		{
 			name: "without raid centos",
 			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs.img-1.2.3", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
 			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
@@ -773,16 +840,13 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		{
 			name: "with raid centos",
 			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs.img-1.2.3", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
 			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
 			oss:     osCentos,
-			link: &linkMock{
-				mocks: map[string]string{
-					"/boot/vmlinuz":       "/boot/vmlinuz-4.14.252-001730324769e3ea3c709-rel-lb",
-					"/boot/initramfs.img": "/boot/init-test",
-				},
-			},
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
@@ -815,7 +879,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"dracut", "--mdadm", "--kver", "4.14.252-001730324769e3ea3c709-rel-lb", "--kmoddir", "/lib/modules/4.14.252-001730324769e3ea3c709-rel-lb", "--include", "/lib/modules/4.14.252-001730324769e3ea3c709-rel-lb", "/lib/modules/4.14.252-001730324769e3ea3c709-rel-lb", "--fstab", "--add=\"dm mdraid\"", "--add-drivers=\"raid0 raid1\"", "--hostonly", "--force"},
+					WantCmd:  []string{"dracut", "--mdadm", "--kver", "1.2.3", "--kmoddir", "/lib/modules/1.2.3", "--include", "/lib/modules/1.2.3", "/lib/modules/1.2.3", "--fstab", "--add=\"dm mdraid\"", "--add-drivers=\"raid0 raid1\"", "--hostonly", "--force"},
 					Output:   "",
 					ExitCode: 0,
 				},

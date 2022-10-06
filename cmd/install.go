@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/user"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -280,7 +279,7 @@ func (i *installer) createMetalUser() error {
 
 func (i *installer) configureNetwork() error {
 	i.log.Infow("configure network")
-	kb, err := netconf.New(i.log, installYAML)
+	kb, err := netconf.New(i.log.Named("networker"), installYAML)
 	if err != nil {
 		return err
 	}
@@ -451,33 +450,70 @@ func (i *installer) writeBootInfo(cmdLine string) error {
 }
 
 func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error) {
+	// Debian 10
+	// root@1f223b59051bcb12:/boot# ls -l
+	// total 83500
+	// -rw-r--r-- 1 root root       83 Aug 13 15:25 System.map-5.10.0-17-amd64
+	// -rw-r--r-- 1 root root   236286 Aug 13 15:25 config-5.10.0-17-amd64
+	// -rw-r--r-- 1 root root    93842 Jul 19  2021 config-5.10.51
+	// drwxr-xr-x 2 root root     4096 Oct  3 11:21 grub
+	// -rw-r--r-- 1 root root 34665690 Oct  3 11:22 initrd.img-5.10.0-17-amd64
+	// lrwxrwxrwx 1 root root       21 Jul 19  2021 vmlinux -> /boot/vmlinux-5.10.51
+	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
+	// -rw-r--r-- 1 root root  6962816 Aug 13 15:25 vmlinuz-5.10.0-17-amd64
+
+	// Ubuntu 20.04
+	// root@568551f94559b121:~# ls -l /boot/
+	// total 83500
+	// -rw-r--r-- 1 root root       83 Aug 13 15:25 System.map-5.10.0-17-amd64
+	// -rw-r--r-- 1 root root   236286 Aug 13 15:25 config-5.10.0-17-amd64
+	// -rw-r--r-- 1 root root    93842 Jul 19  2021 config-5.10.51
+	// drwxr-xr-x 2 root root     4096 Oct  3 11:21 grub
+	// -rw-r--r-- 1 root root 34665690 Oct  3 11:22 initrd.img-5.10.0-17-amd64
+	// lrwxrwxrwx 1 root root       21 Jul 19  2021 vmlinux -> /boot/vmlinux-5.10.51
+	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
+	// -rw-r--r-- 1 root root  6962816 Aug 13 15:25 vmlinuz-5.10.0-17-amd64
+
+	// Centos 7
+	// [root@31f5556636196095 boot]# ls -l
+	// total 96704
+	// -rw------- 1 root root  3622646 Aug 10 18:25 System.map-3.10.0-1160.76.1.el7.x86_64
+	// -rw-r--r-- 1 root root   153619 Aug 10 18:25 config-3.10.0-1160.76.1.el7.x86_64
+	// -rw-r--r-- 1 root root    93842 Jul 19  2021 config-5.10.51
+	// drwxr-xr-x 3 root root     4096 Oct  6 08:34 efi
+	// drwx------ 2 root root     4096 Oct  6 08:34 grub2
+	// -rw------- 1 root root 44506213 Oct  6 08:38 initramfs-3.10.0-1160.76.1.el7.x86_64.img
+	// -rw-r--r-- 1 root root   320674 Aug 10 18:25 symvers-3.10.0-1160.76.1.el7.x86_64.gz
+	// lrwxrwxrwx 1 root root       21 Jul 19  2021 vmlinux -> /boot/vmlinux-5.10.51
+	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
+	// -rwxr-xr-x 1 root root  6781544 Aug 10 18:25 vmlinuz-3.10.0-1160.76.1.el7.x86_64
+
 	var (
-		bootPartition = "/boot"
-		kernelLink    = path.Join(bootPartition, "vmlinuz")
-		initrdLink    = path.Join(bootPartition, i.oss.Initramdisk())
+		bootPartition   = "/boot"
+		systemMapPrefix = "/boot/System.map-"
 	)
 
-	lookup := func(link string) (string, error) {
-		unlinked, err := i.link.ReadlinkIfPossible(link)
-		if err != nil {
-			return "", err
-		}
-
-		if filepath.IsAbs(unlinked) {
-			return unlinked, nil
-		}
-
-		return path.Join(path.Dir(link), unlinked), nil
+	systemMaps, err := afero.Glob(i.fs, systemMapPrefix+"*")
+	if err != nil {
+		return "", "", fmt.Errorf("unable to find a System.map, probably no kernel installed %w", err)
+	}
+	if len(systemMaps) != 1 {
+		return "", "", fmt.Errorf("more or less than a single System.map found(%v), probably no kernel or more than one kernel installed", systemMaps)
 	}
 
-	initrd, err = lookup(initrdLink)
-	if err != nil {
-		return "", "", fmt.Errorf("unable to detect link source of initrd %w", err)
+	systemMap := systemMaps[0]
+	_, kernelVersion, found := strings.Cut(systemMap, systemMapPrefix)
+	if !found {
+		return "", "", fmt.Errorf("unable to detect kernel version in System.map :%q", systemMap)
 	}
 
-	kern, err = lookup(kernelLink)
-	if err != nil {
-		return "", "", fmt.Errorf("unable to detect link source of vmlinuz %w", err)
+	kern = path.Join(bootPartition, "vmlinuz"+"-"+kernelVersion)
+	if !i.fileExists(kern) {
+		return "", "", fmt.Errorf("kernel image %q not found", kern)
+	}
+	initrd = path.Join(bootPartition, i.oss.Initramdisk()+"-"+kernelVersion)
+	if !i.fileExists(initrd) {
+		return "", "", fmt.Errorf("ramdisk %q not found", initrd)
 	}
 
 	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
