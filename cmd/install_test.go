@@ -513,7 +513,7 @@ func Test_installer_writeBootInfo(t *testing.T) {
 				Initrd:       "/boot/initramfs-1.2.3.img",
 				Cmdline:      "a-cmd-line",
 				Kernel:       "/boot/vmlinuz-1.2.3",
-				BootloaderID: "metal-centos",
+				BootloaderID: "centos",
 			},
 		},
 		{
@@ -811,14 +811,14 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-centos", "UUID=543eb7f8-98d4-d986-e669-824dbebe69e5"},
+					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=centos", "UUID=543eb7f8-98d4-d986-e669-824dbebe69e5"},
 					Output:   "",
 					ExitCode: 0,
 				},
 			},
 			wantGrubCfg: `GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=metal-centos
+GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
@@ -851,17 +851,17 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\metal-centos\\\\shimx64.efi", "-L", "metal-centos"},
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\centos\\\\shimx64.efi", "-L", "centos"},
 					Output:   "",
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\metal-centos\\\\shimx64.efi", "-L", "metal-centos"},
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\centos\\\\shimx64.efi", "-L", "centos"},
 					Output:   "",
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-centos", "--no-nvram", "UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9"},
+					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=centos", "--no-nvram", "UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -873,7 +873,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			},
 			wantGrubCfg: `GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=metal-centos
+GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial

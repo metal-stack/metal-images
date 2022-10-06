@@ -17,7 +17,14 @@ const (
 )
 
 func (o operatingsystem) BootloaderID() string {
-	return fmt.Sprintf("metal-%s", o)
+	switch o {
+	case osCentos:
+		return string(o)
+	case osDebian, osUbuntu:
+		return fmt.Sprintf("metal-%s", o)
+	default:
+		return fmt.Sprintf("metal-%s", o)
+	}
 }
 
 func (o operatingsystem) SudoGroup() string {
