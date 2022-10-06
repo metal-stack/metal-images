@@ -26,7 +26,6 @@ const (
 type installer struct {
 	log    *zap.SugaredLogger
 	fs     afero.Fs
-	link   afero.LinkReader
 	oss    operatingsystem
 	config *api.InstallerConfig
 	exec   *cmdexec

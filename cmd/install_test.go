@@ -147,18 +147,6 @@ groups:
 	sampleIgnition = `{"ignition":{"config":{},"security":{"tls":{}},"timeouts":{},"version":"2.2.0"}}`
 )
 
-type linkMock struct {
-	mocks map[string]string
-}
-
-func (l *linkMock) ReadlinkIfPossible(name string) (string, error) {
-	v, ok := l.mocks[name]
-	if !ok {
-		return "", fmt.Errorf("no mock for %s", name)
-	}
-	return v, nil
-}
-
 func mustParseInstallYAML(t *testing.T, fs afero.Fs) *api.InstallerConfig {
 	config, err := parseInstallYAML(fs)
 	require.NoError(t, err)
@@ -714,7 +702,6 @@ func Test_installer_grubInstall(t *testing.T) {
 		cmdline     string
 		execMocks   []fakeexecparams
 		oss         operatingsystem
-		link        *linkMock
 		wantGrubCfg string
 		wantErr     error
 	}{
@@ -911,7 +898,6 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				},
 				fs:     fs,
 				oss:    tt.oss,
-				link:   tt.link,
 				config: mustParseInstallYAML(t, fs),
 			}
 

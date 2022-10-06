@@ -34,7 +34,6 @@ func main() {
 	i := installer{
 		log:    log,
 		fs:     fs,
-		link:   fs,
 		oss:    oss,
 		config: config,
 		exec: &cmdexec{
