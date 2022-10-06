@@ -31,14 +31,14 @@ func (o operatingsystem) SudoGroup() string {
 	}
 }
 
-func (o operatingsystem) Initramdisk() string {
+func (o operatingsystem) Initramdisk(kernversion string) string {
 	switch o {
 	case osCentos:
-		return "initramfs.img"
+		return fmt.Sprintf("initramfs-%s.img", kernversion)
 	case osDebian, osUbuntu:
-		return "initrd.img"
+		return fmt.Sprintf("initrd.img-%s", kernversion)
 	default:
-		return "initrd.img"
+		return fmt.Sprintf("initrd.img-%s", kernversion)
 	}
 }
 

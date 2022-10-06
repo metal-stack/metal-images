@@ -507,10 +507,10 @@ func Test_installer_writeBootInfo(t *testing.T) {
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs.img-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 			},
 			want: &api.Bootinfo{
-				Initrd:       "/boot/initramfs.img-1.2.3",
+				Initrd:       "/boot/initramfs-1.2.3.img",
 				Cmdline:      "a-cmd-line",
 				Kernel:       "/boot/vmlinuz-1.2.3",
 				BootloaderID: "metal-centos",
@@ -799,7 +799,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs.img-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
 			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
@@ -829,7 +829,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs.img-1.2.3", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
 			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
