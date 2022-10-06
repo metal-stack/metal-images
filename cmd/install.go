@@ -487,7 +487,6 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
 	// -rwxr-xr-x 1 root root  6781544 Aug 10 18:25 vmlinuz-3.10.0-1160.76.1.el7.x86_64
 
-	// {"level":"fatal","ts":"2022-10-06T11:23:42.125+0200","caller":"cmd/main.go:48","msg":"ramdisk \"/boot/initramfs.img-3.10.0-1160.76.1.el7.x86_64\" not found","stacktrace":"main.main\n\tgithub.com/metal-stack/metal-images/cmd/main.go:48\nruntime.main\n\truntime/proc.go:250"}
 	var (
 		bootPartition   = "/boot"
 		systemMapPrefix = "/boot/System.map-"
@@ -541,7 +540,7 @@ func (i *installer) grubInstall(cmdLine string) error {
 
 	defaultGrub := fmt.Sprintf(`GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=$(lsb_release -i -s || echo "%s")
+GRUB_DISTRIBUTOR=%s
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="%s"
 GRUB_TERMINAL=serial
