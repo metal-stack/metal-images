@@ -81,8 +81,6 @@ WORKDIR /tmp/
 RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter.tgz -o nftables-exporter.tgz \
  && tar xvf nftables-exporter.tgz -C / \
  && systemctl enable nftables-exporter \
- # TODO remove once metal-networker adopted systemd service template to new binary location
- && ln -s /usr/bin/nftables-exporter /usr/local/bin/nftables_exporter \
  && rm -rf /tmp/*
 
 # Remove getty overrides to enable console password again
