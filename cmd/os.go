@@ -60,17 +60,6 @@ func (o operatingsystem) GrubInstallCmd() string {
 	}
 }
 
-func (o operatingsystem) SupportsCloudInit() bool {
-	switch o {
-	case osCentos:
-		return false
-	case osDebian, osUbuntu:
-		return true
-	default:
-		return false
-	}
-}
-
 func operatingSystemFromString(s string) (operatingsystem, error) {
 	unquoted, err := strconv.Unquote(s)
 	if err == nil {

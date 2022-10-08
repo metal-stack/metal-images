@@ -628,32 +628,12 @@ func Test_installer_processUserdata(t *testing.T) {
 			},
 		},
 		{
-			name: "cloud-init for centos is not supported",
-			oss:  osCentos,
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleCloudInit), 0700))
-			},
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"systemctl", "preset-all"},
-					Output:   "",
-					ExitCode: 0,
-				},
-			},
-			wantErr: fmt.Errorf("os does not support cloud-init userdata"),
-		},
-		{
 			name: "ignition",
 			oss:  osDebian,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleIgnition), 0700))
 			},
 			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"ignition-validate", "/etc/metal/config.ign"},
-					Output:   "",
-					ExitCode: 0,
-				},
 				{
 					WantCmd:  []string{"ignition", "-oem", "file", "-stage", "files", "-log-to-stdout"},
 					Output:   "",
