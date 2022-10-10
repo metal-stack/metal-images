@@ -146,7 +146,7 @@ func (i *installer) writeResolvConf() error {
 	content := []byte(`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
-	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, os.ModeDir)
+	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
 }
 
 func (i *installer) buildCMDLine() string {
@@ -588,7 +588,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		}
 
 		if i.oss != osCentos {
-			err = i.fs.MkdirAll("/var/lib/initramfs-tools", os.ModeDir)
+			err = i.fs.MkdirAll("/var/lib/initramfs-tools", 0755)
 			if err != nil {
 				return err
 			}
@@ -720,7 +720,7 @@ func (i *installer) writeBuildMeta() error {
 
 	content = append([]byte("---\n"), content...)
 
-	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, os.ModePerm)
+	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, 0644)
 }
 
 func (i *installer) getKernelVersion() (string, error) {
