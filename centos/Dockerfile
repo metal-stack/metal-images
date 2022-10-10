@@ -39,8 +39,10 @@ RUN set -ex \
     ipmitool \
     jq \
     kernel \
+    logrotate \
     mdadm \
     openssl \
+    openssh-clients \
     openssh-server \
     passwd \
     procps \

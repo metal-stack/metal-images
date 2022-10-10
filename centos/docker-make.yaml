@@ -7,6 +7,7 @@ default-build-args:
   - IGNITION_BRANCH=v0.35.0
   - GOLLDPD_VERSION=v0.4.0
   - FRR_VERSION=frr-8
+  - OS_NAME=centos
   - SEMVER_PATCH=${SEMVER_PATCH}
 builds:
   -
@@ -19,4 +20,5 @@ builds:
       - SEMVER_MAJOR_MINOR=7
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
+      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=centos SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh

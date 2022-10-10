@@ -2,8 +2,6 @@
 user:
   metal:
     exists: true
-    groups:
-      - sudo
     shell: /bin/bash
     home: /home/metal
     uid: 1000
@@ -74,9 +72,16 @@ service:
   frr:
     enabled: true
     running: true
+{{ if eq .Env.OS "centos" }}
+  sshd:
+    enabled: true
+    running: true
+{{ end }}
+{{ if ne .Env.OS "centos" }}
   ssh:
     enabled: true
     running: true
+{{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   docker:
     enabled: true
@@ -117,6 +122,7 @@ command:
   "internet is reachable":
     exec: "ping -W 1 -c 1 -n 8.8.8.8"
     exit-status: 0
+{{ if ne .Env.OS "centos" }}
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
     exit-status: 0
@@ -128,6 +134,7 @@ command:
     exit-status: 0
     stdout:
     - No jobs running.
+{{ end }}
   "systemd: no failed units":
     exec: systemctl list-units --failed --no-pager --no-legend
     exit-status: 0
@@ -174,10 +181,12 @@ command:
     exit-status: 0
     stdout:
     - "0"
+{{ if ne .Env.OS "centos" }}
   "timedatectl show -p NTPSynchronized":
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
+{{ end }}
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":

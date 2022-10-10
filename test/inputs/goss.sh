@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+source /etc/os-release
+
+export OS=$ID
 export MACHINE_TYPE=$1
 export ROUTER_ID=10.1.0.1
 export ASN=4200003073
