@@ -654,11 +654,6 @@ func Test_installer_processUserdata(t *testing.T) {
 			},
 			execMocks: []fakeexecparams{
 				{
-					WantCmd:  []string{"ignition-validate", "/etc/metal/config.ign"},
-					Output:   "",
-					ExitCode: 0,
-				},
-				{
 					WantCmd:  []string{"ignition", "-oem", "file", "-stage", "files", "-log-to-stdout"},
 					Output:   "",
 					ExitCode: 0,

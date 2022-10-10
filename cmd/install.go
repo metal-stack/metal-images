@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	config "github.com/flatcar/ignition/config/v2_4"
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/metal-stack/v"
@@ -389,11 +390,11 @@ func (i *installer) processUserdata() error {
 		return err
 	}
 
-	i.log.Infow("validating ignition config")
-	_, err = i.exec.command(&cmdParams{
-		name: "ignition-validate",
-		args: []string{"/etc/metal/config.ign"},
-	})
+	rawConfig, err := afero.ReadFile(i.fs, "/etc/metal/config.ign")
+	if err != nil {
+		return err
+	}
+	_, report, err := config.Parse(rawConfig)
 	if err != nil {
 		i.log.Errorw("error when validating ignition userdata, continuing anyway", "error", err)
 	}
@@ -405,7 +406,7 @@ func (i *installer) processUserdata() error {
 		dir:  "/etc/metal",
 	})
 	if err != nil {
-		i.log.Errorw("error when running ignition, continuing anyway", "error", err)
+		i.log.Errorw("error when running ignition, continuing anyway", "report", report.Entries, "error", err)
 	}
 
 	return nil

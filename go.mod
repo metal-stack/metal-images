@@ -3,6 +3,7 @@ module github.com/metal-stack/metal-images
 go 1.19
 
 require (
+	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.5.9
 	github.com/metal-stack/metal-hammer v0.11.0
 	github.com/metal-stack/metal-lib v0.11.2
@@ -15,8 +16,11 @@ require (
 )
 
 require (
+	github.com/ajeddeloh/go-json v0.0.0-20160803184958-73d058cf8437 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
+	github.com/coreos/go-semver v0.3.0 // indirect
+	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/coreos/go-systemd/v22 v22.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
@@ -37,9 +41,11 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
+	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.10.3 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
+	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 )
