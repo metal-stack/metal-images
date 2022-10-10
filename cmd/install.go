@@ -373,10 +373,6 @@ func (i *installer) processUserdata() error {
 	}()
 
 	if isCloudInitFile(content) {
-		if !i.oss.SupportsCloudInit() {
-			return fmt.Errorf("os does not support cloud-init userdata")
-		}
-
 		_, err := i.exec.command(&cmdParams{
 			name: "cloud-init",
 			args: []string{"devel", "schema", "--config-file", userdata},

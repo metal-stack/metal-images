@@ -25,6 +25,7 @@ RUN set -ex \
  && yum install -y \
     ca-certificates \
     chrony \
+    cloud-init \
     curl \
     dbus \
     efibootmgr \
