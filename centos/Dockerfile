@@ -64,7 +64,9 @@ RUN curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLD
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  && rm -rf /tmp/* \
  # create directory to store metal-networker tmp files
- && mkdir -p /etc/metal/networker
+ && mkdir -p /etc/metal/networker \
+ # clean yum cache
+ && yum clean all
 
 # Install FRR see https://rpm.frrouting.org/ for available channels
 RUN set -ex \
