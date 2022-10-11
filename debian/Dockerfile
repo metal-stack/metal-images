@@ -141,6 +141,4 @@ RUN systemctl set-default multi-user.target \
                      cloud-init-custom.service \
  && update-ca-certificates \
  # generate locale
- && locale-gen \
- # clean yum cache
- && yum clean all
+ && locale-gen

@@ -32,7 +32,7 @@ func main() {
 	}
 
 	i := installer{
-		log:    log,
+		log:    log.Named("install-go"),
 		fs:     fs,
 		oss:    oss,
 		config: config,
