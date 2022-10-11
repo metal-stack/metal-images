@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func newLogger(level zapcore.Level) (*zap.SugaredLogger, error) {
+func newLogger(level zapcore.Level) *zap.SugaredLogger {
 	pe := zap.NewProductionEncoderConfig()
 	pe.EncodeLevel = zapcore.LowercaseColorLevelEncoder
 	pe.EncodeTime = zapcore.ISO8601TimeEncoder
@@ -18,5 +18,5 @@ func newLogger(level zapcore.Level) (*zap.SugaredLogger, error) {
 	)
 
 	l := zap.New(core)
-	return l.Sugar(), nil
+	return l.Sugar()
 }

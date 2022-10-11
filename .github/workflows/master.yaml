@@ -24,6 +24,10 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.19.x'
+    - name: Lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        args: --build-tags integration -p bugs -p unused --timeout=3m
     - name: build install
       run: make
     - name: Prepare build environment

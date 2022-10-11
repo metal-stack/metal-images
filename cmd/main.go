@@ -13,10 +13,7 @@ import (
 
 func main() {
 	start := time.Now()
-	log, err := newLogger(zapcore.InfoLevel)
-	if err != nil {
-		panic(err)
-	}
+	log := newLogger(zapcore.InfoLevel)
 	log.Infof("running install version: %s", v.V.String())
 
 	fs := afero.OsFs{}
