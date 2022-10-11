@@ -40,6 +40,7 @@ RUN set -ex \
     jq \
     kernel \
     logrotate \
+    lvm2 \
     mdadm \
     openssl \
     openssh-clients \
