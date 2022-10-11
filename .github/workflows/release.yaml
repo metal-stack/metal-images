@@ -19,6 +19,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19.x'
+    - name: Lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        args: --build-tags integration -p bugs -p unused --timeout=3m
+    - name: build install
+      run: make
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
@@ -58,6 +68,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19.x'
+    - name: build install
+      run: make
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh centos
