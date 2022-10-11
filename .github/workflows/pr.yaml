@@ -19,6 +19,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19.x'
+    - name: Lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        args: --build-tags integration -p bugs -p unused --timeout=3m
+    - name: build install
+      run: make
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
@@ -48,18 +58,24 @@ jobs:
           --no-lint \
           --no-push
       if: ${{ matrix.os == 'ubuntu' }}
-    - uses: google-github-actions/setup-gcloud@master
+    - uses: google-github-actions/setup-gcloud@v0
       with:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
     - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
   centos:
     name: Build Centos based OS image
     runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+    - name: Set up Go 1.19
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.19.x'
+    - name: build install
+      run: make
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh centos
@@ -76,9 +92,9 @@ jobs:
           --summary \
           --no-lint \
           --no-push
-    - uses: google-github-actions/setup-gcloud@master
+    - uses: google-github-actions/setup-gcloud@v0
       with:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
     - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/

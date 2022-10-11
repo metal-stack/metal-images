@@ -1,10 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG METAL_NETWORKER_VERSION
 
-FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
-
-FROM golang:1.17-buster as ignition-builder
+FROM golang:1.18-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -19,22 +16,23 @@ RUN set -ex \
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
-ARG YQ_VERSION
 ARG FRR_VERSION
+ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
-ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
 ARG CRI_VERSION
 ARG SEMVER_MAJOR_MINOR
 ARG KERNEL_VERSION
+ARG UBUNTU_MAINLINE_KERNEL_VERSION
+ARG ICE_VERSION
+ARG ICE_PKG_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
-    YQ=/usr/local/bin/yq \
     DOCKER_URL=https://download.docker.com \
-    SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR}
+    SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} \
+    UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
@@ -65,10 +63,10 @@ RUN set -ex \
     iptables \
     iputils-ping \
     iproute2 \
-    isc-dhcp-client \
     jq \
     locales \
     lsb-release \
+    locales \
     lvm2 \
     mdadm \
     procps \
@@ -81,8 +79,6 @@ RUN set -ex \
     watchdog \
     wget \
     vim \
- && curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
- && chmod +x ${YQ} \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
@@ -106,15 +102,30 @@ RUN set -ex \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  # install frr from frrouting debian package repo
  && curl -fLsS https://deb.frrouting.org/frr/keys.asc | apt-key add - \
- && echo ${FRR_VERSION} \
  && add-apt-repository "deb [arch=amd64] https://deb.frrouting.org/frr $(lsb_release -s -c) ${FRR_VERSION}" \
  && apt update \
- && apt install --yes --no-install-recommends frr frr-pythontools \
+ && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
+ # Install Intel Firmware for e800 based network cards
+ && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
+ && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
+ && mkdir -p /lib/firmware/intel/ice/ddp/ \
+ && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
  # install kernel and stuff
  && /kernel-and-timesyncd-installation.sh \
+ # remove dhclient which could lead to dangerous configurations
+ && apt-get remove --yes isc-dhcp-client \
+ # restore a fake dhclient binary to make networking.service happy
+ && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
- && rm -rf /tmp/*
+ && rm -rf /tmp/* \
+ # create directory to store metal-networker tmp files
+ && mkdir -p /etc/metal/networker
+
+RUN echo "---" >> /etc/metal/build-meta.yaml \
+ && echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml \
+ && echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml \
+ && echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
 
 COPY context/ /
 
@@ -132,7 +143,6 @@ RUN systemctl set-default multi-user.target \
                      systemd-timesyncd \
                      watchdog.service \
                      cloud-init-custom.service \
- && update-ca-certificates
-
-# Provide metal-networker that is called during the install routine to setup networking.
-COPY --from=metal-networker /metal-networker /etc/metal/networker/
+ && update-ca-certificates \
+ # generate locale
+ && locale-gen

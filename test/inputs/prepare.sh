@@ -12,6 +12,3 @@ mv "/${MACHINE_TYPE}.yaml" /etc/metal/install.yaml
 
 echo "place userdata"
 mv "/userdata-${MACHINE_TYPE}.json" /etc/metal/userdata
-
-echo "for idempotency: delete metal user before issuing install.sh"
-userdel metal

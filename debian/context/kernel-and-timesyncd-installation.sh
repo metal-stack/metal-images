@@ -6,10 +6,28 @@ ADDITIONAL_PACKAGES="openssh-server systemd-timesyncd"
 
 if [ "${ID}" = "ubuntu" ] ; then
     echo "Ubuntu - Install kernel, openssh-server and systemd-timesyncd from ubuntu repository"
+<<<<<<< HEAD
     apt-get install --yes "linux-generic-hwe-${SEMVER_MAJOR_MINOR}" ${ADDITIONAL_PACKAGES} intel-microcode
 fi
 if [ "${VERSION_CODENAME}" = "buster" ] ; then
     echo "Debian ${VERSION_CODENAME} - Install kernel, openssh-server and systemd-timesyncd from backports repository"
+=======
+    # Download mainline kernel packages, kernel up to 5.13 available in ubuntu 20.04 and 22.04 have a broken NAT implementation.
+    cd /tmp
+    wget --no-directories \
+         --no-parent \
+         --accept-regex generic \
+         --recursive \
+         --execute robots=off \
+        https://kernel.ubuntu.com/~kernel-ppa/mainline/${UBUNTU_MAINLINE_KERNEL_VERSION}/amd64/
+
+    apt-get install --yes \
+        /tmp/linux-image* \
+        /tmp/linux-modules* \
+        ${ADDITIONAL_PACKAGES}
+else
+    echo "Debian - Install kernel, openssh-server and systemd-timesyncd from backports repository"
+>>>>>>> e42a42d0878ec6c9dd7230257853e77739d1feac
     # Note: for firewall images the backports kernel is a hard requirements because kernel >= 5.x is necessary for vxlan/evpn
     # we need openssh-server because of
     #
@@ -23,6 +41,7 @@ if [ "${VERSION_CODENAME}" = "buster" ] ; then
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME} contrib" > /etc/apt/sources.list.d/contrib.list
     echo "deb https://deb.debian.org/debian ${VERSION_CODENAME}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list
     echo "deb https://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list.d/bullseye.list
+    echo "deb https://deb.debian.org/debian-security bullseye-security main contrib non-free" > /etc/apt/sources.list.d/bullseye-security.list
     apt-get update --quiet
     apt-get install --yes -t buster-backports ${ADDITIONAL_PACKAGES}
     # you can get list of installable versions with 
@@ -40,4 +59,5 @@ rm -rf /usr/lib/firmware/*wifi* \
     /usr/lib/firmware/netronome \
     /usr/lib/firmware/v4l* \
     /usr/lib/firmware/liquidio \
-    /var/lib/apt/lists/*
+    /var/lib/apt/lists/* \
+    /tmp/*

@@ -1,10 +1,9 @@
 name: Pipeline
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+  release:
+    types:
+      - published
 
 env:
   GCS_BUCKET: images.metal-pod.io
@@ -43,8 +42,7 @@ jobs:
           --file docker-make.${{ matrix.os }}.yaml \
           --no-cache \
           --summary \
-          --no-lint \
-          --no-push
+          --no-lint
     - name: Build docker image for firewalls and export tarball
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
@@ -56,8 +54,7 @@ jobs:
           --no-cache \
           --no-pull \
           --summary \
-          --no-lint \
-          --no-push
+          --no-lint
       if: ${{ matrix.os == 'ubuntu' }}
     - uses: google-github-actions/setup-gcloud@v0
       with:
@@ -65,10 +62,6 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
-
-    - uses: release-drafter/release-drafter@v5
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   centos:
     name: Build Centos based OS image
     runs-on: self-hosted
@@ -96,4 +89,9 @@ jobs:
           --summary \
           --no-lint \
           --no-push
-
+    - uses: google-github-actions/setup-gcloud@v0
+      with:
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+    - name: Upload image tarballs to GCS
+      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os

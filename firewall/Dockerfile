@@ -1,26 +1,32 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG DROPTAILER_VERSION=v0.2.7
-ARG FIREWALL_CONTROLLER_VERSION=v1.0.9
+ARG DROPTAILER_VERSION=v0.2.9
+ARG FIREWALL_CONTROLLER_VERSION=v1.1.5
+ARG TAILSCALE_VERSION=v1.30.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as firewall-controller-artifacts
 
+FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
+
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.2.2 \
-    NFTABLES_EXPORTER_VERSION=v0.1.3
+    NODE_EXPORTER_VERSION=1.3.1 \
+    NFTABLES_EXPORTER_VERSION=v0.1.5
 
+# iptables reinstallation is required, so that image works in mini-lab environment.
+# Most likely the reason is that old config is removed during deletion.
 RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
     tcpdump \
  && apt-get remove --yes iptables \
- && apt --yes autoremove
+ && apt --yes autoremove \
+ && apt install --yes iptables
 
 # Context:
 # - chrony.conf provides default configuration for chrony
@@ -59,6 +65,10 @@ COPY --from=firewall-controller-artifacts /firewall-controller /usr/local/bin/fi
 # Install droptailer-client
 COPY --from=droptailer-artifacts /client /usr/local/bin/droptailer-client
 
+# Install tailscaled and Tailscale client
+COPY --from=tailscale-artifacts /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=tailscale-artifacts /usr/local/bin/tailscale /usr/local/bin/tailscale
+
 # Install node_exporter
 WORKDIR /tmp/node_exporter
 RUN curl -fLsS https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz -o node_exporter.tgz \
@@ -71,8 +81,6 @@ WORKDIR /tmp/
 RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter.tgz -o nftables-exporter.tgz \
  && tar xvf nftables-exporter.tgz -C / \
  && systemctl enable nftables-exporter \
- # TODO remove once metal-networker adopted systemd service template to new binary location
- && ln -s /usr/bin/nftables-exporter /usr/local/bin/nftables_exporter \
  && rm -rf /tmp/*
 
 # Remove getty overrides to enable console password again

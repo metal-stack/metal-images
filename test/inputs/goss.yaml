@@ -2,6 +2,9 @@
 user:
   metal:
     exists: true
+    shell: /bin/bash
+    home: /home/metal
+    uid: 1000
 file:
   "/etc/systemd/network/10-lan0.link":
     exists: true
@@ -26,6 +29,10 @@ file:
     contains:
     - {{ .Env.PUB_KEY }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
+  "/etc/hostname":
+    exists: true
+    contains:
+    - machine
   "/var/lib/cloud-config-downloader/credentials/server":
     exists: true
     contains:
@@ -48,6 +55,10 @@ file:
     - "#!/bin/bash"
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
+  "/etc/hostname":
+    exists: true
+    contains:
+    - firewall
   "/etc/logrotate.d/suricata":
     exists: true
     contains:
@@ -61,9 +72,16 @@ service:
   frr:
     enabled: true
     running: true
+{{ if eq .Env.OS "centos" }}
+  sshd:
+    enabled: true
+    running: true
+{{ end }}
+{{ if ne .Env.OS "centos" }}
   ssh:
     enabled: true
     running: true
+{{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   docker:
     enabled: true
@@ -101,14 +119,10 @@ dns:
   google.com:
     resolvable: true
 command:
-  "hostname is set":
-    exec: "hostnamectl --static"
-    exit-status: 0
-    stdout:
-    - machine
   "internet is reachable":
     exec: "ping -W 1 -c 1 -n 8.8.8.8"
     exit-status: 0
+{{ if ne .Env.OS "centos" }}
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
     exit-status: 0
@@ -120,6 +134,7 @@ command:
     exit-status: 0
     stdout:
     - No jobs running.
+{{ end }}
   "systemd: no failed units":
     exec: systemctl list-units --failed --no-pager --no-legend
     exit-status: 0
@@ -133,9 +148,9 @@ command:
     - "uid=0(root)"
   "boot-info contains kernel, initrd and cmdline":
     exec: |
-      yq e '.kernel' /etc/metal/boot-info.yaml && \
-      yq e '.initrd' /etc/metal/boot-info.yaml && \
-      yq e '.cmdline' /etc/metal/boot-info.yaml
+      grep -q 'kernel:' /etc/metal/boot-info.yaml && \
+      grep -q 'initrd:' /etc/metal/boot-info.yaml && \
+      grep -q 'cmdline:' /etc/metal/boot-info.yaml
     exit-status: 0
     stdout:
     - "!null"
@@ -166,10 +181,12 @@ command:
     exit-status: 0
     stdout:
     - "0"
+{{ if ne .Env.OS "centos" }}
   "timedatectl show -p NTPSynchronized":
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
+{{ end }}
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
@@ -192,17 +209,9 @@ kernel-param:
     value: "0"
   net.ipv4.conf.default.rp_filter:
     value: "0"
-{{ if eq .Env.MACHINE_TYPE "machine" }}
   net.ipv4.fib_multipath_hash_policy:
     value: "0"
   net.ipv6.fib_multipath_hash_policy:
     value: "0"
-{{ end }}
-{{ if eq .Env.MACHINE_TYPE "firewall" }}
-  net.ipv4.fib_multipath_hash_policy:
-    value: "1"
-  net.ipv6.fib_multipath_hash_policy:
-    value: "1"
-{{ end }}
   kernel.printk:
     value: "2\t4\t1\t7"

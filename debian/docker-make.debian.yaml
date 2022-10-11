@@ -5,30 +5,15 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.35.0
-  - YQ_VERSION=v4.6.3
-  - GOLLDPD_VERSION=v0.3.6
-  - METAL_NETWORKER_VERSION=v0.7.2
+  - GOLLDPD_VERSION=v0.4.0
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - OS_NAME=debian
   - DOCKER_APT_OS=debian
-  - CRI_VERSION=v1.22.0
+  - CRI_VERSION=v1.24.2
+  - ICE_VERSION=1.9.11
+  - ICE_PKG_VERSION=1.3.30.0
 builds:
-  -
-    name: "Debian 10"
-    tags:
-      - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
-    build-args:
-      - BASE_OS_VERSION=10
-      - DOCKER_APT_CHANNEL=buster
-      - FRR_VERSION=frr-8
-      - SEMVER_MAJOR_MINOR=10
-      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-      - KERNEL_VERSION=5.10.70-1~bpo10+1
-    after:
-      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
-      - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
   -
     name: "Debian 11"
     tags:
@@ -36,10 +21,12 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=11
-      - DOCKER_APT_CHANNEL=bullseye
+      - DOCKER_APT_CHANNEL=buster
       - FRR_VERSION=frr-8
-      - SEMVER_MAJOR_MINOR=11
+      - FRR_VERSION_DETAIL=8.3.1-0~deb10u1
+      - SEMVER_MAJOR_MINOR=10
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+      - KERNEL_VERSION=5.10.136-1
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
