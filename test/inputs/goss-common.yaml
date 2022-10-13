@@ -1,0 +1,84 @@
+---
+user:
+  metal:
+    exists: true
+    shell: /bin/bash
+    home: /home/metal
+    uid: 1000
+file:
+  "/etc/systemd/network/10-lan0.link":
+    exists: true
+    contains:
+    - "MACAddress=00:03:00:11:11:01"
+    - "Name=lan0"
+  "/etc/systemd/network/11-lan1.link":
+    exists: true
+    contains:
+    - "MACAddress=00:03:00:11:12:01"
+    - "Name=lan1"
+  "/etc/systemd/network/10-lan0.network":
+    exists: true
+    contains:
+    - "Name=lan0"
+  "/etc/systemd/network/11-lan1.network":
+    exists: true
+    contains:
+    - "Name=lan1"
+  "/home/metal/.ssh/authorized_keys":
+    exists: true
+    contains:
+    - {{ .Env.PUB_KEY }}
+service:
+  lldpd:
+    enabled: true
+    running: false
+  frr:
+    enabled: true
+    running: true
+process:
+  bgpd:
+    running: true
+  zebra:
+    running: true
+dns:
+  google.com:
+    resolvable: true
+command:
+  "internet is reachable":
+    exec: "ping -W 1 -c 1 -n 8.8.8.8"
+    exit-status: 0
+  "systemd: no failed units":
+    exec: systemctl list-units --failed --no-pager --no-legend
+    exit-status: 0
+    stdout:
+    - ""
+  "metal user: sudo is possible with the machine console password":
+    exec: |
+      su metal -c /bin/bash -c 'printf "test\n" | sudo --stdin -i id'
+    exit-status: 0
+    stdout:
+    - "uid=0(root)"
+  "boot-info contains kernel, initrd and cmdline":
+    exec: |
+      grep -q 'kernel:' /etc/metal/boot-info.yaml && \
+      grep -q 'initrd:' /etc/metal/boot-info.yaml && \
+      grep -q 'cmdline:' /etc/metal/boot-info.yaml
+    exit-status: 0
+    stdout:
+    - "!null"
+    stderr: []
+  "bgp has two peers visibile":
+    exec: "vtysh -c 'show bgp sum json' | jq '.ipv4Unicast.totalPeers'"
+    exit-status: 0
+    stdout:
+    - "2"
+  "bgp router-id matches":
+    exec: "vtysh -c 'show bgp json' | jq '.routerId'"
+    exit-status: 0
+    stdout:
+    - {{ .Env.ROUTER_ID }}
+  "bgp ASN matches":
+    exec: "vtysh -c 'show bgp json' | jq '.localAS'"
+    exit-status: 0
+    stdout:
+    - {{ .Env.ASN }}

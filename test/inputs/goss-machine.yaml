@@ -1,0 +1,37 @@
+---
+file:
+  "/etc/hostname":
+    exists: true
+    contains:
+    - machine
+  "/var/lib/cloud-config-downloader/credentials/server":
+    exists: true
+    contains:
+    - https://my-cluster.local
+  "/var/lib/cloud-config-downloader/credentials/ca.crt":
+    exists: true
+    contains:
+    - "-----BEGIN CERTIFICATE-----"
+  "/var/lib/cloud-config-downloader/credentials/client.crt":
+    exists: true
+    contains:
+    - "-----BEGIN CERTIFICATE-----"
+  "/var/lib/cloud-config-downloader/credentials/client.key":
+    exists: true
+    contains:
+    - "-----BEGIN RSA PRIVATE KEY-----"
+  "/var/lib/cloud-config-downloader/download-cloud-config.sh":
+    exists: true
+    contains:
+    - "#!/bin/bash"
+command:
+  "only ssh and bgpd is listening at 0.0.0.0":
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
+    exit-status: 0
+    stdout:
+    - "0"
+  "only ssh and bgpd is listening at [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179' | wc -l"
+    exit-status: 0
+    stdout:
+    - "0"

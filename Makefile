@@ -23,6 +23,7 @@ binary: test
 	strip bin/$(BINARY)
 	cp bin/$(BINARY) debian/context/install-go
 	cp bin/$(BINARY) centos/context/install-go
+	cp bin/$(BINARY) almalinux/context/install-go
 
 .PHONY: test
 test:
