@@ -22,6 +22,8 @@ COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 
 RUN set -ex \
+ # with an empty /etc/machine-id nothing will be installed in /boot
+ && echo "almalinux" > /etc/machine-id \ 
  && dnf install -y \
     ca-certificates \
     chrony \
@@ -34,8 +36,6 @@ RUN set -ex \
     grub2 \
     grub2-efi \
     grub2-efi-modules \
-    # Only ifupdown2 support association of more than one IP address to lo LOOPBACK interface.
-    # ifupdown2 \
     ipmitool \
     jq \
     kernel \
