@@ -333,7 +333,11 @@ func (i *installer) copySSHKeys() error {
 		return err
 	}
 
-	return afero.WriteFile(i.fs, "/home/metal/.ssh/authorized_keys", []byte(i.config.SSHPublicKey), 0600)
+	err = afero.WriteFile(i.fs, "/home/metal/.ssh/authorized_keys", []byte(i.config.SSHPublicKey), 0600)
+	if err != nil {
+		return err
+	}
+	return i.fs.Chown("/home/metal/.ssh/authorized_keys", uid, gid)
 }
 
 func (i *installer) fixPermissions() error {
