@@ -3,16 +3,15 @@ gossfile:
   common:
     file: goss-common.yaml
     skip: false
-{{ if eq .Env.MACHINE_TYPE "machine" }}
-  machine:
-    file: goss-machine.yaml
-    skip: false
-{{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   firewall:
     file: goss-firewall.yaml
     skip: false
 {{ end }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  machine:
+    file: goss-machine.yaml
+    skip: false
 {{ if eq .Env.OS "debian" }}
   debian:
     file: goss-debian-ubuntu.yaml
@@ -33,4 +32,4 @@ gossfile:
     file: goss-almalinux.yaml
     skip: false
 {{ end }}
-
+{{ end }}

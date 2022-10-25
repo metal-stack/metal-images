@@ -11,7 +11,7 @@ default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
 builds:
   -
-    name: "Almalinux 7"
+    name: "Almalinux 8"
     tags:
       - ${SEMVER}
       - ${SEMVER_MAJOR_MINOR}
