@@ -1,15 +1,15 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.18-buster as ignition-builder
+FROM golang:1.19-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
  && apt-get update \
  && apt-get install -y libblkid-dev \
- && git clone https://github.com/coreos/ignition.git \
+ && git clone https://github.com/flatcar/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && GO111MODULE=off make \
+ && make \
  && strip bin/amd64/ignition
 
 FROM centos:${BASE_OS_VERSION}
