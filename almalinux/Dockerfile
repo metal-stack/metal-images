@@ -36,6 +36,7 @@ RUN set -ex \
     grub2 \
     grub2-efi \
     grub2-efi-modules \
+    grub2-efi-x64-modules \
     ipmitool \
     jq \
     kernel \
