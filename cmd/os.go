@@ -49,6 +49,16 @@ func (o operatingsystem) Initramdisk(kernversion string) string {
 		return fmt.Sprintf("initrd.img-%s", kernversion)
 	}
 }
+func (o operatingsystem) NeedUpdateInitRamfs() bool {
+	switch o {
+	case osCentos, osAlmalinux:
+		return false
+	case osDebian, osUbuntu:
+		return true
+	default:
+		return true
+	}
+}
 
 func (o operatingsystem) GrubInstallCmd() string {
 	switch o {

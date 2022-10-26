@@ -34,8 +34,7 @@ RUN set -ex \
     gettext \
     gnupg2 \
     grub2 \
-    grub2-efi \
-    grub2-efi-modules \
+    grub2-efi-x64 \
     grub2-efi-x64-modules \
     ipmitool \
     jq \
@@ -50,6 +49,7 @@ RUN set -ex \
     passwd \
     procps \
     shim \
+    shim-x64 \
     socat \
     sudo \
     systemd \
