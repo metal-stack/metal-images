@@ -1,29 +1,24 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG METAL_NETWORKER_VERSION
 
-FROM ghcr.io/metal-stack/metal-networker:${METAL_NETWORKER_VERSION} as metal-networker
-
-FROM golang:1.19-bullseye as ignition-builder
+FROM golang:1.19-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
  && apt-get update \
  && apt-get install -y libblkid-dev \
- && git clone https://github.com/coreos/ignition.git \
+ && git clone https://github.com/flatcar/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && GO111MODULE=off make \
+ && make \
  && strip bin/amd64/ignition
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
-ARG YQ_VERSION
 ARG FRR_VERSION
 ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
-ARG METAL_NETWORKER_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
 ARG CRI_VERSION
@@ -35,8 +30,6 @@ ARG ICE_PKG_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
-    YQ=/usr/local/bin/yq \
     DOCKER_URL=https://download.docker.com \
     SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} \
     UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
@@ -87,8 +80,6 @@ RUN set -ex \
     watchdog \
     wget \
     vim \
- && curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
- && chmod +x ${YQ} \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
@@ -125,7 +116,14 @@ RUN set -ex \
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
- && rm -rf /tmp/*
+ && rm -rf /tmp/* \
+ # create directory to store metal-networker tmp files
+ && mkdir -p /etc/metal/networker
+
+RUN echo "---" >> /etc/metal/build-meta.yaml \
+ && echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml \
+ && echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml \
+ && echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
 
 COPY context/ /
 
@@ -146,6 +144,3 @@ RUN systemctl set-default multi-user.target \
  && update-ca-certificates \
  # generate locale
  && locale-gen
-
-# Provide metal-networker that is called during the install routine to setup networking.
-COPY --from=metal-networker /metal-networker /etc/metal/networker/

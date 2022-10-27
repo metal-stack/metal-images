@@ -1,27 +1,22 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.18-buster as ignition-builder
+FROM golang:1.19-buster as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
  && apt-get update \
  && apt-get install -y libblkid-dev \
- && git clone https://github.com/coreos/ignition.git \
+ && git clone https://github.com/flatcar/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && GO111MODULE=off make \
+ && make \
  && strip bin/amd64/ignition
 
 FROM centos:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
-ARG YQ_VERSION
 ARG GOLLDPD_VERSION
-ARG METAL_NETWORKER_VERSION
 ARG FRR_VERSION
-
-ENV YQ_DOWNLOAD=https://github.com/mikefarah/yq/releases/download \
-    YQ=/usr/local/bin/yq
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
@@ -30,6 +25,7 @@ RUN set -ex \
  && yum install -y \
     ca-certificates \
     chrony \
+    cloud-init \
     curl \
     dbus \
     efibootmgr \
@@ -43,8 +39,11 @@ RUN set -ex \
     ipmitool \
     jq \
     kernel \
+    logrotate \
+    lvm2 \
     mdadm \
     openssl \
+    openssh-clients \
     openssh-server \
     passwd \
     procps \
@@ -58,15 +57,17 @@ RUN set -ex \
     wget \
     vim \
     yum-utils
-RUN curl -fLsS ${YQ_DOWNLOAD}/${YQ_VERSION}/yq_linux_amd64 -o ${YQ} \
- && chmod +x ${YQ} \
- && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
+RUN curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo \
  && yum install -y docker-ce docker-ce-cli containerd.io \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
- && rm -rf /tmp/*
+ && rm -rf /tmp/* \
+ # create directory to store metal-networker tmp files
+ && mkdir -p /etc/metal/networker \
+ # clean yum cache
+ && yum clean all
 
 # Install FRR see https://rpm.frrouting.org/ for available channels
 RUN set -ex \
@@ -78,6 +79,11 @@ RUN set -ex \
 RUN set -ex \
  && curl -fLsS https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/bin/jq \
  && chmod +x /usr/bin/jq
+
+RUN echo "---" >> /etc/metal/build-meta.yaml \
+ && echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml \
+ && echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml \
+ && echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
 
 COPY context/ /
 # Set default target to multi-user.target - otherwise it will be graphical.target
@@ -92,12 +98,6 @@ RUN systemctl set-default multi-user.target \
                      systemd-networkd \
                      watchdog.service \
  && update-ca-trust
-
-# Provide metal-networker that is called during the install routine to setup networking.
-WORKDIR /etc/metal/networker
-RUN curl -fLOsS https://github.com/metal-stack/metal-networker/releases/download/${METAL_NETWORKER_VERSION}/metal-networker.tgz \
- && tar xzf metal-networker.tgz \
- && rm metal-networker.tgz /etc/sysconfig/network-scripts/ifcfg-lo
 
 # execute dracut to regenerate initramfs with all drivers because otherwise only
 # a few drivers are included and the kexec into centos will fail because no disks where found

@@ -13,7 +13,7 @@ ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     ln -sf /bin/false /usr/bin/systemd-detect-virt
     systemctl stop chrony
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
-    /install.sh
+    /install-go
     systemctl restart systemd-networkd
     systemctl restart chrony@vrf104009
     systemctl daemon-reload
