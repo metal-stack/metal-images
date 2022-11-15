@@ -522,6 +522,63 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 }
 
 func (i *installer) grubInstall(cmdLine string) error {
+	switch i.oss {
+	case osCentos:
+		return i.installGrubCentos(cmdLine)
+	case osAlmalinux:
+		return i.installGrubAlmalinux(cmdLine)
+	case osDebian, osUbuntu:
+		return i.installGrubUbuntu(cmdLine)
+	default:
+		return nil
+	}
+}
+
+func (i *installer) writeBuildMeta() error {
+	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
+
+	meta := map[string]interface{}{}
+	if i.fileExists("/etc/metal/build-meta.yaml") {
+		content, err := afero.ReadFile(i.fs, "/etc/metal/build-meta.yaml")
+		if err != nil {
+			return err
+		}
+
+		err = yaml.Unmarshal(content, &meta)
+		if err != nil {
+			return err
+		}
+	}
+
+	meta["buildVersion"] = v.Version
+	meta["buildDate"] = v.BuildDate
+	meta["buildSHA"] = v.GitSHA1
+
+	content, err := yaml.Marshal(meta)
+	if err != nil {
+		return err
+	}
+
+	content = append([]byte("---\n"), content...)
+
+	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, 0644)
+}
+
+func (i *installer) getKernelVersion() (string, error) {
+	kern, _, err := i.kernelAndInitrdPath()
+	if err != nil {
+		return "", err
+	}
+
+	_, version, found := strings.Cut(kern, "vmlinuz-")
+	if !found {
+		return "", fmt.Errorf("unable to determine kernel version from: %s", kern)
+	}
+
+	return version, nil
+}
+
+func (i *installer) installGrubUbuntu(cmdLine string) error {
 	i.log.Infow("install grub")
 	// ttyS1,115200n8
 	serialPort, serialSpeed, found := strings.Cut(i.config.Console, ",")
@@ -560,18 +617,6 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	}
 	if i.config.RaidEnabled {
 		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
-	}
-
-	if i.oss == osCentos || i.oss == osAlmalinux {
-		_, err := i.exec.command(&cmdParams{
-			name: "grub2-mkconfig",
-			args: []string{"-o", "/boot/grub2/grub.cfg"},
-		})
-		if err != nil {
-			return err
-		}
-
-		grubInstallArgs = append(grubInstallArgs, fmt.Sprintf("UUID=%s", i.config.RootUUID))
 	}
 
 	if i.config.RaidEnabled {
@@ -621,9 +666,6 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 				}
 
 				shim := fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID())
-				if i.oss == osCentos || i.oss == osAlmalinux {
-					shim = fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
-				}
 
 				_, err = i.exec.command(&cmdParams{
 					name: "efibootmgr",
@@ -642,37 +684,6 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	})
 	if err != nil {
 		return err
-	}
-
-	if i.oss == osCentos || i.oss == osAlmalinux {
-		if !i.config.RaidEnabled {
-			return nil
-		}
-
-		v, err := i.getKernelVersion()
-		if err != nil {
-			return err
-		}
-
-		_, err = i.exec.command(&cmdParams{
-			name: "dracut",
-			args: []string{
-				"--mdadm",
-				"--kver", v,
-				"--kmoddir", "/lib/modules/" + v,
-				"--include", "/lib/modules/" + v, "/lib/modules/" + v,
-				"--fstab",
-				`--add="dm mdraid"`,
-				`--add-drivers="raid0 raid1"`,
-				"--hostonly",
-				"--force",
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		return nil
 	}
 
 	_, err = i.exec.command(&cmdParams{
@@ -697,46 +708,320 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	return nil
 }
 
-func (i *installer) writeBuildMeta() error {
-	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
-
-	meta := map[string]interface{}{}
-	if i.fileExists("/etc/metal/build-meta.yaml") {
-		content, err := afero.ReadFile(i.fs, "/etc/metal/build-meta.yaml")
-		if err != nil {
-			return err
-		}
-
-		err = yaml.Unmarshal(content, &meta)
-		if err != nil {
-			return err
-		}
+func (i *installer) installGrubCentos(cmdLine string) error {
+	i.log.Infow("install grub")
+	// ttyS1,115200n8
+	serialPort, serialSpeed, found := strings.Cut(i.config.Console, ",")
+	if !found {
+		return fmt.Errorf("serial console could not be split into port and speed")
 	}
 
-	meta["buildVersion"] = v.Version
-	meta["buildDate"] = v.BuildDate
-	meta["buildSHA"] = v.GitSHA1
+	_, serialPort, found = strings.Cut(serialPort, "ttyS")
+	if !found {
+		return fmt.Errorf("serial port could not be split")
+	}
 
-	content, err := yaml.Marshal(meta)
+	serialSpeed, _, found = strings.Cut(serialSpeed, "n8")
+	if !found {
+		return fmt.Errorf("serial speed could not be split")
+	}
+
+	defaultGrub := fmt.Sprintf(`GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=%s
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="%s"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(), cmdLine, serialSpeed, serialPort)
+
+	err := afero.WriteFile(i.fs, "/etc/default/grub", []byte(defaultGrub), 0755)
 	if err != nil {
 		return err
 	}
 
-	content = append([]byte("---\n"), content...)
+	grubInstallArgs := []string{
+		"--target=x86_64-efi",
+		"--efi-directory=/boot/efi",
+		"--boot-directory=/boot",
+		"--bootloader-id=" + i.oss.BootloaderID(),
+	}
+	if i.config.RaidEnabled {
+		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
+	}
 
-	return afero.WriteFile(i.fs, "/etc/metal/build-meta.yaml", content, 0644)
+	_, err = i.exec.command(&cmdParams{
+		name: "grub2-mkconfig",
+		args: []string{"-o", "/boot/grub2/grub.cfg"},
+	})
+	if err != nil {
+		return err
+	}
+
+	grubInstallArgs = append(grubInstallArgs, fmt.Sprintf("UUID=%s", i.config.RootUUID))
+
+	if i.config.RaidEnabled {
+		out, err := i.exec.command(&cmdParams{
+			name:    "mdadm",
+			args:    []string{"--examine", "--scan"},
+			timeout: 10 * time.Second,
+		})
+		if err != nil {
+			return err
+		}
+
+		out += "\nMAILADDR root\n"
+
+		err = afero.WriteFile(i.fs, "/etc/mdadm.conf", []byte(out), 0700)
+		if err != nil {
+			return err
+		}
+
+		if i.oss.NeedUpdateInitRamfs() {
+			err = i.fs.MkdirAll("/var/lib/initramfs-tools", 0755)
+			if err != nil {
+				return err
+			}
+
+			_, err = i.exec.command(&cmdParams{
+				name: "update-initramfs",
+				args: []string{"-u"},
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		out, err = i.exec.command(&cmdParams{
+			name: "blkid",
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, line := range strings.Split(string(out), "\n") {
+			if strings.Contains(line, `PARTLABEL="efi"`) {
+				disk, _, found := strings.Cut(line, ":")
+				if !found {
+					return fmt.Errorf("unable to process blkid output lines")
+				}
+
+				shim := fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
+
+				_, err = i.exec.command(&cmdParams{
+					name: "efibootmgr",
+					args: []string{"-c", "-d", disk, "-p1", "-l", shim, "-L", i.oss.BootloaderID()},
+				})
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	_, err = i.exec.command(&cmdParams{
+		name: i.oss.GrubInstallCmd(),
+		args: grubInstallArgs,
+	})
+	if err != nil {
+		return err
+	}
+
+	if !i.config.RaidEnabled {
+		return nil
+	}
+
+	v, err := i.getKernelVersion()
+	if err != nil {
+		return err
+	}
+
+	_, err = i.exec.command(&cmdParams{
+		name: "dracut",
+		args: []string{
+			"--mdadm",
+			"--kver", v,
+			"--kmoddir", "/lib/modules/" + v,
+			"--include", "/lib/modules/" + v, "/lib/modules/" + v,
+			"--fstab",
+			`--add="dm mdraid"`,
+			`--add-drivers="raid0 raid1"`,
+			"--hostonly",
+			"--force",
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (i *installer) getKernelVersion() (string, error) {
-	kern, _, err := i.kernelAndInitrdPath()
-	if err != nil {
-		return "", err
-	}
-
-	_, version, found := strings.Cut(kern, "vmlinuz-")
+func (i *installer) installGrubAlmalinux(cmdLine string) error {
+	i.log.Infow("install grub")
+	// ttyS1,115200n8
+	serialPort, serialSpeed, found := strings.Cut(i.config.Console, ",")
 	if !found {
-		return "", fmt.Errorf("unable to determine kernel version from: %s", kern)
+		return fmt.Errorf("serial console could not be split into port and speed")
 	}
 
-	return version, nil
+	_, serialPort, found = strings.Cut(serialPort, "ttyS")
+	if !found {
+		return fmt.Errorf("serial port could not be split")
+	}
+
+	serialSpeed, _, found = strings.Cut(serialSpeed, "n8")
+	if !found {
+		return fmt.Errorf("serial speed could not be split")
+	}
+
+	defaultGrub := fmt.Sprintf(`GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=%s
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="%s"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(), cmdLine, serialSpeed, serialPort)
+
+	err := afero.WriteFile(i.fs, "/etc/default/grub", []byte(defaultGrub), 0755)
+	if err != nil {
+		return err
+	}
+
+	_, err = i.exec.command(&cmdParams{
+		name: "grub2-mkconfig",
+		args: []string{"-o", "/boot/efi/EFI/almalinux/grub.cfg"},
+	})
+	if err != nil {
+		return err
+	}
+
+	out, err := i.exec.command(&cmdParams{
+		name: "blkid",
+	})
+	if err != nil {
+		return err
+	}
+
+	var efiPartition string
+	for _, line := range strings.Split(string(out), "\n") {
+		if strings.Contains(line, `PARTLABEL="efi"`) {
+			disk, _, found := strings.Cut(line, ":")
+			if !found {
+				return fmt.Errorf("unable to process blkid output lines")
+			}
+
+			efiPartition = disk
+			break
+		}
+	}
+
+	shim := fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
+
+	_, err = i.exec.command(&cmdParams{
+		name: "efibootmgr",
+		args: []string{"-c", "-d", efiPartition, "-l", shim, "-L", i.oss.BootloaderID()},
+	})
+	if err != nil {
+		return err
+	}
+
+	// grubInstallArgs := []string{
+	// 	"--target=x86_64-efi",
+	// 	"--efi-directory=/boot/efi",
+	// 	"--boot-directory=/boot",
+	// 	"--bootloader-id=" + i.oss.BootloaderID(),
+	// }
+	// if i.config.RaidEnabled {
+	// 	grubInstallArgs = append(grubInstallArgs, "--no-nvram")
+	// }
+
+	// grubInstallArgs = append(grubInstallArgs, fmt.Sprintf("UUID=%s", i.config.RootUUID))
+
+	// if i.config.RaidEnabled {
+	// 	out, err := i.exec.command(&cmdParams{
+	// 		name:    "mdadm",
+	// 		args:    []string{"--examine", "--scan"},
+	// 		timeout: 10 * time.Second,
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	out += "\nMAILADDR root\n"
+
+	// 	err = afero.WriteFile(i.fs, "/etc/mdadm.conf", []byte(out), 0700)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	if i.oss.NeedUpdateInitRamfs() {
+	// 		err = i.fs.MkdirAll("/var/lib/initramfs-tools", 0755)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+
+	// 		_, err = i.exec.command(&cmdParams{
+	// 			name: "update-initramfs",
+	// 			args: []string{"-u"},
+	// 		})
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+
+	// 	out, err = i.exec.command(&cmdParams{
+	// 		name: "blkid",
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	for _, line := range strings.Split(string(out), "\n") {
+	// 		if strings.Contains(line, `PARTLABEL="efi"`) {
+	// 			disk, _, found := strings.Cut(line, ":")
+	// 			if !found {
+	// 				return fmt.Errorf("unable to process blkid output lines")
+	// 			}
+
+	// 			shim := fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
+
+	// 			_, err = i.exec.command(&cmdParams{
+	// 				name: "efibootmgr",
+	// 				args: []string{"-c", "-d", disk, "-p1", "-l", shim, "-L", i.oss.BootloaderID()},
+	// 			})
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// if !i.config.RaidEnabled {
+	// 	return nil
+	// }
+
+	// v, err := i.getKernelVersion()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// _, err = i.exec.command(&cmdParams{
+	// 	name: "dracut",
+	// 	args: []string{
+	// 		"--mdadm",
+	// 		"--kver", v,
+	// 		"--kmoddir", "/lib/modules/" + v,
+	// 		"--include", "/lib/modules/" + v, "/lib/modules/" + v,
+	// 		"--fstab",
+	// 		`--add="dm mdraid"`,
+	// 		`--add-drivers="raid0 raid1"`,
+	// 		"--hostonly",
+	// 		"--force",
+	// 	},
+	// })
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
 }

@@ -115,7 +115,11 @@ nics:
     -   mac: b8:6a:97:74:00:5f
         name: null
         neighbors: []`
-	sampleBlkidOutput = `/dev/sda1: UUID="42d10089-ee1e-0399-445e-755062b63ec8" UUID_SUB="cc57c456-0b2f-6345-c597-d861cc6dd8ac" LABEL="any:0" TYPE="linux_raid_member" PARTLABEL="efi" PARTUUID="273985c8-d097-4123-bcd0-80b4e4e14728"
+	sampleBlkidOutput = `
+/dev/sda1: LABEL="efi" UUID="F01A-C653" BLOCK_SIZE="512" TYPE="vfat" PARTLABEL="efi" PARTUUID="07e8378b-a34f-4d88-80e8-bf87d04e2e23"
+/dev/sda2: LABEL="root" UUID="543eb7f8-98d4-d986-e669-824dbebe69e5" BLOCK_SIZE="4096" TYPE="ext4" PARTLABEL="root" PARTUUID="2a08cdd0-2e2c-46a0-b4a8-06d6ebd84664"
+/dev/sda3: LABEL="varlib" UUID="043bbfa6-c3ea-43e6-8de6-4e5fd7d64674" BLOCK_SIZE="4096" TYPE="ext4" PARTLABEL="varlib" PARTUUID="14e5ce73-8f58-4ed7-9298-965ca4e79fec"`
+	sampleBlkidOutputRaid = `/dev/sda1: UUID="42d10089-ee1e-0399-445e-755062b63ec8" UUID_SUB="cc57c456-0b2f-6345-c597-d861cc6dd8ac" LABEL="any:0" TYPE="linux_raid_member" PARTLABEL="efi" PARTUUID="273985c8-d097-4123-bcd0-80b4e4e14728"
 /dev/sda2: UUID="543eb7f8-98d4-d986-e669-824dbebe69e5" UUID_SUB="54748c60-b566-f391-142c-fb78bb1fc6a9" LABEL="any:1" TYPE="linux_raid_member" PARTLABEL="root" PARTUUID="d7863f4e-af7c-47fc-8c03-6ecdc69bc72d"
 /dev/sda3: UUID="fc32a6f0-ee40-d9db-87c8-c9f3a8400c8b" UUID_SUB="582e9b4f-f191-e01e-85fd-2f7d969fbef6" LABEL="any:2" TYPE="linux_raid_member" PARTLABEL="varlib" PARTUUID="e8b44f09-b7f7-4e0d-a7c3-d909617d1f05"
 /dev/sdb1: UUID="42d10089-ee1e-0399-445e-755062b63ec8" UUID_SUB="61bd5d8b-1bb8-673b-9e61-8c28dccc3812" LABEL="any:0" TYPE="linux_raid_member" PARTLABEL="efi" PARTUUID="13a4c568-57b0-4259-9927-9ac023aaa5f0"
@@ -314,7 +318,7 @@ func Test_installer_findMDUUID(t *testing.T) {
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"blkid"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
@@ -371,7 +375,7 @@ func Test_installer_buildCMDLine(t *testing.T) {
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"blkid"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
@@ -391,7 +395,7 @@ func Test_installer_buildCMDLine(t *testing.T) {
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"blkid"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
@@ -756,16 +760,16 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				},
 				{
 					WantCmd:  []string{"blkid"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\metal-ubuntu\\\\grubx64.efi", "-L", "metal-ubuntu"},
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", `\\EFI\\metal-ubuntu\\grubx64.efi`, "-L", "metal-ubuntu"},
 					Output:   "",
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\metal-ubuntu\\\\grubx64.efi", "-L", "metal-ubuntu"},
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", `\\EFI\\metal-ubuntu\\grubx64.efi`, "-L", "metal-ubuntu"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -806,7 +810,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
@@ -836,7 +840,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			execMocks: []fakeexecparams{
 				{
 					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
@@ -846,16 +850,16 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				},
 				{
 					WantCmd:  []string{"blkid"},
-					Output:   sampleBlkidOutput,
+					Output:   sampleBlkidOutputRaid,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\centos\\\\shimx64.efi", "-L", "centos"},
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", `\\EFI\\centos\\shimx64.efi`, "-L", "centos"},
 					Output:   "",
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\centos\\\\shimx64.efi", "-L", "centos"},
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", `\\EFI\\centos\\shimx64.efi`, "-L", "centos"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -875,6 +879,41 @@ GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+		},
+		{
+			name: "without raid almalinux",
+			fsMocks: func(fs afero.Fs) {
+				// require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
+				// require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
+				// require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
+				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
+			},
+			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			oss:     osAlmalinux,
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/efi/EFI/almalinux/grub.cfg"},
+					Output:   "",
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"blkid"},
+					Output:   sampleBlkidOutput,
+					ExitCode: 0,
+				},
+				{
+					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-l", `\\EFI\\almalinux\\shimx64.efi`, "-L", "almalinux"},
+					Output:   "",
+					ExitCode: 0,
+				},
+			},
+			wantGrubCfg: `GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR=almalinux
+GRUB_CMDLINE_LINUX_DEFAULT=""
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
