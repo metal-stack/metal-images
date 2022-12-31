@@ -14,7 +14,7 @@ jobs:
     name: Build Debian and Ubuntu based OS images
     strategy:
       matrix:
-        os: [debian, ubuntu]
+        os: [debian]
     runs-on: self-hosted
     steps:
     - name: Checkout
