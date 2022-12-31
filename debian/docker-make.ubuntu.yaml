@@ -24,7 +24,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=20.04
       - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.4-0~ubuntu20.04.1
+      - FRR_VERSION_DETAIL=8.4.1-0~ubuntu20.04.1
       - SEMVER_MAJOR_MINOR=20.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
@@ -38,7 +38,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=22.04
       - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.4-0~ubuntu22.04.1
+      - FRR_VERSION_DETAIL=8.4.1-0~ubuntu22.04.1
       - SEMVER_MAJOR_MINOR=22.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
