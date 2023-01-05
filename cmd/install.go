@@ -299,7 +299,7 @@ func (i *installer) configureNetwork() error {
 		return err
 	}
 
-	c, err := netconf.NewConfigurator(kind, *kb)
+	c, err := netconf.NewConfigurator(kind, *kb, false)
 	if err != nil {
 		return err
 	}
