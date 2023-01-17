@@ -125,6 +125,19 @@ RUN echo "---" >> /etc/metal/build-meta.yaml \
 
 COPY context/ /
 
+# Apply CIS hardening - we use https://github.com/ovh/debian-cis/ with a defined list to apply the config
+RUN mkdir /debian-cis \
+ && cd /debian-cis \
+ && curl -fLsS https://github.com/ovh/debian-cis/archive/refs/tags/latest.tar.gz -o cis-hardening.tar.gz \
+ && tar -xf cis-hardening.tar.gz --strip-components=1  \
+ && cp debian/default /etc/default/cis-hardening \
+ && sed -i "s#CIS_ROOT_DIR=.*#CIS_ROOT_DIR='$(pwd)'#" /etc/default/cis-hardening \
+ && bin/hardening.sh --audit --batch > /dev/null \
+ && bin/hardening.sh --audit --set-hardening-level 3 \
+ && cut -f 1 -d\# /cis-hardening.apply | while read a ; do bin/hardening.sh --apply --only "$a" ; done \
+ && rm /etc/default/cis-hardening \
+ && rm -rf /debian-cis
+
 # Copy the dependencies of `cloud-init-custom.service` into the image.
 COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
 COPY /cloud-init/cloud-init-custom.sh /etc/metal/
