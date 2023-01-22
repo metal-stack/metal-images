@@ -23,10 +23,10 @@ builds:
       - BASE_OS_VERSION=11
       - DOCKER_APT_CHANNEL=buster
       - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.4.1-0~deb11u1
+      - FRR_VERSION_DETAIL=8.4.2-0~deb11u1
       - SEMVER_MAJOR_MINOR=11
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-      - KERNEL_VERSION=5.10.149-2
+      - KERNEL_VERSION=5.10.158-2
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
