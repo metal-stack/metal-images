@@ -143,7 +143,9 @@ func (i *installer) writeResolvConf() error {
 		i.log.Infow("no /etc/resolv.conf present")
 	}
 
-	content := []byte(`nameserver 8.8.8.8
+	// FIXME migrate to dns0.eu resolvers
+	content := []byte(
+		`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)

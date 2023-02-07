@@ -1,6 +1,6 @@
 module github.com/metal-stack/metal-images
 
-go 1.19
+go 1.20
 
 require (
 	github.com/flatcar/ignition v0.36.2
@@ -35,7 +35,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/metal-stack/metal-go v0.21.5 // indirect
+	github.com/metal-stack/metal-go v0.22.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
