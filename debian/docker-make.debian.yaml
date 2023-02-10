@@ -21,7 +21,7 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=11
-      - DOCKER_APT_CHANNEL=buster
+      - DOCKER_APT_CHANNEL=bullseye
       - FRR_VERSION=frr-8
       - FRR_VERSION_DETAIL=8.4.2-0~deb11u1
       - SEMVER_MAJOR_MINOR=11
