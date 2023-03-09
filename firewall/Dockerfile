@@ -15,7 +15,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NODE_EXPORTER_VERSION=1.5.0 \
-    NFTABLES_EXPORTER_VERSION=v0.2.2
+    NFTABLES_EXPORTER_VERSION=v0.2.0
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
@@ -78,7 +78,7 @@ RUN curl -fLsS https://github.com/prometheus/node_exporter/releases/download/v${
 
 # Install nftables-exporter
 WORKDIR /tmp/
-RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter.tgz -o nftables-exporter.tgz \
+RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter -o /usr/bin/nftables-exporter \
  && tar xvf nftables-exporter.tgz -C / \
  && systemctl enable nftables-exporter \
  && rm -rf /tmp/*
