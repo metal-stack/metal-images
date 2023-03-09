@@ -2,7 +2,7 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.10
 ARG FIREWALL_CONTROLLER_VERSION=v1.2.2
-ARG TAILSCALE_VERSION=v1.32.0
+ARG TAILSCALE_VERSION=v1.36.2
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -15,7 +15,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NODE_EXPORTER_VERSION=1.5.0 \
-    NFTABLES_EXPORTER_VERSION=v0.1.7
+    NFTABLES_EXPORTER_VERSION=v0.2.2
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
