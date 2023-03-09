@@ -78,7 +78,7 @@ RUN curl -fLsS https://github.com/prometheus/node_exporter/releases/download/v${
 
 # Install nftables-exporter
 WORKDIR /tmp/
-RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter -o /usr/bin/nftables-exporter \
+RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter.tgz -o nftables-exporter.tgz \
  && tar xvf nftables-exporter.tgz -C / \
  && systemctl enable nftables-exporter \
  && rm -rf /tmp/*
