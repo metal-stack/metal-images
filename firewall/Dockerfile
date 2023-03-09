@@ -20,7 +20,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
 RUN apt-get update --quiet \
- && apt-get install --yes --no-install-recommends \
+ && apt-get install --yes \
     bridge-utils \
     fever \
     tcpdump \
