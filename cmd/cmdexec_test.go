@@ -20,6 +20,7 @@ type fakeexec struct {
 	mocks     []fakeexecparams
 }
 
+// nolint:musttag
 type fakeexecparams struct {
 	WantCmd  []string
 	Output   string
