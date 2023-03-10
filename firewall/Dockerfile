@@ -15,7 +15,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NODE_EXPORTER_VERSION=1.5.0 \
-    NFTABLES_EXPORTER_VERSION=v0.2.3
+    NFTABLES_EXPORTER_VERSION=v0.2.4
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
