@@ -243,8 +243,8 @@ github.com/metal-stack/metal-hammer v0.11.2 h1:CUzrz+RCKlbhdKKSI5ow8UhgURmcT3Z7Z
 github.com/metal-stack/metal-hammer v0.11.2/go.mod h1:OyrsyH6aZ6p1DWv6k2CFEJGybg4A0oBjH0yQQmSBfcQ=
 github.com/metal-stack/metal-lib v0.11.5 h1:tX6oRiKwWsjc7LiShNcQTe/7KKmYeZ886wMSI7zRsrI=
 github.com/metal-stack/metal-lib v0.11.5/go.mod h1:dUlNcar6S42YBEyTsqHQcSX3wrBrPeCNgBr2weG/Rhg=
-github.com/metal-stack/metal-networker v0.32.0 h1:uyf3YQ25oha1rb4UxAr6kpa4IF0fU2ZsWbRCBwVsth0=
-github.com/metal-stack/metal-networker v0.32.0/go.mod h1:lVpSIE7E0iYgyTAavjcrLrUYB5IaFrtthhKzKn5fcH4=
+github.com/metal-stack/metal-networker v0.32.1-0.20230320124918-33d80a379adb h1:X2x56PUpgzHn6COTkW5dl7ve8d2X2OZ+pgfeBpLkvOM=
+github.com/metal-stack/metal-networker v0.32.1-0.20230320124918-33d80a379adb/go.mod h1:lVpSIE7E0iYgyTAavjcrLrUYB5IaFrtthhKzKn5fcH4=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=
 github.com/metal-stack/v v1.0.3/go.mod h1:YTahEu7/ishwpYKnp/VaW/7nf8+PInogkfGwLcGPdXg=
 github.com/mitchellh/mapstructure v1.3.3/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
