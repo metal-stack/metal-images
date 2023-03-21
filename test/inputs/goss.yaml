@@ -93,7 +93,7 @@ service:
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "chrony@vrf104009":
     enabled: true
-    running: false
+    running: true
   suricata:
     enabled: true
     running: true
