@@ -23,8 +23,9 @@ else
     echo "deb http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list
     echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
     echo "deb http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list
+    echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list
 
-    apt update && apt install -y intel-microcode linux-image-amd64="${KERNEL_VERSION}"
+    apt update && apt install -y intel-microcode "linux-image-${KERNEL_VERSION}-amd64-unsigned"
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size

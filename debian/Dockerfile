@@ -142,7 +142,6 @@ RUN systemctl set-default multi-user.target \
                      watchdog.service \
                      cloud-init-custom.service \
                      serial-getty@ttyS1.service \
-                     serial-getty@ttyS2.service \
  && systemctl disable console-getty.service \
  && systemctl mask console-getty.service \
  && update-ca-certificates \

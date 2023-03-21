@@ -26,7 +26,7 @@ builds:
       - FRR_VERSION_DETAIL=8.5-0~deb11u1
       - SEMVER_MAJOR_MINOR=11
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-      - KERNEL_VERSION=5.10.162-1
+      - KERNEL_VERSION=6.1.0-0.deb11.5
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
