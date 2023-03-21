@@ -143,8 +143,8 @@ RUN systemctl set-default multi-user.target \
                      cloud-init-custom.service \
                      serial-getty@ttyS1.service \
                      serial-getty@ttyS2.service \
- && systemctl disable console-getty.service && \
- && systemctl mask console-getty.service && \
+ && systemctl disable console-getty.service \
+ && systemctl mask console-getty.service \
  && update-ca-certificates \
  # generate locale
  && locale-gen
