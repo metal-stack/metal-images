@@ -20,10 +20,12 @@ if [ "${ID}" = "ubuntu" ] ; then
 else
     echo "Debian - Install kernel"
 
-    echo "deb http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list
-    echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
-    echo "deb http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list
-    echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list
+    cat <<EOF > /etc/apt/sources.list
+deb http://deb.debian.org/debian bullseye main contrib non-free
+deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+deb http://deb.debian.org/debian bullseye-backports main
+deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+EOF
 
     apt update && apt install -y intel-microcode "linux-image-${KERNEL_VERSION}-amd64-unsigned"
 fi
