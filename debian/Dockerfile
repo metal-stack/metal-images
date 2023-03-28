@@ -104,6 +104,7 @@ RUN set -ex \
  && apt update \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # create a link to /usr/lib/frr/vtysh to make reload not forcing a restart of bgpd
+ # can be removed once frr-8.5.1 is released, https://github.com/FRRouting/frr/pull/13101
  && ln -sf /usr/bin/vtysh /usr/lib/frr/ \
  # Install Intel Firmware for e800 based network cards
  && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
