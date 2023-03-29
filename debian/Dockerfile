@@ -113,6 +113,7 @@ RUN set -ex \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
  && mkdir -p /lib/firmware/intel/ice/ddp/ \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
+ && rm -rf ice* \
  # install kernel and stuff
  && /kernel-installation.sh \
  # remove dhclient which could lead to dangerous configurations
