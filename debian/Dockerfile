@@ -49,6 +49,7 @@ RUN set -ex \
     apt-utils \
     ca-certificates \
     cloud-init \
+    cpufrequtils \
     curl \
     dbus \
     efibootmgr \
