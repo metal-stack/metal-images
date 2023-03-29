@@ -150,3 +150,6 @@ RUN systemctl set-default multi-user.target \
  && update-ca-certificates \
  # generate locale
  && locale-gen
+
+# remove .dockerenv, otherwise systemd-detect-virt guesses docker which modifies the behavior of many services.
+RUN rm -f /.dockerenv

@@ -16,7 +16,8 @@ if [ "${ID}" = "ubuntu" ] ; then
     apt-get install --yes \
         /tmp/linux-image* \
         /tmp/linux-modules* \
-        intel-microcode
+        intel-microcode \
+        linux-firmware
 else
     echo "Debian - Install kernel"
 
@@ -32,8 +33,11 @@ fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
 rm -rf /usr/lib/firmware/*wifi* \
-    /usr/lib/firmware/netronome \
-    /usr/lib/firmware/v4l* \
+    /usr/lib/firmware/amd* \
     /usr/lib/firmware/liquidio \
+    /usr/lib/firmware/mrvl \
+    /usr/lib/firmware/netronome \
+    /usr/lib/firmware/qcom \
+    /usr/lib/firmware/v4l* \
     /var/lib/apt/lists/* \
     /tmp/*
