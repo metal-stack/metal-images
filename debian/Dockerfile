@@ -36,7 +36,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
-COPY context/kernel-and-timesyncd-installation.sh /
+COPY context/kernel-installation.sh /
 
 RUN set -ex \
  && rm -f /.dockerenv \
@@ -114,7 +114,7 @@ RUN set -ex \
  && mkdir -p /lib/firmware/intel/ice/ddp/ \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
  # install kernel and stuff
- && /kernel-and-timesyncd-installation.sh \
+ && /kernel-installation.sh \
  # remove dhclient which could lead to dangerous configurations
  && apt-get remove --yes isc-dhcp-client \
  # restore a fake dhclient binary to make networking.service happy
