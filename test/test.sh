@@ -9,9 +9,6 @@ echo "do machine test"
 
 # somehow chrony@vrf104009 needs a double restart to work
 ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
-    # disable detection of running inside container
-    ln -sf /bin/false /usr/bin/systemd-detect-virt
-    systemctl stop chrony
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     /install-go
     systemctl restart systemd-networkd

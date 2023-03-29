@@ -39,6 +39,7 @@ COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 COPY context/kernel-and-timesyncd-installation.sh /
 
 RUN set -ex \
+ && rm -f /.dockerenv \
  && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
  && sed 's@security.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
  && apt-get update \
