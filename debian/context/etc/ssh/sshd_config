@@ -1,82 +1,52 @@
-#       $OpenBSD: sshd_config,v 1.101 2017/03/14 07:19:07 djm Exp $
-
 # This is the sshd server system-wide configuration file.  See
 # sshd_config(5) for more information.
 
-# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin
-
-# The strategy used for options in the default sshd_config shipped with
-# OpenSSH is to specify options with their default value where
-# possible, but leave them commented.  Uncommented options override the
-# default value.
-
-#Port 22
-#AddressFamily any
-#ListenAddress 0.0.0.0
-#ListenAddress ::
-
-#HostKey /etc/ssh/ssh_host_rsa_key
-#HostKey /etc/ssh/ssh_host_ecdsa_key
-#HostKey /etc/ssh/ssh_host_ed25519_key
+# CIS 5.2.4 - explicitly define the SSH2 protocol 
+Protocol 2
 
 # Ciphers and keying
-#RekeyLimit default none
+# CIS 5.2.2 - Rekey limit for time (6 hours) or volume (512Mio) whichever comes first
+RekeyLimit 512M 6h
 
 # Enable modern ciphers, key exchange, and MAC algorithms to increase security.
 # References: man sshd_config, https://infosec.mozilla.org/guidelines/openssh.html#modern-openssh-67
 Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
+# CIS 5.2.14 - Ensure only strong MAC algorithms are used 
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+# CIS 5.2.15 - Ensure only strong Key Exchange algorithms are used (minified version of CIS recomendation)
 KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256
 
 # Logging
 #SyslogFacility AUTH
-#LogLevel INFO
+# CIS 5.2.5 - ensure SSH LogLevel is appropriate
+LogLevel INFO
 
 # Authentication:
+# CIS 5.2.17 - Ensure SSH LoginGraceTime is set to one minute or less
+LoginGraceTime 60
+# CIS 5.2.10 - disable SSH Root Login                                                                                                                                        
+PermitRootLogin no      
+# CIS 5.2.5 - Ensure home directory and ssh sensitive files are verified (not publicly readable) before connecting.
+StrictModes yes
+# CIS 5.2.7 - set SSH MaxAuthTries to 4
+MaxAuthTries 4
+# CIS 5.2.23 - Limit SSH MaxSessions
+MaxSessions 10
 
-#LoginGraceTime 2m                                                                                                                                                                           
-#PermitRootLogin prohibit-password                                                                                                                                                           
-#StrictModes yes                                                                                                                                                                             
-#MaxAuthTries 6                                                                                                                                                                              
-#MaxSessions 10                                                                                                                                                                              
-                                                                                                                                                                                             
-#PubkeyAuthentication yes                                                                                                                                                                    
-                                                                                                                                                                                             
-# Expect .ssh/authorized_keys2 to be disregarded by default in future.                                                                                                                       
-#AuthorizedKeysFile     .ssh/authorized_keys .ssh/authorized_keys2                                                                                                                           
-                                                                                                                                                                                             
-#AuthorizedPrincipalsFile none                                                                                                                                                               
-                                                                                                                                                                                             
-#AuthorizedKeysCommand none                                                                                                                                                                  
-#AuthorizedKeysCommandUser nobody                                                                                                                                                            
-                                                                                                                                                                                             
-# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts                                                                                                                  
-#HostbasedAuthentication no                                                                                                                                                                  
-# Change to yes if you don't trust ~/.ssh/known_hosts for                                                                                                                                    
-# HostbasedAuthentication                                                                                                                                                                    
-#IgnoreUserKnownHosts no                                                                                                                                                                     
-# Don't read the user's ~/.rhosts and ~/.shosts files                                                                                                                                        
-#IgnoreRhosts yes                                                                                                                                                                            
-                                                                                                                                                                                             
-# To disable tunneled clear text passwords, change to no here!
+# CIS 5.2.8 - set SSH IgnoreRhosts to Yes
+IgnoreRhosts yes
+# CIS 5.2.1 - Ensure that sshd only allows authentication through public key
+PubkeyAuthentication yes
 PasswordAuthentication no
-#PermitEmptyPasswords no
-
-# Change to yes to enable challenge-response passwords (beware issues with
-# some PAM modules and threads)
+KbdInteractiveAuthentication no
+KerberosAuthentication no
 ChallengeResponseAuthentication no
-
-# Kerberos options
-#KerberosAuthentication no
-#KerberosOrLocalPasswd yes
-#KerberosTicketCleanup yes
-#KerberosGetAFSToken no
-
-# GSSAPI options
-#GSSAPIAuthentication no
-#GSSAPICleanupCredentials yes
-#GSSAPIStrictAcceptorCheck yes
-#GSSAPIKeyExchange no
+GSSAPIAuthentication no
+GSSAPIKeyExchange no
+# CIS 5.2.9 - set HostbasedAuthentication to No
+HostbasedAuthentication no
+# CIS 5.2.11 - set SSH PermitEmptyPasswords to No
+PermitEmptyPasswords no
 
 # Set this to 'yes' to enable PAM authentication, account processing,
 # and session processing. If this is enabled, PAM authentication will
@@ -89,10 +59,16 @@ ChallengeResponseAuthentication no
 # and ChallengeResponseAuthentication to 'no'.
 UsePAM yes
 
-#AllowAgentForwarding yes
-#AllowTcpForwarding yes
-#GatewayPorts no
-X11Forwarding yes
+# CIS 5.2.3 - all special features in sshd_config are disabled
+AllowAgentForwarding no
+AllowTcpForwarding no
+AllowStreamLocalForwarding no
+PermitTunnel no
+PermitUserRC no
+GatewayPorts no
+# CIS 5.2.6 - disable  X11 forwarding
+X11Forwarding no
+
 #X11DisplayOffset 10
 #X11UseLocalhost yes
 #PermitTTY yes
@@ -100,29 +76,35 @@ PrintMotd no
 #PrintLastLog yes
 #TCPKeepAlive yes
 #UseLogin no
-#PermitUserEnvironment no
+
+# CIS 5.2.12 - do not allow users to set environment options
+PermitUserEnvironment no
+
 #Compression delayed
-#ClientAliveInterval 0
-#ClientAliveCountMax 3
+
+# CIS 5.2.16 - Ensure SSH Idle Timeout Interval is configured
+ClientAliveInterval 300
+ClientAliveCountMax 3
 #UseDNS no
 #PidFile /var/run/sshd.pid
-#MaxStartups 10:30:100
-#PermitTunnel no
+
+# CIS 5.2.22 - configure MaxStartups
+# 0: Number of unauthenticated connections before we start dropping
+# 30: Percentage chance of dropping once we reach 10 (increases linearly for more than 10)
+# 60: Maximum number of connections at which we start dropping everything
+MaxStartups 10:30:60
+
 #ChrootDirectory none
 #VersionAddendum none
 
-# no default banner path
-#Banner none
+# CIS 5.2.18 - Ensure SSH access is limited
+AllowUsers metal
+AllowGroups sudo
+DenyUsers nobody
+DenyGroups nogroup
 
-# Allow client to pass locale environment variables
-AcceptEnv LANG LC_*
+# CIS 5.2.19 - Set SSH banner
+Banner /etc/issue.net
 
 # override default of no subsystems
 Subsystem       sftp    /usr/lib/openssh/sftp-server
-
-# Example of overriding settings on a per-user basis
-#Match User anoncvs
-#       X11Forwarding no
-#       AllowTcpForwarding no
-#       PermitTTY no
-#       ForceCommand cvs server
