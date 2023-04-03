@@ -127,6 +127,16 @@ RUN echo "---" >> /etc/metal/build-meta.yaml \
 
 COPY context/ /
 
+# CIS 5.2.1 - permissions and ownership to root 600 for sshd_config
+RUN chmod 600 /etc/ssh/sshd_config \
+ && chown root:root /etc/ssh/sshd_config \
+# sudoers should be 440 (root:root)
+ && chmod 440 /etc/sudoers /etc/sudoers.d/* \
+ && chown root:root /etc/sudoers /etc/sudoers.d/* \
+# CIS 4.2.3 - set default permission on logfiles
+ && chmod -R 640 /var/log \
+ && chown -R root:root /var/log 
+
 # Copy the dependencies of `cloud-init-custom.service` into the image.
 COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
 COPY /cloud-init/cloud-init-custom.sh /etc/metal/
