@@ -5,28 +5,29 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
-  - GOLLDPD_VERSION=v0.4.2
+  - GOLLDPD_VERSION=v0.4.3
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - OS_NAME=debian
   - DOCKER_APT_OS=debian
-  - CRI_VERSION=v1.26.0
-  - ICE_VERSION=1.9.11
+  - CRI_VERSION=v1.26.1
+  - ICE_VERSION=1.11.14
   - ICE_PKG_VERSION=1.3.30.0
 builds:
   -
-    name: "Debian 10"
+    name: "Debian 11"
     tags:
       - ${SEMVER}
       - ${SEMVER_MAJOR_MINOR}
     build-args:
-      - BASE_OS_VERSION=10
-      - DOCKER_APT_CHANNEL=buster
+      - BASE_OS_VERSION=11
+      - DOCKER_APT_CHANNEL=bullseye
       - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.5-0~deb10u1
-      - SEMVER_MAJOR_MINOR=10
+      - FRR_VERSION_DETAIL=8.5-0~deb11u1
+      - SEMVER_MAJOR_MINOR=11
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-      - KERNEL_VERSION=5.10.162-1
+      # see https://packages.debian.org/bullseye-backports/kernel/ for available versions
+      - KERNEL_VERSION=6.1.0-0.deb11.5
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
