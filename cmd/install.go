@@ -43,6 +43,14 @@ func (i *installer) do() error {
 		return fmt.Errorf("no install.yaml found")
 	}
 
+	// remove .dockerenv, otherwise systemd-detect-virt guesses docker which modifies the behavior of many services.
+	if i.fileExists("/.dockerenv") {
+		err := os.Remove("/.dockerenv")
+		if err != nil {
+			return fmt.Errorf("unable to delete .dockerenv")
+		}
+	}
+
 	err = i.writeResolvConf()
 	if err != nil {
 		i.log.Warnw("writing resolv.conf failed", "error", err)
