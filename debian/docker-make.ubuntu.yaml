@@ -13,7 +13,7 @@ default-build-args:
   - DOCKER_APT_CHANNEL=focal
   - CRI_VERSION=v1.26.1
   # see https://kernel.ubuntu.com/~kernel-ppa/mainline for available versions
-  - UBUNTU_MAINLINE_KERNEL_VERSION=v6.1.20
+  - UBUNTU_MAINLINE_KERNEL_VERSION=v6.1.26
   - ICE_VERSION=1.11.14
   - ICE_PKG_VERSION=1.3.30.0
 builds:
@@ -25,7 +25,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=22.04
       - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.5-0~ubuntu22.04.1
+      - FRR_VERSION_DETAIL=8.5.1-0~ubuntu22.04.1
       - SEMVER_MAJOR_MINOR=22.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:

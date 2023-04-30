@@ -23,11 +23,11 @@ builds:
       - BASE_OS_VERSION=11
       - DOCKER_APT_CHANNEL=bullseye
       - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.5-0~deb11u1
+      - FRR_VERSION_DETAIL=8.5.1-0~deb11u1
       - SEMVER_MAJOR_MINOR=11
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
       # see https://packages.debian.org/bullseye-backports/kernel/ for available versions
-      - KERNEL_VERSION=6.1.0-0.deb11.5
+      - KERNEL_VERSION=6.1.0-0.deb11.7
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
