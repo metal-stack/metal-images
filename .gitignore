@@ -5,3 +5,4 @@ bin
 install-go
 images
 footloose.*yaml
+.vscode
