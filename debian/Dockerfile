@@ -70,6 +70,7 @@ RUN set -ex \
     locales \
     lvm2 \
     mdadm \
+    nvme-cli \
     openssh-server \
     procps \
     socat \
@@ -78,6 +79,8 @@ RUN set -ex \
     systemd \
     systemd-sysv \
     systemd-timesyncd \
+    tcpdump \
+    traceroute \
     tzdata \
     watchdog \
     wget \
