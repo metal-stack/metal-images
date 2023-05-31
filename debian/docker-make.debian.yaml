@@ -22,8 +22,6 @@ builds:
     build-args:
       - BASE_OS_VERSION=11
       - DOCKER_APT_CHANNEL=bullseye
-      - FRR_VERSION=frr-8
-      - FRR_VERSION_DETAIL=8.3.1-0~deb11u1
       - SEMVER_MAJOR_MINOR=11
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
       # see https://packages.debian.org/bullseye-backports/kernel/ for available versions
