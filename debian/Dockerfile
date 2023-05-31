@@ -82,6 +82,9 @@ RUN set -ex \
     watchdog \
     wget \
     vim \
+    tcpdump \
+    traceroute \
+    nvme-cli \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
