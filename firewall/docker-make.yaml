@@ -7,19 +7,19 @@ default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
   - OS_NAME=firewall
 builds:
-  -
-    name: debian
-    tags:
-      - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
-    build-args:
-      - BASE_OS_VERSION=11
-      - BASE_OS_NAME=quay.io/metalstack/debian
-      - SEMVER_MAJOR_MINOR=3.0
-      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-    after:
-      - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
-      - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
+  # -
+  #   name: debian
+  #   tags:
+  #     - ${SEMVER}
+  #     - ${SEMVER_MAJOR_MINOR}
+  #   build-args:
+  #     - BASE_OS_VERSION=11
+  #     - BASE_OS_NAME=quay.io/metalstack/debian
+  #     - SEMVER_MAJOR_MINOR=3.0
+  #     - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+  #   after:
+  #     - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+  #     - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
   -
     name: ubuntu
     tags:
