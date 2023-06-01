@@ -24,9 +24,12 @@ RUN apt-get update --quiet \
     bridge-utils \
     fever \
     tcpdump \
- && apt-get remove --yes iptables \
+# also remove the most recent version of frr and install the distribution version
+# this should bring back frr-8.1 on ubuntu and frr-7.5.1 on debian
+# TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
+ && apt-get remove --yes iptables frr \
  && apt --yes autoremove \
- && apt install --yes iptables
+ && apt install --yes iptables frr
 
 # Context:
 # - chrony.conf provides default configuration for chrony
