@@ -43,7 +43,7 @@ RUN /suricata-and-chrony-installation.sh
 # TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
-RUN rm -f /etc/apt/sources.list.d/* /etc/frr/daemons \
+RUN rm -f /etc/apt/sources.list.d/* \
  && apt-get remove --yes frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
  && apt install --yes frr frr-pythontools --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
  && apt --yes autoremove
