@@ -67,7 +67,7 @@ jobs:
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir firewall \
-          --build-only ubuntu \
+          --build-only ${{ matrix.os }} \
           --no-cache \
           --no-pull \
           --summary \
