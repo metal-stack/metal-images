@@ -6,7 +6,7 @@ require (
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.5.9
 	github.com/metal-stack/metal-hammer v0.11.4
-	github.com/metal-stack/metal-lib v0.11.7
+	github.com/metal-stack/metal-lib v0.11.8
 	github.com/metal-stack/metal-networker v0.33.0
 	github.com/metal-stack/v v1.0.3
 	github.com/spf13/afero v1.9.5
