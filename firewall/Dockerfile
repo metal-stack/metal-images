@@ -2,7 +2,7 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.11
 ARG FIREWALL_CONTROLLER_VERSION=v2.0.3
-ARG TAILSCALE_VERSION=v1.40.0
+ARG TAILSCALE_VERSION=v1.42.0
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -14,7 +14,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.5.0 \
+    NODE_EXPORTER_VERSION=1.6.0 \
     NFTABLES_EXPORTER_VERSION=v0.2.6
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
@@ -24,12 +24,8 @@ RUN apt-get update --quiet \
     bridge-utils \
     fever \
     tcpdump \
-# also remove the most recent version of frr and install the distribution version
-# this should bring back frr-8.1 on ubuntu and frr-7.5.1 on debian
-# TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
- && apt-get remove --yes iptables frr frr-pythontools \
- && apt --yes autoremove \
- && apt install --yes iptables frr frr-pythontools
+ && apt-get remove --yes iptables \
+ && apt install --yes iptables
 
 # Context:
 # - chrony.conf provides default configuration for chrony
@@ -40,6 +36,17 @@ COPY context/ /
 
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh
+
+# Install frr from distribution
+# also remove the most recent version of frr and install the distribution version
+# this should bring back frr-8.1 on ubuntu and frr-7.5.1 on debian
+# TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
+# must be done after suricata installation because we need to remove the
+# apt sources entries, otherwise we will get back v8.5.x of frr.
+RUN rm -f /etc/apt/sources.list.d/* \
+ && apt-get remove --yes frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
+ && apt install --yes frr frr-pythontools --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
+ && apt --yes autoremove
 
 # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
 # Final setup is left to metal-networker that knows the internet-facing VRF.
