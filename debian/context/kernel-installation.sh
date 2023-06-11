@@ -21,13 +21,14 @@ else
     echo "Debian - Install kernel"
 
     cat <<EOF > /etc/apt/sources.list
-deb http://deb.debian.org/debian bullseye main contrib non-free
-deb http://deb.debian.org/debian bullseye-updates main contrib non-free
-deb http://deb.debian.org/debian bullseye-backports main
-deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+deb http://deb.debian.org/debian bookwork main contrib non-free
+deb http://deb.debian.org/debian bookwork-updates main contrib non-free
+deb http://security.debian.org/debian-security bookwork-security main contrib non-free
 EOF
 
-    apt update && apt install -y intel-microcode "linux-image-${KERNEL_VERSION}-amd64-unsigned"
+    # FIXME pin kernel again
+    # apt update && apt install -y intel-microcode "linux-image-${KERNEL_VERSION}-amd64-unsigned"
+    apt update && apt install -y intel-microcode linux-image-amd64
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
