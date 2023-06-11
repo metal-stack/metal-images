@@ -79,7 +79,6 @@ RUN set -ex \
     systemd \
     systemd-sysv \
     systemd-timesyncd \
-    systemd-resolved \
     tcpdump \
     traceroute \
     tzdata \
