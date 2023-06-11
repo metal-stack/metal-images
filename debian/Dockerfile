@@ -21,6 +21,7 @@ ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
+ARG FRR_APT_CHANNEL
 ARG CRI_VERSION
 ARG SEMVER_MAJOR_MINOR
 ARG KERNEL_VERSION
@@ -105,7 +106,7 @@ RUN set -ex \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  # install frr from frrouting debian package repo
  && curl -fLsS https://deb.frrouting.org/frr/keys.asc | apt-key add - \
- && echo "deb [arch=amd64] https://deb.frrouting.org/frr bullseye ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
+ && echo "deb [arch=amd64] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
  && apt update \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # Install Intel Firmware for e800 based network cards
