@@ -17,6 +17,8 @@ FROM centos:${BASE_OS_VERSION}
 
 ARG GOLLDPD_VERSION
 ARG FRR_VERSION
+ARG ICE_VERSION
+ARG ICE_PKG_VERSION
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
@@ -29,6 +31,7 @@ RUN set -ex \
     curl \
     dbus \
     efibootmgr \
+    ethtool \
     gettext \
     gnupg2 \
     grub2 \
@@ -59,6 +62,13 @@ RUN set -ex \
     yum-utils
 RUN curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
+ # Install Intel Firmware for e800 based network cards
+ && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
+ && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
+ && mkdir -p /lib/firmware/intel/ice/ddp/ \
+ && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
+ && rm -rf ice* \
+# Install Docker (TODO: is this even required?)
  && yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo \
  && yum install -y docker-ce docker-ce-cli containerd.io \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \

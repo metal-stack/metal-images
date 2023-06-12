@@ -9,6 +9,8 @@ default-build-args:
   - FRR_VERSION=frr-8
   - OS_NAME=centos
   - SEMVER_PATCH=${SEMVER_PATCH}
+  - ICE_VERSION=1.11.14
+  - ICE_PKG_VERSION=1.3.30.0
 builds:
   -
     name: "Centos 7"
