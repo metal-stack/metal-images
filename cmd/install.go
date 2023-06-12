@@ -672,7 +672,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 				"--kmoddir", "/lib/modules/" + v,
 				"--include", "/lib/modules/" + v, "/lib/modules/" + v,
 				"--fstab",
-				`--add="dm mdraid"`,
+				`--add="mdraid"`,
 				`--add-drivers="raid0 raid1"`,
 				"--hostonly",
 				"--force",
