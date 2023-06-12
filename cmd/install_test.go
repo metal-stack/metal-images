@@ -865,7 +865,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"dracut", "--mdadm", "--kver", "1.2.3", "--kmoddir", "/lib/modules/1.2.3", "--include", "/lib/modules/1.2.3", "/lib/modules/1.2.3", "--fstab", "--add=\"mdraid\"", "--add-drivers=\"raid0 raid1\"", "--hostonly", "--force"},
+					WantCmd:  []string{"dracut", "--mdadmconf", "--kver", "1.2.3", "--kmoddir", "/lib/modules/1.2.3", "--include", "/lib/modules/1.2.3", "/lib/modules/1.2.3", "--fstab", "--add=dm mdraid", "--add-drivers=raid0 raid1", "--hostonly", "--force"},
 					Output:   "",
 					ExitCode: 0,
 				},
