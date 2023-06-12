@@ -27,8 +27,8 @@ builds:
       - FRR_APT_CHANNEL=bullseye
       - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-      # see https://packages.debian.org/bullseye-backports/kernel/ for available versions
-      # - KERNEL_VERSION=6.1.0-0.deb11.7
+      # see https://packages.debian.org/bookworm/kernel/ for available versions
+      - KERNEL_VERSION=6.1.0-9
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

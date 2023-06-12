@@ -28,7 +28,7 @@ EOF
 
     # FIXME pin kernel again, install  intel-microcode
     # apt update && apt install -y intel-microcode "linux-image-${KERNEL_VERSION}-amd64-unsigned"
-    apt update && apt install -y linux-image-amd64 systemd-resolved
+    apt update && apt install -y linux-image-${KERNEL_VERSION}-amd64 systemd-resolved
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size

@@ -41,8 +41,6 @@ COPY context/kernel-installation.sh /
 
 RUN set -ex \
  && rm -f /.dockerenv \
-#  && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
-#  && sed 's@security.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
  && apt-get update \
  && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends \
@@ -92,10 +90,6 @@ RUN set -ex \
  && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
  && apt-get install --yes --no-install-recommends docker-ce \
- # docker is always installed in /usr/bin/docker, on ubuntu /bin is a link to /usr/bin
- # debian does not have this link, therefore /bin/docker does not exist.
- # gardener requires /bin/docker in their kubelet.service.
- && ln -s /usr/bin/docker /bin/docker || true \
  # Install crictl to be able to manipulate containers managed with containerd instead of dockerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
@@ -114,9 +108,9 @@ RUN set -ex \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
  && mkdir -p /lib/firmware/intel/ice/ddp/ \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
- && rm -rf ice*
+ && rm -rf ice* \
  # install kernel and stuff
- RUN /kernel-installation.sh \
+ && /kernel-installation.sh \
  # remove dhclient which could lead to dangerous configurations
  && apt-get remove --yes isc-dhcp-client \
  # restore a fake dhclient binary to make networking.service happy
