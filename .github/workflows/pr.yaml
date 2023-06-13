@@ -1,4 +1,4 @@
-name: Pipeline
+name: Pull Request Pipeline
 
 on:
   pull_request:
@@ -12,26 +12,41 @@ env:
 jobs:
   debian-ubuntu:
     name: Build Debian and Ubuntu based OS images
+
     strategy:
       matrix:
         os: [debian, ubuntu]
+
     runs-on: self-hosted
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
+    - uses: google-github-actions/auth@v1
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+
     - name: Set up Go 1.20
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version: '1.20.x'
+
     - name: Lint
       uses: golangci/golangci-lint-action@v3
       with:
         args: --build-tags integration -p bugs -p unused --timeout=3m
+
     - name: build install
       run: make
+
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
+
     - name: Build docker image for workers and export tarball
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
@@ -44,6 +59,7 @@ jobs:
           --summary \
           --no-lint \
           --no-push
+
     - name: Build docker image for firewalls and export tarball
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
@@ -57,27 +73,37 @@ jobs:
           --summary \
           --no-lint \
           --no-push
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+
   centos:
     name: Build Centos based OS image
     runs-on: self-hosted
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
+    - uses: google-github-actions/auth@v1
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+
     - name: Set up Go 1.20
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version: '1.20.x'
+
     - name: build install
       run: make
+
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh centos
+
     - name: Build docker image for centos based workers and export tarball
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
@@ -91,9 +117,6 @@ jobs:
           --summary \
           --no-lint \
           --no-push
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/

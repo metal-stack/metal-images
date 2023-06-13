@@ -70,6 +70,7 @@ RUN set -ex \
     locales \
     lvm2 \
     mdadm \
+    nvme-cli \
     openssh-server \
     procps \
     socat \
@@ -78,6 +79,8 @@ RUN set -ex \
     systemd \
     systemd-sysv \
     systemd-timesyncd \
+    tcpdump \
+    traceroute \
     tzdata \
     watchdog \
     wget \
@@ -105,9 +108,6 @@ RUN set -ex \
  && add-apt-repository "deb [arch=amd64] https://deb.frrouting.org/frr $(lsb_release -s -c) ${FRR_VERSION}" \
  && apt update \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
- # create a link to /usr/lib/frr/vtysh to make reload not forcing a restart of bgpd
- # can be removed once frr-8.5.1 is released, https://github.com/FRRouting/frr/pull/13101
- && ln -sf /usr/bin/vtysh /usr/lib/frr/ \
  # Install Intel Firmware for e800 based network cards
  && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
