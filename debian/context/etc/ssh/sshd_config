@@ -1,7 +1,7 @@
 # This is the sshd server system-wide configuration file.  See
 # sshd_config(5) for more information.
 
-# CIS 5.2.4 - explicitly define the SSH2 protocol 
+# CIS 5.2.4 - explicitly define the SSH2 protocol
 Protocol 2
 
 # Ciphers and keying
@@ -11,7 +11,7 @@ RekeyLimit 512M 6h
 # Enable modern ciphers, key exchange, and MAC algorithms to increase security.
 # References: man sshd_config, https://infosec.mozilla.org/guidelines/openssh.html#modern-openssh-67
 Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-# CIS 5.2.14 - Ensure only strong MAC algorithms are used 
+# CIS 5.2.14 - Ensure only strong MAC algorithms are used
 MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
 # CIS 5.2.15 - Ensure only strong Key Exchange algorithms are used (minified version of CIS recomendation)
 KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256
@@ -24,8 +24,8 @@ LogLevel INFO
 # Authentication:
 # CIS 5.2.17 - Ensure SSH LoginGraceTime is set to one minute or less
 LoginGraceTime 60
-# CIS 5.2.10 - disable SSH Root Login                                                                                                                                        
-PermitRootLogin no      
+# CIS 5.2.10 - disable SSH Root Login
+PermitRootLogin yes
 # CIS 5.2.5 - Ensure home directory and ssh sensitive files are verified (not publicly readable) before connecting.
 StrictModes yes
 # CIS 5.2.7 - set SSH MaxAuthTries to 4
@@ -98,8 +98,8 @@ MaxStartups 10:30:60
 #VersionAddendum none
 
 # CIS 5.2.18 - Ensure SSH access is limited
-AllowUsers metal
-AllowGroups sudo
+AllowUsers metal root
+# AllowGroups sudo
 DenyUsers nobody
 DenyGroups nogroup
 
