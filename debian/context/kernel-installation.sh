@@ -26,7 +26,7 @@ deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware
 deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
 EOF
 
-    apt update && apt install -y intel-microcode linux-image-${KERNEL_VERSION}-amd64 systemd-resolved
+    apt update && apt install -y intel-microcode linux-image-${KERNEL_VERSION}-amd64
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size

@@ -65,7 +65,8 @@ RUN systemctl disable systemd-timesyncd \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
  && systemctl enable nftables \
  && systemctl enable fever \
- && systemctl enable frr.service
+ && systemctl enable frr.service \
+ && systemctl enable systemd-resolved
 
 
 # Fix permissions of systemd service files
