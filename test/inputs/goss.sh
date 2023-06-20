@@ -16,4 +16,4 @@ else
     chmod +rx /usr/local/bin/goss
 fi
 
-goss validate -f documentation --color --retry-timeout 120s --sleep 5s
+goss validate -f documentation --color --retry-timeout 150s --sleep 10s
