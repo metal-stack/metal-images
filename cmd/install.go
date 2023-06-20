@@ -170,7 +170,7 @@ func (i *installer) buildCMDLine() string {
 		"init=/sbin/init",
 		"net.ifnames=0",
 		"biosdevname=0",
-		"nvme_core.io_timeout=4294967295",
+		"nvme_core.io_timeout=300", // 300 sec should be enough for firewalls to be replaced
 		"systemd.unified_cgroup_hierarchy=0",
 	}
 

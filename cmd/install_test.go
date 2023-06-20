@@ -380,8 +380,8 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					ExitCode: 0,
 				},
 			},
-			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 		},
 		{
 			name: "with raid",
@@ -400,8 +400,8 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					ExitCode: 0,
 				},
 			},
-			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0 rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=543eb7f8:98d4d986:e669824d:bebe69e5",
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0 rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=543eb7f8:98d4d986:e669824d:bebe69e5",
 		},
 	}
 	for _, tt := range tests {
@@ -709,7 +709,7 @@ func Test_installer_grubInstall(t *testing.T) {
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osUbuntu,
 			execMocks: []fakeexecparams{
 				{
@@ -732,7 +732,7 @@ func Test_installer_grubInstall(t *testing.T) {
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=metal-ubuntu
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -741,7 +741,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osUbuntu,
 			execMocks: []fakeexecparams{
 				{
@@ -789,7 +789,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=metal-ubuntu
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -801,7 +801,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osCentos,
 			execMocks: []fakeexecparams{
 				{
@@ -819,7 +819,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -831,7 +831,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osCentos,
 			execMocks: []fakeexecparams{
 				{
@@ -874,7 +874,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
