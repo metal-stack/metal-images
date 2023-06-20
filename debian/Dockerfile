@@ -139,7 +139,6 @@ RUN systemctl set-default multi-user.target \
                      docker.service \
                      frr.service \
                      systemd-networkd \
-                    #  systemd-resolved \
                      systemd-timesyncd \
                      watchdog.service \
                      cloud-init-custom.service \
