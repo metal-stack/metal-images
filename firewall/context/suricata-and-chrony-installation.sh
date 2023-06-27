@@ -4,6 +4,16 @@ source /etc/os-release
 
 if [ "${ID}" = "ubuntu" ] ; then
     echo "Ubuntu - Install suricata from suricata ppa repository"
+
+    # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
+    # Final setup is left to metal-networker that knows the internet-facing VRF.
+    # To succeed metal-networker enabling chrony it is important to provide the chrony unit template in advance.
+    # Usually the generator creates that template but the generator is loaded only after system boot or at `systemctl daemon-reload` (cannot be run from Docker Context).
+    # systemd-time-wait-sync.service is disabled because it sometimes does not start and blocks depending services like logrotate.
+    # see https://github.com/systemd/systemd/issues/14061
+
+    systemctl disable systemd-timesyncd
+
     apt-get update --quiet
     apt-get install --yes --no-install-recommends software-properties-common
     add-apt-repository --yes ppa:oisf/suricata-stable

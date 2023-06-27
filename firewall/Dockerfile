@@ -2,7 +2,7 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.11
 ARG FIREWALL_CONTROLLER_VERSION=v2.0.5
-ARG TAILSCALE_VERSION=v1.42.0
+ARG TAILSCALE_VERSION=v1.44.0
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -48,14 +48,7 @@ RUN rm -f /etc/apt/sources.list.d/* \
  && apt install --yes frr frr-pythontools --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
  && apt --yes autoremove
 
-# Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
-# Final setup is left to metal-networker that knows the internet-facing VRF.
-# To succeed metal-networker enabling chrony it is important to provide the chrony unit template in advance.
-# Usually the generator creates that template but the generator is loaded only after system boot or at `systemctl daemon-reload` (cannot be run from Docker Context).
-# systemd-time-wait-sync.service is disabled because it sometimes does not start and blocks depending services like logrotate.
-# see https://github.com/systemd/systemd/issues/14061
-RUN systemctl disable systemd-timesyncd \
- && systemctl disable chrony \
+RUN systemctl disable chrony \
  && systemctl mask chrony \
  && systemctl disable systemd-time-wait-sync.service \
  && systemctl mask systemd-time-wait-sync.service \
@@ -65,9 +58,7 @@ RUN systemctl disable systemd-timesyncd \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
  && systemctl enable nftables \
  && systemctl enable fever \
- && systemctl enable frr.service \
- && systemctl enable systemd-resolved
-
+ && systemctl enable frr.service
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
