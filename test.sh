@@ -21,6 +21,7 @@ if [ "${KERNEL_IMAGE}" == "metal-kernel" ]; then
   cd test && docker build . -t metal-kernel:latest && cd -
 
   echo "import metal-kernel image to ignite"
+  sudo ignite kernel rm -f metal-kernel:latest
   sudo ignite kernel import --runtime=docker metal-kernel:latest
 fi
 
