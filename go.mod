@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/metal-stack/metal-hammer v0.11.4
 	github.com/metal-stack/metal-lib v0.11.10
-	github.com/metal-stack/metal-networker v0.33.1-0.20230626135021-5474f1d1173c
+	github.com/metal-stack/metal-networker v0.33.1-0.20230627075806-95843b2bd117
 	github.com/metal-stack/v v1.0.3
 	github.com/spf13/afero v1.9.5
 	github.com/stretchr/testify v1.8.4
