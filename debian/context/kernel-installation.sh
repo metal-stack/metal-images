@@ -17,6 +17,8 @@ if [ "${ID}" = "ubuntu" ] ; then
         /tmp/linux-image* \
         /tmp/linux-modules* \
         intel-microcode
+    # Ubuntu still requires it
+    systemctl enable systemd-resolved
 else
     echo "Debian - Install kernel"
 

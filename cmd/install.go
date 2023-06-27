@@ -145,7 +145,7 @@ func (i *installer) writeResolvConf() error {
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
 	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-	// in ignite this file is a symlinkg to /proc/net/pnp, to pass integration test, remove this first
+	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove("/etc/resolv.conf")
 	if err != nil {
 		i.log.Infow("no /etc/resolv.conf present")
