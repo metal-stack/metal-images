@@ -11,6 +11,14 @@ LINKMODE := -extldflags=-static \
 		 -X 'github.com/metal-stack/v.GitSHA1=$(SHA)' \
 		 -X 'github.com/metal-stack/v.BuildDate=$(BUILDDATE)'
 
+
+all: clean binary
+
+.PHONY: clean
+clean:
+	rm -f debian/context/install-go
+	rm -f centos/context/install-go
+
 .PHONY: binary
 binary: test
 	GGO_ENABLED=0 \
@@ -26,5 +34,5 @@ binary: test
 
 .PHONY: test
 test:
-	GO_ENV=testing go test -cover ./...
+	GO_ENV=testing go test -race -cover ./...
 

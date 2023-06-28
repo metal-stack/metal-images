@@ -17,17 +17,18 @@ if [ "${ID}" = "ubuntu" ] ; then
         /tmp/linux-image* \
         /tmp/linux-modules* \
         intel-microcode
+    # Ubuntu still requires it
+    systemctl enable systemd-resolved
 else
     echo "Debian - Install kernel"
 
     cat <<EOF > /etc/apt/sources.list
-deb http://deb.debian.org/debian bullseye main contrib non-free
-deb http://deb.debian.org/debian bullseye-updates main contrib non-free
-deb http://deb.debian.org/debian bullseye-backports main
-deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+deb http://deb.debian.org/debian bookworm main contrib non-free-firmware
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware
+deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
 EOF
 
-    apt update && apt install -y intel-microcode "linux-image-${KERNEL_VERSION}-amd64-unsigned"
+    apt update && apt install -y intel-microcode linux-image-${KERNEL_VERSION}-amd64
 fi
 
 # Remove WIFI, netronome, v4l and liquidio firmware to save ~300MB image size
