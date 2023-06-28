@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.19-buster as ignition-builder
+FROM golang:1.20-bullseye as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \

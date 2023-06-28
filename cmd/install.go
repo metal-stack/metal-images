@@ -145,7 +145,7 @@ func (i *installer) writeResolvConf() error {
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
 	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-	// in ignite this file is a symlinkg to /proc/net/pnp, to pass integration test, remove this first
+	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove("/etc/resolv.conf")
 	if err != nil {
 		i.log.Infow("no /etc/resolv.conf present")
@@ -170,7 +170,7 @@ func (i *installer) buildCMDLine() string {
 		"init=/sbin/init",
 		"net.ifnames=0",
 		"biosdevname=0",
-		"nvme_core.io_timeout=4294967295",
+		"nvme_core.io_timeout=300", // 300 sec should be enough for firewalls to be replaced
 		"systemd.unified_cgroup_hierarchy=0",
 	}
 

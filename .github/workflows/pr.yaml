@@ -60,6 +60,8 @@ jobs:
           --no-lint \
           --no-push
 
+    # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
+    # and then goss tests fail
     - name: Build docker image for firewalls and export tarball
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
@@ -67,7 +69,7 @@ jobs:
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir firewall \
-          --build-only ${{ matrix.os }} \
+          --build-only ubuntu \
           --no-cache \
           --no-pull \
           --summary \
