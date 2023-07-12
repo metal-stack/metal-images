@@ -94,6 +94,7 @@ RUN set -ex \
  # Install crictl to be able to manipulate containers managed with containerd instead of dockerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
+ && chown root:root /usr/local/bin/crictl \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  # Switch to use iptables-legacy on worker nodes
