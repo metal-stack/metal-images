@@ -18,4 +18,5 @@ ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     systemctl restart frr
     systemctl restart nftables
     cd / && /goss.sh ${MACHINE_TYPE}
+    cd / && /cis-benchmark.sh
 EOF

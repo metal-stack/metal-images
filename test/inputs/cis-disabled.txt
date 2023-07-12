@@ -1,0 +1,5 @@
+1.1.1.7* # VFAT filesystem is needed for UEFI boot
+1.1.12* # auditd is not part of the image
+1.1.13* # there are no regular users on the nodes (no /home needed)
+1.1.14* # there are no regular users on the nodes (no /home needed)
+5.1.* # cron is not installed
