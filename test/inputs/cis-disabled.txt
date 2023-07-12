@@ -1,5 +1,14 @@
-1.1.1.7* # VFAT filesystem is needed for UEFI boot
-1.1.12* # auditd is not part of the image
-1.1.13* # there are no regular users on the nodes (no /home needed)
-1.1.14* # there are no regular users on the nodes (no /home needed)
-5.1.* # cron is not installed
+1.1.1.7*   # VFAT filesystem is needed for UEFI boot, we disabled USB-drives instead
+1.1.12*    # auditd is not part of the image, we recomend deployment as daemonset
+1.1.13*    # there are no regular users on the nodes (no /home needed)
+1.1.14*    # there are no regular users on the nodes (no /home needed)
+2.2.1*     # we use systemd-timesyncd
+3.1.1*     # IPv6 is necessary for BGP-unnumbered
+3.2.2*     # IP forwarding is necessary for Kubernetes
+3.5.4.1.1* # iptables-rules are managed by kube-proxy and the CNI plugin
+4.1.*      # auditd is not part of the image, we recomend deployment as daemonset
+4.2.1.*    # nodes only use journald, we recomend deploying log-shippers in Kubernetes
+5.1.*      # cron is not installed/needed
+99.3.3.1*  # we do not have any services to wrap
+99.5.2.6*  # we use the more restrictive "PermitUserEnvironment no"
+99.99*     # distribution check is disabled
