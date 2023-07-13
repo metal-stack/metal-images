@@ -14,6 +14,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    # we now update the draft with a download table:
+    # this is basically done for testing that the udpate on a release works
+
     - name: Checkout
       uses: actions/checkout@v3
 
@@ -22,8 +25,13 @@ jobs:
       with:
         go-version: '1.20.x'
 
+    - name: Get release
+      id: get_release
+      uses: agners/get-draft-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
     - run: |
-        # this is basically done for testing that the release update works before a release
         PREFIX=metal-os/stable go run ./cmd/tools/generate-table > downloads.md
 
     - name: Update release body
@@ -31,6 +39,7 @@ jobs:
       uses: tubone24/update_release@v1.3.1
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        RELEASE_ID: ${{ steps.get_release.outputs.id }}
       with:
         draft: true
         body_path: ./downloads.md
