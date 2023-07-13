@@ -23,16 +23,16 @@ You can build metal-images like that:
 
 ```bash
 # for debian images
-cd debian && docker-make -nNL -f docker-make.debian.yaml
+make debian
 
 # for ubuntu images
-cd debian && docker-make -nNL -f docker-make.ubuntu.yaml
-
-# for centos images
-cd centos && docker-make -nNL docker-make.yaml
+make ubuntu
 
 # for firewall images
-cd firewall && docker-make -nNL docker-make.yaml
+make firewall
+
+# for centos images
+make centos
 ```
 
 For integration testing the images are started as [firecracker vm](https://firecracker-microvm.github.io/) with [weaveworks/ignite](https://github.com/weaveworks/ignite) and basic properties like interfaces to other metal-stack components, kernel parameters, internet reachability, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. The integration tests are also executed when you build an image locally with.
@@ -41,9 +41,9 @@ For integration testing the images are started as [firecracker vm](https://firec
 
 Currently these images are supported:
 
-1. Debian 10
-1. Ubuntu 20.04
-1. Firewall 2.0-ubuntu (based on Ubuntu 20.04)
+1. Debian 12
+1. Ubuntu 22.04
+1. Firewall 3.0-ubuntu (based on Ubuntu 22.04)
 
 Unsupported images:
 
@@ -57,12 +57,16 @@ Builds from the master branch are scheduled on every sunday night at 1:10 o'cloc
 
 Images are synced to partitions with a service that mirrors the public bucket and which runs on the management servers of partitions.
 
+Released Images are accessible with under this image URL, where `20230710` here is the tag of this repository.
+
+`http://images.metal-stack.io/metal-os/20230710/debian/12/img.tar.lz4`
+
 Images built from the master branch are accessible with an image URL like this:
 
-`http://images.metal-stack.io/ubuntu/20.04/20200728/img.tar.lz4`
+`http://images.metal-stack.io/metal-os/stable/debian/12/img.tar.lz4`
 
 For other branches, the URL pattern is this:
 
-`http://images.metal-stack.io/${CI_COMMIT_REF_SLUG}/ubuntu/20.04/20200728/img.tar.lz4`
+`http://images.metal-stack.io/metal-os/pull_requests/${CI_COMMIT_REF_SLUG}/debian/12/img.tar.lz4`
 
 Those URLs can be used to define an image at the metal-api.
