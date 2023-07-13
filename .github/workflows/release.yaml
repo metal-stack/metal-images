@@ -32,7 +32,7 @@ jobs:
 
       - run: |
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}
-          go run ./cmd/tools/generate-table > downloads.md
+          PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
 
       - name: Update release body
         id: update_release

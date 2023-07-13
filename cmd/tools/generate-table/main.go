@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -34,7 +35,7 @@ func generate() error {
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
-		prefix      = "metal-os/20230710"
+		prefix      = os.Getenv("PREFIX") // "metal-os/20230710"
 	)
 
 	ss, err := session.NewSession(&aws.Config{
