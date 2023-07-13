@@ -1,11 +1,10 @@
 package v1
 
 type BuildMeta struct {
-	BuildVersion string `json:"buildVersion" yaml:"buildVersion"`
-	BuildDate    string `json:"buildDate" yaml:"buildDate"`
-	BuildSHA     string `json:"buildSHA" yaml:"buildSHA"`
+	Version  string `json:"buildVersion" yaml:"buildVersion"`
+	Date     string `json:"buildDate" yaml:"buildDate"`
+	SHA      string `json:"buildSHA" yaml:"buildSHA"`
+	Revision string `json:"buildRevision" yaml:"buildRevision"`
 
 	IgnitionVersion string `json:"ignitionVersion" yaml:"ignitionVersion"`
-	GolldpdVersion  string `json:"golldpdVersion" yaml:"golldpdVersion"`
-	FrrVersion      string `json:"frrVersion" yaml:"frrVersion"`
 }

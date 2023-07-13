@@ -936,9 +936,8 @@ func Test_installer_writeBuildMeta(t *testing.T) {
 buildVersion: "456"
 buildDate: ""
 buildSHA: abc
+buildRevision: revision
 ignitionVersion: Ignition v0.36.2
-golldpdVersion: "888"
-frrVersion: "999"
 `,
 		},
 	}
@@ -963,9 +962,7 @@ frrVersion: "999"
 
 			v.Version = "456"
 			v.GitSHA1 = "abc"
-
-			t.Setenv("GOLLDPD_VERSION", "888")
-			t.Setenv("FRR_VERSION", "999")
+			v.Revision = "revision"
 
 			err := i.writeBuildMeta()
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {

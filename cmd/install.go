@@ -712,14 +712,12 @@ func (i *installer) writeBuildMeta() error {
 	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
 
 	meta := &v1.BuildMeta{
-		BuildVersion:   v.Version,
-		BuildDate:      v.BuildDate,
-		BuildSHA:       v.GitSHA1,
-		GolldpdVersion: os.Getenv("GOLLDPD_VERSION"),
-		FrrVersion:     os.Getenv("FRR_VERSION"),
+		Version:  v.Version,
+		Date:     v.BuildDate,
+		SHA:      v.GitSHA1,
+		Revision: v.Revision,
 	}
 
-	i.log.Infow("executing ignition")
 	out, err := i.exec.command(&cmdParams{
 		name: "ignition",
 		args: []string{"-version"},
