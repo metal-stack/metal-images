@@ -135,7 +135,7 @@ func print(artifacts []*artifact) error {
 		return nil, nil, fmt.Errorf("unsupported type for printing: %T", data)
 	}
 
-	fmt.Println("# Downloads")
+	fmt.Println("## Downloads")
 
 	return p.Print(artifacts)
 }
