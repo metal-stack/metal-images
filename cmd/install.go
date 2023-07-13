@@ -12,6 +12,7 @@ import (
 
 	config "github.com/flatcar/ignition/config/v2_4"
 	"github.com/metal-stack/metal-hammer/pkg/api"
+	v1 "github.com/metal-stack/metal-images/cmd/v1"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
@@ -710,22 +711,24 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 func (i *installer) writeBuildMeta() error {
 	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
 
-	meta := map[string]interface{}{}
-	if i.fileExists("/etc/metal/build-meta.yaml") {
-		content, err := afero.ReadFile(i.fs, "/etc/metal/build-meta.yaml")
-		if err != nil {
-			return err
-		}
-
-		err = yaml.Unmarshal(content, &meta)
-		if err != nil {
-			return err
-		}
+	meta := &v1.BuildMeta{
+		BuildVersion:   v.Version,
+		BuildDate:      v.BuildDate,
+		BuildSHA:       v.GitSHA1,
+		GolldpdVersion: os.Getenv("GOLLDPD_VERSION"),
+		FrrVersion:     os.Getenv("FRR_VERSION"),
 	}
 
-	meta["buildVersion"] = v.Version
-	meta["buildDate"] = v.BuildDate
-	meta["buildSHA"] = v.GitSHA1
+	i.log.Infow("executing ignition")
+	out, err := i.exec.command(&cmdParams{
+		name: "ignition",
+		args: []string{"-version"},
+	})
+	if err != nil {
+		i.log.Errorw("error detecting ignition version for build meta, continuing anyway", "error", err)
+	} else {
+		meta.IgnitionVersion = strings.TrimSpace(out)
+	}
 
 	content, err := yaml.Marshal(meta)
 	if err != nil {
