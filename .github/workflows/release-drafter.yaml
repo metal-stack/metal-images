@@ -14,35 +14,35 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # we now update the draft with a download table:
-    # this is basically done for testing that the udpate on a release works
+    # the following actions can be used to try out the update release action on the master branch.
+    # it adds a generated download table to the release body with images from the stable folder.
 
-    - name: Checkout
-      uses: actions/checkout@v3
+    # - name: Checkout
+    #   uses: actions/checkout@v3
 
-    - name: Set up Go 1.20
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.20.x'
+    # - name: Set up Go 1.20
+    #   uses: actions/setup-go@v4
+    #   with:
+    #     go-version: '1.20.x'
 
-    - uses: cardinalby/git-get-release-action@v1
-      id: get_release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        latest: true
-        draft: true
+    # - uses: cardinalby/git-get-release-action@v1
+    #   id: get_release
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }}
+    #   with:
+    #     latest: true
+    #     draft: true
 
-    - run: |
-        PREFIX=metal-os/stable go run ./cmd/tools/generate-table > downloads.md
+    # - run: |
+    #     PREFIX=metal-os/stable go run ./cmd/tools/generate-table > downloads.md
 
-    - name: Update release body
-      id: update_release
-      uses: tubone24/update_release@v1.3.1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-        RELEASE_ID: ${{ steps.get_release.outputs.id }}
-      with:
-        draft: true
-        body_path: ./downloads.md
-        is_append_body: true
+    # - name: Update release body
+    #   id: update_release
+    #   uses: tubone24/update_release@v1.3.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }}
+    #     RELEASE_ID: ${{ steps.get_release.outputs.id }}
+    #   with:
+    #     draft: true
+    #     body_path: ./downloads.md
+    #     is_append_body: true
