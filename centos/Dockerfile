@@ -80,11 +80,6 @@ RUN set -ex \
  && curl -fLsS https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/bin/jq \
  && chmod +x /usr/bin/jq
 
-RUN echo "---" >> /etc/metal/build-meta.yaml \
- && echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml \
- && echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml \
- && echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
-
 COPY context/ /
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online

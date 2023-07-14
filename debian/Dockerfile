@@ -122,11 +122,6 @@ RUN set -ex \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker
 
-RUN echo "---" >> /etc/metal/build-meta.yaml \
- && echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml \
- && echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml \
- && echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
-
 COPY context/ /
 
 # Copy the dependencies of `cloud-init-custom.service` into the image.
