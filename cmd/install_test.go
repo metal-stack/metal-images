@@ -917,29 +917,27 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 
 func Test_installer_writeBuildMeta(t *testing.T) {
 	tests := []struct {
-		name    string
-		fsMocks func(fs afero.Fs)
-		want    string
-		wantErr error
+		name      string
+		fsMocks   func(fs afero.Fs)
+		execMocks []fakeexecparams
+		want      string
+		wantErr   error
 	}{
 		{
-			name: "create file",
-			want: `---
-buildDate: ""
-buildSHA: abc
-buildVersion: "456"
-`,
-		},
-		{
-			name: "append to existing file",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/build-meta.yaml", []byte("---\nfrrVersion: 123"), 0700))
+			name: "build meta gets written",
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"ignition", "-version"},
+					Output:   "Ignition v0.36.2",
+					ExitCode: 0,
+				},
 			},
 			want: `---
+buildVersion: "456"
 buildDate: ""
 buildSHA: abc
-buildVersion: "456"
-frrVersion: 123
+buildRevision: revision
+ignitionVersion: Ignition v0.36.2
 `,
 		},
 	}
@@ -951,13 +949,20 @@ frrVersion: 123
 				tt.fsMocks(fs)
 			}
 
+			log := zaptest.NewLogger(t).Sugar()
+
 			i := &installer{
 				log: zaptest.NewLogger(t).Sugar(),
 				fs:  fs,
+				exec: &cmdexec{
+					log: log,
+					c:   fakeCmd(t, tt.execMocks...),
+				},
 			}
 
 			v.Version = "456"
 			v.GitSHA1 = "abc"
+			v.Revision = "revision"
 
 			err := i.writeBuildMeta()
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
