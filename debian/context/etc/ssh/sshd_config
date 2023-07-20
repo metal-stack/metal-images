@@ -25,7 +25,7 @@ LogLevel INFO
 # CIS 5.2.17 - Ensure SSH LoginGraceTime is set to one minute or less
 LoginGraceTime 60
 # CIS 5.2.10 - disable SSH Root Login
-PermitRootLogin yes
+PermitRootLogin no
 # CIS 5.2.5 - Ensure home directory and ssh sensitive files are verified (not publicly readable) before connecting.
 StrictModes yes
 # CIS 5.2.7 - set SSH MaxAuthTries to 4
@@ -101,10 +101,10 @@ MaxStartups 10:30:60
 #VersionAddendum none
 
 # CIS 5.2.18 - Ensure SSH access is limited
-AllowUsers metal root
-# AllowGroups sudo
+AllowUsers metal
+AllowGroups sudo
 DenyUsers nobody
-DenyGroups nogroup
+DenyGroups nobody nogroup
 
 # CIS 5.2.19 - Set SSH banner
 Banner /etc/issue.net
