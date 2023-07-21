@@ -13,7 +13,7 @@ cp debian/default /etc/default/cis-hardening
 sed -i "s#CIS_ROOT_DIR=.*#CIS_ROOT_DIR='$(pwd)'#" /etc/default/cis-hardening
 
 # Disable inapropriate checks
-bin/hardening.sh --create-config-files-only --allow-unsupported-distribution
+bin/hardening.sh --create-config-files-only --allow-unsupported-distribution --batch
 
 disable-testcase () {
   CONFFILE="etc/conf.d/$1.cfg"
