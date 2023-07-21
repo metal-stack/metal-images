@@ -10,8 +10,8 @@
 1.1.13_*      # there are no regular users on the nodes (no /home needed)
 1.1.14*       # there are no regular users on the nodes (no /home needed)
 1.4.[12]_*    # tipwire should be deployed as daemonset
-1.5.1_*       # we have no bootloade in the image
-1.5.2_*       # we have no bootloade in the image
+1.5.1_*       # we have no bootloader in the image
+1.5.2_*       # we have no bootloader in the image
 1.5.3_*       # root password must be set by metal-hammer and not in the image
 1.7.1.*       # apparmor is enabled on the nodes, but not in test
 2.2.1.*       # we use systemd-timesyncd
