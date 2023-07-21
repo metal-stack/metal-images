@@ -17,6 +17,7 @@ if [ "${ID}" = "ubuntu" ] ; then
     apt-get update --quiet
     apt-get install --yes --no-install-recommends software-properties-common
     add-apt-repository --yes ppa:oisf/suricata-stable
+    apt-get remove --yes polkitd software-properties-common
     apt-get update --quiet
     apt-get install --yes --no-install-recommends chrony suricata nftables || true
 else

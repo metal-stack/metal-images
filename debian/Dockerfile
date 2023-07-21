@@ -73,7 +73,6 @@ RUN set -ex \
     openssh-server \
     procps \
     socat \
-    software-properties-common \
     sudo \
     systemd \
     systemd-sysv \
