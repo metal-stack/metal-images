@@ -118,7 +118,7 @@ RUN set -ex \
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
- && rm -rf /tmp/* \
+ && rm -rf /tmp/* /var/log/apt/* \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker
 

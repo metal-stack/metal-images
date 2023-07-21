@@ -6,6 +6,7 @@ chmod 644 /etc/resolv.conf
 
 # Install and configure OVH-CIS benchmark
 apt update && apt install -y git
+rm /var/log/apt/*
 git clone https://github.com/ovh/debian-cis.git
 cd debian-cis
 cp debian/default /etc/default/cis-hardening
