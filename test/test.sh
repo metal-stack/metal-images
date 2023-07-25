@@ -18,6 +18,6 @@ ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     systemctl restart frr
     systemctl restart nftables
     cd / && /goss.sh ${MACHINE_TYPE}
-    cd / && [ "${OS_NAME}" == debian ] && /cis-benchmark.sh
+    cd / && [ "${CIS_VERSION}" != "" ] && CIS_VERSION=${CIS_VERSION} /cis-benchmark.sh
     echo "connection to ignite-vm completed"
 EOF
