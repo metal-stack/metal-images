@@ -154,8 +154,8 @@ func (i *installer) writeResolvConf() error {
 
 	// FIXME migrate to dns0.eu resolvers
 	content := []byte(
-		`nameserver 8.8.8.8
-nameserver 8.8.4.4
+		`nameserver 193.110.81.0
+nameserver 185.253.5.0
 `)
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
 }

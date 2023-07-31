@@ -218,15 +218,15 @@ func Test_installer_writeResolvConf(t *testing.T) {
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/resolv.conf", []byte(""), 0755))
 			},
-			want: `nameserver 8.8.8.8
-nameserver 8.8.4.4
+			want: `nameserver 193.110.81.0
+nameserver 185.253.5.0
 `,
 			wantErr: nil,
 		},
 		{
 			name: "resolv.conf gets written, file is not present",
-			want: `nameserver 8.8.8.8
-nameserver 8.8.4.4
+			want: `nameserver 193.110.81.0
+nameserver 185.253.5.0
 `,
 			wantErr: nil,
 		},
