@@ -23,6 +23,7 @@ RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
+    libyang1 \
     tcpdump \
  && apt-get remove --yes iptables \
  && apt install --yes iptables
@@ -43,9 +44,12 @@ RUN /suricata-and-chrony-installation.sh
 # TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
-RUN rm -f /etc/apt/sources.list.d/* \
+COPY --from=ghcr.io/metal-stack/frr:7.5.1-ubuntu-22.04 /artifacts/*.deb /tmp/
+
+RUN set -ex \
+ && rm -f /etc/apt/sources.list.d/* \
  && apt-get remove --yes frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
- && apt install --yes frr frr-pythontools --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
+ && apt install --yes /tmp/frr*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
  && apt --yes autoremove
 
 RUN systemctl disable chrony \
