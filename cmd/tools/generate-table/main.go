@@ -72,11 +72,12 @@ func generate() error {
 			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, prefix, after)
 			a.image = fmt.Sprintf("%s%s", prefix, path.Dir(after))
 
-			if strings.HasSuffix(key, ".tar.lz4") {
+			switch {
+			case strings.HasSuffix(key, ".tar.lz4"):
 				a.url = url
-			} else if strings.HasSuffix(key, ".md5") {
+			case strings.HasSuffix(key, ".md5"):
 				a.checksumURL = url
-			} else if strings.HasSuffix(key, ".txt") {
+			case strings.HasSuffix(key, ".txt"):
 				a.packagesURL = url
 			}
 
