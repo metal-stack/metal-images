@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/metal-stack/metal-hammer v0.11.5
 	github.com/metal-stack/metal-lib v0.13.0
-	github.com/metal-stack/metal-networker v0.33.0
+	github.com/metal-stack/metal-networker v0.33.1-0.20231002093420-425034dee1b3
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.9.5
