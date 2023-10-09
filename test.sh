@@ -42,6 +42,7 @@ sudo ignite run "${IMAGE}" \
   --kernel-image "${KERNEL_IMAGE}" \
   --size 4G \
   --ssh=./test/key.pub \
+  --copy-files=${PWD}/test/ssh-default:/etc/default/ssh \
   --memory 1G --cpus 1 \
   --log-level debug
 

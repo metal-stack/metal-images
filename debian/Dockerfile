@@ -73,7 +73,6 @@ RUN set -ex \
     openssh-server \
     procps \
     socat \
-    software-properties-common \
     sudo \
     systemd \
     systemd-sysv \
@@ -94,6 +93,7 @@ RUN set -ex \
  # Install crictl to be able to manipulate containers managed with containerd instead of dockerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
+ && chown root:root /usr/local/bin/crictl \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  # Switch to use iptables-legacy on worker nodes
@@ -118,11 +118,21 @@ RUN set -ex \
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
- && rm -rf /tmp/* \
+ && rm -rf /tmp/* /var/log/apt/* \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker
 
 COPY context/ /
+
+# CIS 5.2.1 - permissions and ownership to root 600 for sshd_config
+RUN chmod 600 /etc/ssh/sshd_config \
+ && chown root:root /etc/ssh/sshd_config \
+# sudoers should be 440 (root:root)
+ && chmod 440 /etc/sudoers /etc/sudoers.d/* \
+ && chown root:root /etc/sudoers /etc/sudoers.d/* \
+# CIS 4.2.3 - set default permission on logfiles
+ && chmod -R 640 /var/log \
+ && chown -R root:root /var/log 
 
 # Copy the dependencies of `cloud-init-custom.service` into the image.
 COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
