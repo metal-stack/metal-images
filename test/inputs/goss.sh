@@ -2,6 +2,7 @@
 
 source /etc/os-release
 
+export GOSS_VERSION=v0.3.23
 export OS=$ID
 export MACHINE_TYPE=$1
 export ROUTER_ID=10.1.0.1
@@ -12,7 +13,7 @@ if hash goss 2>/dev/null; then
     echo "goss is already installed"
 else
     echo "installing goss"
-    curl -kL https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss
+    curl -kL https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64 -o /usr/local/bin/goss
     chmod +rx /usr/local/bin/goss
 fi
 
