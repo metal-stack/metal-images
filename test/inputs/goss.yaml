@@ -8,60 +8,60 @@ user:
 file:
   "/etc/systemd/network/10-lan0.link":
     exists: true
-    contains:
+    contents:
     - "MACAddress=00:03:00:11:11:01"
     - "Name=lan0"
   "/etc/systemd/network/11-lan1.link":
     exists: true
-    contains:
+    contents:
     - "MACAddress=00:03:00:11:12:01"
     - "Name=lan1"
   "/etc/systemd/network/10-lan0.network":
     exists: true
-    contains:
+    contents:
     - "Name=lan0"
   "/etc/systemd/network/11-lan1.network":
     exists: true
-    contains:
+    contents:
     - "Name=lan1"
   "/home/metal/.ssh/authorized_keys":
     exists: true
-    contains:
+    contents:
     - {{ .Env.PUB_KEY }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "/etc/hostname":
     exists: true
-    contains:
+    contents:
     - machine
   "/var/lib/cloud-config-downloader/credentials/server":
     exists: true
-    contains:
+    contents:
     - https://my-cluster.local
   "/var/lib/cloud-config-downloader/credentials/ca.crt":
     exists: true
-    contains:
+    contents:
     - "-----BEGIN CERTIFICATE-----"
   "/var/lib/cloud-config-downloader/credentials/client.crt":
     exists: true
-    contains:
+    contents:
     - "-----BEGIN CERTIFICATE-----"
   "/var/lib/cloud-config-downloader/credentials/client.key":
     exists: true
-    contains:
+    contents:
     - "-----BEGIN RSA PRIVATE KEY-----"
   "/var/lib/cloud-config-downloader/download-cloud-config.sh":
     exists: true
-    contains:
+    contents:
     - "#!/bin/bash"
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "/etc/hostname":
     exists: true
-    contains:
+    contents:
     - firewall
   "/etc/logrotate.d/suricata":
     exists: true
-    contains:
+    contents:
     - "/var/log/suricata/*.log"
     - "/var/log/suricata/*.json"
 {{ end }}
@@ -133,7 +133,7 @@ command:
     exec: systemctl list-jobs
     exit-status: 0
     stdout:
-    - No jobs running.
+    - "No jobs running."
 {{ end }}
   "systemd: no failed units":
     exec: systemctl list-units --failed --no-pager --no-legend
@@ -164,12 +164,12 @@ command:
     exec: "vtysh -c 'show bgp json' | jq '.routerId'"
     exit-status: 0
     stdout:
-    - {{ .Env.ROUTER_ID }}
+    - "{{ .Env.ROUTER_ID }}"
   "bgp ASN matches":
     exec: "vtysh -c 'show bgp json' | jq '.localAS'"
     exit-status: 0
     stdout:
-    - {{ .Env.ASN }}
+    - "{{ .Env.ASN }}"
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "only ssh and bgpd is listening at 0.0.0.0":
     exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
