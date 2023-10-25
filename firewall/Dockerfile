@@ -44,7 +44,7 @@ RUN /suricata-and-chrony-installation.sh
 # TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
-COPY --from=ghcr.io/metal-stack/frr:7.5.1-ubuntu-22.04 /artifacts/*.deb /tmp/
+COPY --from=ghcr.io/metal-stack/frr:9.0.1-ubuntu-22.04 /artifacts/*.deb /tmp/
 
 RUN set -ex \
  && rm -f /etc/apt/sources.list.d/* \
