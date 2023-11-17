@@ -11,7 +11,7 @@ if [ "${ID}" = "ubuntu" ] ; then
          --accept-regex generic \
          --recursive \
          --execute robots=off \
-        https://kernel.ubuntu.com/~kernel-ppa/mainline/${UBUNTU_MAINLINE_KERNEL_VERSION}/amd64/
+        https://kernel.ubuntu.com/mainline/${UBUNTU_MAINLINE_KERNEL_VERSION}/amd64/
 
     apt-get install --yes \
         /tmp/linux-image* \
