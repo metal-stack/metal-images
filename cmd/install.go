@@ -568,7 +568,6 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		"--efi-directory=/boot/efi",
 		"--boot-directory=/boot",
 		"--bootloader-id=" + i.oss.BootloaderID(),
-		"--removable",
 	}
 	if i.config.RaidEnabled {
 		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
@@ -584,6 +583,8 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		}
 
 		grubInstallArgs = append(grubInstallArgs, fmt.Sprintf("UUID=%s", i.config.RootUUID))
+	} else {
+		grubInstallArgs = append(grubInstallArgs, "--removable")
 	}
 
 	if i.config.RaidEnabled {
