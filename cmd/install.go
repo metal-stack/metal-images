@@ -632,8 +632,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 				if !found {
 					return fmt.Errorf("unable to process blkid output lines")
 				}
-
-				shim := `\\EFI\\BOOT\\BOOTX64.EFI`
+				shim := fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID())
 				if i.oss == osCentos {
 					shim = fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
 				}
