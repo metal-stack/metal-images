@@ -713,7 +713,7 @@ func Test_installer_grubInstall(t *testing.T) {
 			oss:     osUbuntu,
 			execMocks: []fakeexecparams{
 				{
-					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu"},
+					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--removable"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -770,7 +770,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--no-nvram"},
+					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--no-nvram", "--removable"},
 					Output:   "",
 					ExitCode: 0,
 				},
