@@ -14,7 +14,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.6.1 \
+    NODE_EXPORTER_VERSION=1.7.0 \
     NFTABLES_EXPORTER_VERSION=v0.2.8
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
@@ -23,7 +23,6 @@ RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
-    libyang1 \
     tcpdump \
  && apt-get remove --yes iptables \
  && apt install --yes iptables
@@ -45,6 +44,7 @@ RUN /suricata-and-chrony-installation.sh
 # This issue is fixed with 8.5.3 but we still face redundacy issues.
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
+# TODO update to frr from 24.04
 COPY --from=ghcr.io/metal-stack/frr:9.1-ubuntu-22.04 /artifacts/*.deb /tmp/
 
 RUN set -ex \
