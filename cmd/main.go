@@ -1,51 +1,55 @@
 package main
 
 import (
+	"log/slog"
+	"os"
 	"os/exec"
 	"time"
 
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
-	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v3"
 )
 
 func main() {
 	start := time.Now()
-	log := newLogger(zapcore.InfoLevel)
-	log.Infof("running install version: %s", v.V.String())
+	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	})
+	log := slog.New(jsonHandler)
+	log.Info("running install version: %s", v.V.String())
 
 	fs := afero.OsFs{}
 
 	oss, err := detectOS(fs)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	config, err := parseInstallYAML(fs)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	i := installer{
-		log:    log.Named("install-go"),
+		log:    log.WithGroup("install-go"),
 		fs:     fs,
 		oss:    oss,
 		config: config,
 		exec: &cmdexec{
-			log: log.Named("cmdexec"),
+			log: log.WithGroup("cmdexec"),
 			c:   exec.CommandContext,
 		},
 	}
 
 	err = i.do()
 	if err != nil {
-		i.log.Errorw("installation failed", "duration", time.Since(start))
-		i.log.Fatal(err)
+		i.log.Error("installation failed", "duration", time.Since(start))
+		panic(err)
 	}
 
-	i.log.Infow("installation succeeded", "duration", time.Since(start))
+	i.log.Info("installation succeeded", "duration", time.Since(start))
 }
 
 func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
