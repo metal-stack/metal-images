@@ -23,7 +23,6 @@ RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
-    libyang1 \
     tcpdump \
  && apt-get remove --yes iptables \
  && apt install --yes iptables
