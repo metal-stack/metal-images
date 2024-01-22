@@ -314,7 +314,7 @@ func (i *installer) configureNetwork() error {
 	if err != nil {
 		return err
 	}
-	c.Configure()
+	c.Configure(netconf.ForwardPolicyDrop)
 	return nil
 }
 
