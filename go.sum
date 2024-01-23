@@ -71,8 +71,8 @@ github.com/go-openapi/spec v0.20.14 h1:7CBlRnw+mtjFGlPDRZmAMnq35cRzI91xj03HVyUi/
 github.com/go-openapi/spec v0.20.14/go.mod h1:8EOhTpBoFiask8rrgwbLC3zmJfz4zsCUueRuPM6GNkw=
 github.com/go-openapi/strfmt v0.22.0 h1:Ew9PnEYc246TwrEspvBdDHS4BVKXy/AOVsfqGDgAcaI=
 github.com/go-openapi/strfmt v0.22.0/go.mod h1:HzJ9kokGIju3/K6ap8jL+OlGAbjpSv27135Yr9OivU4=
-github.com/go-openapi/swag v0.22.7 h1:JWrc1uc/P9cSomxfnsFSVWoE1FW6bNbrVPmpQYpCcR8=
-github.com/go-openapi/swag v0.22.7/go.mod h1:Gl91UqO+btAM0plGGxHqJcQZ1ZTy6jbmridBTsDy8A0=
+github.com/go-openapi/swag v0.22.8 h1:/9RjDSQ0vbFR+NyjGMkFTsA1IA0fmhKSThmfGZjicbw=
+github.com/go-openapi/swag v0.22.8/go.mod h1:6QT22icPLEqAM/z/TChgb4WAveCHF92+2gF0CNjHpPI=
 github.com/go-openapi/validate v0.22.6 h1:+NhuwcEYpWdO5Nm4bmvhGLW0rt1Fcc532Mu3wpypXfo=
 github.com/go-openapi/validate v0.22.6/go.mod h1:eaddXSqKeTg5XpSmj1dYyFTK/95n/XHwcOY+BMxKMyM=
 github.com/godbus/dbus v0.0.0-20181025153459-66d97aec3384/go.mod h1:/YcGZj5zSblfDWMMoOzV4fas9FZnQYTkDnsGvmh2Grw=
@@ -153,8 +153,8 @@ github.com/metal-stack/metal-hammer v0.12.0 h1:t6t73RGmDU1IFkHC7dJxu7xDIZZvwmqmu
 github.com/metal-stack/metal-hammer v0.12.0/go.mod h1:MeY/EDYqyFUTk24vEQuaUrfRJf20lIisbqXj28+Bxmc=
 github.com/metal-stack/metal-lib v0.14.3 h1:oHtOnGsQC/ySLXzj14mfy7/8bwmCPfD5SD6U4yh8BHU=
 github.com/metal-stack/metal-lib v0.14.3/go.mod h1:2wKxFXSCpA1Dr+Rq0ddpQCPKPGMWJp4cpIaVTM4lDi0=
-github.com/metal-stack/metal-networker v0.33.1-0.20240122140354-df52bd9b79c8 h1:OEZO/17v+jIegFLDFdKFF6v7NN9KpqWjjj2W1xYp05g=
-github.com/metal-stack/metal-networker v0.33.1-0.20240122140354-df52bd9b79c8/go.mod h1:rmhP+MAz8GJyuhXGqb+F4LhtEcYUZPYj7ul8VN3pUF4=
+github.com/metal-stack/metal-networker v0.40.0 h1:PH6UQmKJjD4MkaZHvgBE20u0YYiTSDa+z211qM/8ZuU=
+github.com/metal-stack/metal-networker v0.40.0/go.mod h1:K7M5RGN/nSBmeuVrkjl1oDxI9fw8CB3VnuPdoumGTnk=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=
 github.com/metal-stack/v v1.0.3/go.mod h1:YTahEu7/ishwpYKnp/VaW/7nf8+PInogkfGwLcGPdXg=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=

@@ -5,15 +5,15 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
-  - GOLLDPD_VERSION=v0.4.5
+  - GOLLDPD_VERSION=v0.4.6
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=ubuntu
   - OS_NAME=ubuntu
   - DOCKER_APT_OS=ubuntu
   - DOCKER_APT_CHANNEL=jammy
-  - CRI_VERSION=v1.28.0
+  - CRI_VERSION=v1.29.0
   # see https://kernel.ubuntu.com/mainline for available versions
-  - UBUNTU_MAINLINE_KERNEL_VERSION=v6.6.10
+  - UBUNTU_MAINLINE_KERNEL_VERSION=v6.6.12
   - ICE_VERSION=1.12.7
   - ICE_PKG_VERSION=1.3.35.0
 

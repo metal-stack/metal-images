@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.12.0
 	github.com/metal-stack/metal-lib v0.14.3
-	github.com/metal-stack/metal-networker v0.33.1-0.20240122140354-df52bd9b79c8
+	github.com/metal-stack/metal-networker v0.40.0
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.11.0
@@ -34,7 +34,7 @@ require (
 	github.com/go-openapi/loads v0.21.5 // indirect
 	github.com/go-openapi/spec v0.20.14 // indirect
 	github.com/go-openapi/strfmt v0.22.0 // indirect
-	github.com/go-openapi/swag v0.22.7 // indirect
+	github.com/go-openapi/swag v0.22.8 // indirect
 	github.com/go-openapi/validate v0.22.6 // indirect
 	github.com/godbus/dbus/v5 v5.1.1-0.20230522191255-76236955d466 // indirect
 	github.com/google/uuid v1.5.0 // indirect

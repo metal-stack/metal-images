@@ -5,12 +5,12 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
-  - GOLLDPD_VERSION=v0.4.5
+  - GOLLDPD_VERSION=v0.4.6
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - OS_NAME=debian
   - DOCKER_APT_OS=debian
-  - CRI_VERSION=v1.28.0
+  - CRI_VERSION=v1.29.0
   - ICE_VERSION=1.12.7
   - ICE_PKG_VERSION=1.3.35.0
   - CIS_VERSION=v4.0-1
