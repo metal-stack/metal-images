@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
 	"os/user"
 	"path"
@@ -16,7 +17,6 @@ import (
 	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
-	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 )
 
@@ -26,7 +26,7 @@ const (
 )
 
 type installer struct {
-	log    *zap.SugaredLogger
+	log    *slog.Logger
 	fs     afero.Fs
 	oss    operatingsystem
 	config *api.InstallerConfig
@@ -36,7 +36,7 @@ type installer struct {
 func (i *installer) do() error {
 	err := i.detectFirmware()
 	if err != nil {
-		i.log.Warnw("no efi detected", "error", err)
+		i.log.Warn("no efi detected", "error", err)
 		return err
 	}
 
@@ -54,7 +54,7 @@ func (i *installer) do() error {
 
 	err = i.writeResolvConf()
 	if err != nil {
-		i.log.Warnw("writing resolv.conf failed", "error", err)
+		i.log.Warn("writing resolv.conf failed", "error", err)
 		return err
 	}
 
@@ -108,7 +108,7 @@ func (i *installer) do() error {
 }
 
 func (i *installer) detectFirmware() error {
-	i.log.Infow("detect firmware")
+	i.log.Info("detect firmware")
 
 	if !i.isVirtual() && !i.fileExists("/sys/firmware/efi") {
 		return fmt.Errorf("not running efi mode")
@@ -121,7 +121,7 @@ func (i *installer) isVirtual() bool {
 }
 
 func (i *installer) unsetMachineID() error {
-	i.log.Infow("unset machine-id")
+	i.log.Info("unset machine-id")
 	for _, p := range []string{"/etc/machine-id", "/var/lib/dbus/machine-id"} {
 		f, err := i.fs.Create(p)
 		if err != nil {
@@ -141,7 +141,7 @@ func (i *installer) fileExists(filename string) bool {
 }
 
 func (i *installer) writeResolvConf() error {
-	i.log.Infow("write /etc/resolv.conf")
+	i.log.Info("write /etc/resolv.conf")
 	// Must be written here because during docker build this file is synthetic
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
@@ -149,7 +149,7 @@ func (i *installer) writeResolvConf() error {
 	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove("/etc/resolv.conf")
 	if err != nil {
-		i.log.Infow("no /etc/resolv.conf present")
+		i.log.Info("no /etc/resolv.conf present")
 	}
 
 	// FIXME migrate to dns0.eu resolvers
@@ -161,7 +161,7 @@ nameserver 8.8.4.4
 }
 
 func (i *installer) buildCMDLine() string {
-	i.log.Infow("build kernel cmdline")
+	i.log.Info("build kernel cmdline")
 
 	rootUUID := i.config.RootUUID
 
@@ -189,7 +189,7 @@ func (i *installer) buildCMDLine() string {
 }
 
 func (i *installer) findMDUUID() (mdUUID string, found bool) {
-	i.log.Infow("detect software raid uuid")
+	i.log.Info("detect software raid uuid")
 	if !i.config.RaidEnabled {
 		return "", false
 	}
@@ -199,7 +199,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		timeout: 10 * time.Second,
 	})
 	if err != nil {
-		i.log.Error(err)
+		i.log.Error("unable to run blkid", "error", err)
 		return "", false
 	}
 	rootUUID := i.config.RootUUID
@@ -215,7 +215,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		}
 	}
 	if rootDisk == "" {
-		i.log.Errorf("unable to detect rootdisk")
+		i.log.Error("unable to detect rootdisk")
 		return "", false
 	}
 
@@ -225,7 +225,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		timeout: 10 * time.Second,
 	})
 	if err != nil {
-		i.log.Error(err)
+		i.log.Error("unable to run mdadm", "error", err)
 		return "", false
 	}
 
@@ -238,7 +238,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 	}
 
 	if mdUUID == "" {
-		i.log.Errorf("unable to detect md root disk")
+		i.log.Error("unable to detect md root disk")
 		return "", false
 	}
 
@@ -246,7 +246,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 }
 
 func (i *installer) createMetalUser() error {
-	i.log.Infow("create user", "user", "metal")
+	i.log.Info("create user", "user", "metal")
 
 	u, err := user.Lookup("metal")
 	if err != nil {
@@ -255,7 +255,7 @@ func (i *installer) createMetalUser() error {
 		}
 	}
 	if u != nil {
-		i.log.Infow("user already exists, recreating")
+		i.log.Info("user already exists, recreating")
 		_, err = i.exec.command(&cmdParams{
 			name:    "userdel",
 			args:    []string{"metal"},
@@ -289,8 +289,8 @@ func (i *installer) createMetalUser() error {
 }
 
 func (i *installer) configureNetwork() error {
-	i.log.Infow("configure network")
-	kb, err := netconf.New(i.log.Named("networker"), installYAML)
+	i.log.Info("configure network")
+	kb, err := netconf.New(i.log.WithGroup("networker"), installYAML)
 	if err != nil {
 		return err
 	}
@@ -319,7 +319,7 @@ func (i *installer) configureNetwork() error {
 }
 
 func (i *installer) copySSHKeys() error {
-	i.log.Infow("copy ssh keys")
+	i.log.Info("copy ssh keys")
 	err := i.fs.MkdirAll("/home/metal/.ssh", 0700)
 	if err != nil {
 		return err
@@ -352,7 +352,7 @@ func (i *installer) copySSHKeys() error {
 }
 
 func (i *installer) fixPermissions() error {
-	i.log.Infow("fix permissions")
+	i.log.Info("fix permissions")
 	for p, perm := range map[string]fs.FileMode{
 		"/var/tmp":   1777,
 		"/etc/hosts": 0644,
@@ -367,9 +367,9 @@ func (i *installer) fixPermissions() error {
 }
 
 func (i *installer) processUserdata() error {
-	i.log.Infow("process userdata")
+	i.log.Info("process userdata")
 	if ok := i.fileExists(userdata); !ok {
-		i.log.Infow("no userdata present, not processing userdata", "path", userdata)
+		i.log.Info("no userdata present, not processing userdata", "path", userdata)
 		return nil
 	}
 
@@ -384,7 +384,7 @@ func (i *installer) processUserdata() error {
 			args: []string{"preset-all"},
 		})
 		if err != nil {
-			i.log.Errorw("error when running systemctl preset-all, continuing anyway", "error", err, "output", string(out))
+			i.log.Error("error when running systemctl preset-all, continuing anyway", "error", err, "output", string(out))
 		}
 	}()
 
@@ -394,7 +394,7 @@ func (i *installer) processUserdata() error {
 			args: []string{"devel", "schema", "--config-file", userdata},
 		})
 		if err != nil {
-			i.log.Errorw("error when running cloud-init userdata, continuing anyway", "error", err)
+			i.log.Error("error when running cloud-init userdata, continuing anyway", "error", err)
 		}
 
 		return nil
@@ -411,17 +411,17 @@ func (i *installer) processUserdata() error {
 	}
 	_, report, err := config.Parse(rawConfig)
 	if err != nil {
-		i.log.Errorw("error when validating ignition userdata, continuing anyway", "error", err)
+		i.log.Error("error when validating ignition userdata, continuing anyway", "error", err)
 	}
 
-	i.log.Infow("executing ignition")
+	i.log.Info("executing ignition")
 	_, err = i.exec.command(&cmdParams{
 		name: "ignition",
 		args: []string{"-oem", "file", "-stage", "files", "-log-to-stdout"},
 		dir:  "/etc/metal",
 	})
 	if err != nil {
-		i.log.Errorw("error when running ignition, continuing anyway", "report", report.Entries, "error", err)
+		i.log.Error("error when running ignition, continuing anyway", "report", report.Entries, "error", err)
 	}
 
 	return nil
@@ -440,7 +440,7 @@ func isCloudInitFile(content []byte) bool {
 }
 
 func (i *installer) writeBootInfo(cmdLine string) error {
-	i.log.Infow("write boot-info")
+	i.log.Info("write boot-info")
 
 	kern, initrd, err := i.kernelAndInitrdPath()
 	if err != nil {
@@ -527,13 +527,13 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 		return "", "", fmt.Errorf("ramdisk %q not found", initrd)
 	}
 
-	i.log.Infow("detect kernel and initrd", "kernel", kern, "initrd", initrd)
+	i.log.Info("detect kernel and initrd", "kernel", kern, "initrd", initrd)
 
 	return
 }
 
 func (i *installer) grubInstall(cmdLine string) error {
-	i.log.Infow("install grub")
+	i.log.Info("install grub")
 	// ttyS1,115200n8
 	serialPort, serialSpeed, found := strings.Cut(i.config.Console, ",")
 	if !found {
@@ -710,7 +710,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 }
 
 func (i *installer) writeBuildMeta() error {
-	i.log.Infow("writing build meta file", "path", "/etc/metal/build-meta.yaml")
+	i.log.Info("writing build meta file", "path", "/etc/metal/build-meta.yaml")
 
 	meta := &v1.BuildMeta{
 		Version:  v.Version,
@@ -724,7 +724,7 @@ func (i *installer) writeBuildMeta() error {
 		args: []string{"-version"},
 	})
 	if err != nil {
-		i.log.Errorw("error detecting ignition version for build meta, continuing anyway", "error", err)
+		i.log.Error("error detecting ignition version for build meta, continuing anyway", "error", err)
 	} else {
 		meta.IgnitionVersion = strings.TrimSpace(out)
 	}

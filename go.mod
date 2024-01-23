@@ -8,12 +8,11 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.12.0
 	github.com/metal-stack/metal-lib v0.14.3
-	github.com/metal-stack/metal-networker v0.40.0
+	github.com/metal-stack/metal-networker v0.41.0
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.11.0
 	github.com/stretchr/testify v1.8.4
-	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -57,7 +56,6 @@ require (
 	github.com/stretchr/objx v0.5.1 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
-	go.uber.org/multierr v1.11.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
