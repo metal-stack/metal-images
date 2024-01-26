@@ -14,7 +14,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.6.1 \
+    NODE_EXPORTER_VERSION=1.7.0 \
     NFTABLES_EXPORTER_VERSION=v0.2.8
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
@@ -23,7 +23,6 @@ RUN apt-get update --quiet \
  && apt-get install --yes \
     bridge-utils \
     fever \
-    libyang1 \
     tcpdump \
  && apt-get remove --yes iptables \
  && apt install --yes iptables
