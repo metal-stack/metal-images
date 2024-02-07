@@ -139,8 +139,8 @@ github.com/metal-stack/metal-hammer v0.12.1-0.20240206074520-ed676b142a48 h1:8ds
 github.com/metal-stack/metal-hammer v0.12.1-0.20240206074520-ed676b142a48/go.mod h1:oneWTxMhxcll0sdujAT4gt7itOFRmDs4YghDNn0LHU4=
 github.com/metal-stack/metal-lib v0.14.4 h1:vm2868vcua6khoyWL7d0to8Hq5RayrjMse0FZTyWEec=
 github.com/metal-stack/metal-lib v0.14.4/go.mod h1:Z3PAh8dkyWC4B19fXsu6EYwXXee0Lk9JZbjoHPLbDbc=
-github.com/metal-stack/metal-networker v0.41.1-0.20240206074605-37876fd3adab h1:KjLey3C3nEWvTq9/BBsORYReetkndWBH5CcRaMjbKEk=
-github.com/metal-stack/metal-networker v0.41.1-0.20240206074605-37876fd3adab/go.mod h1:LXLAXo016o+2fIKDDptI0cxJ0KId/Pl+/E2iIB5ioYY=
+github.com/metal-stack/metal-networker v0.41.1-0.20240206094854-8cd77d393f1a h1:qKWiOZSMtjE12W/aQoOQ5aEkDaeuSRu5rxmCxRLNTVo=
+github.com/metal-stack/metal-networker v0.41.1-0.20240206094854-8cd77d393f1a/go.mod h1:LXLAXo016o+2fIKDDptI0cxJ0KId/Pl+/E2iIB5ioYY=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=
 github.com/metal-stack/v v1.0.3/go.mod h1:YTahEu7/ishwpYKnp/VaW/7nf8+PInogkfGwLcGPdXg=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
@@ -282,8 +282,8 @@ golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.16.0 h1:xWw16ngr6ZMtmxDyKyIgsE93KNKz5HKmMa3b8ALHidU=
-golang.org/x/sys v0.16.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+golang.org/x/sys v0.17.0 h1:25cE3gD+tdBA7lp7QfhuV+rJiE9YXTcS3VG1SqssI/Y=
+golang.org/x/sys v0.17.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/term v0.5.0/go.mod h1:jMB1sMXY+tzblOD4FWmEbocvup2/aLOaQEp7JmGp78k=

@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.12.1-0.20240206074520-ed676b142a48
 	github.com/metal-stack/metal-lib v0.14.4
-	github.com/metal-stack/metal-networker v0.41.1-0.20240206074605-37876fd3adab
+	github.com/metal-stack/metal-networker v0.41.1-0.20240206094854-8cd77d393f1a
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.11.0
@@ -49,7 +49,7 @@ require (
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
