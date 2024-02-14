@@ -6,9 +6,9 @@ require (
 	github.com/aws/aws-sdk-go v1.50.0
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
-	github.com/metal-stack/metal-hammer v0.12.1-0.20240206074520-ed676b142a48
+	github.com/metal-stack/metal-hammer v0.12.2-0.20240214071617-d607fd939f32
 	github.com/metal-stack/metal-lib v0.14.4
-	github.com/metal-stack/metal-networker v0.41.1-0.20240212131903-f0c6b44e274d
+	github.com/metal-stack/metal-networker v0.41.1-0.20240214070454-10c406dfdc66
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.11.0
@@ -40,11 +40,11 @@ require (
 	github.com/jszwec/csvutil v1.10.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/metal-stack/metal-go v0.26.4-0.20240206074344-b77cd93ebe4d // indirect
+	github.com/metal-stack/metal-go v0.26.4-0.20240213145736-fe197bb1f4fa // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/rivo/uniseg v0.4.6 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
