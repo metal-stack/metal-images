@@ -6,10 +6,10 @@ WORKDIR /work
 RUN set -ex \
  && apt-get update \
  && apt-get install -y libblkid-dev \
- && git clone https://github.com/coreos/ignition.git \
+ && git clone https://github.com/flatcar/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && GO111MODULE=off make \
+ && make \
  && strip bin/amd64/ignition
 
 FROM almalinux:${BASE_OS_VERSION}
