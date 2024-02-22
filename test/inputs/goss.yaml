@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 gossfile:
   common:
     file: goss-common.yaml
@@ -21,15 +22,198 @@ gossfile:
   ubuntu:
     file: goss-debian-ubuntu.yaml
     skip: false
+=======
+user:
+  metal:
+    exists: true
+    shell: /bin/bash
+    home: /home/metal
+    uid: 1000
+file:
+  "/etc/systemd/network/10-lan0.link":
+    exists: true
+    contents:
+    - "MACAddress=00:03:00:11:11:01"
+    - "Name=lan0"
+  "/etc/systemd/network/11-lan1.link":
+    exists: true
+    contents:
+    - "MACAddress=00:03:00:11:12:01"
+    - "Name=lan1"
+  "/etc/systemd/network/10-lan0.network":
+    exists: true
+    contents:
+    - "Name=lan0"
+  "/etc/systemd/network/11-lan1.network":
+    exists: true
+    contents:
+    - "Name=lan1"
+  "/home/metal/.ssh/authorized_keys":
+    exists: true
+    contents:
+    - {{ .Env.PUB_KEY }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  "/etc/hostname":
+    exists: true
+    contents:
+    - machine
+  "/var/lib/cloud-config-downloader/credentials/server":
+    exists: true
+    contents:
+    - https://my-cluster.local
+  "/var/lib/cloud-config-downloader/credentials/ca.crt":
+    exists: true
+    contents:
+    - "-----BEGIN CERTIFICATE-----"
+  "/var/lib/cloud-config-downloader/credentials/client.crt":
+    exists: true
+    contents:
+    - "-----BEGIN CERTIFICATE-----"
+  "/var/lib/cloud-config-downloader/credentials/client.key":
+    exists: true
+    contents:
+    - "-----BEGIN RSA PRIVATE KEY-----"
+  "/var/lib/cloud-config-downloader/download-cloud-config.sh":
+    exists: true
+    contents:
+    - "#!/bin/bash"
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+  "/etc/hostname":
+    exists: true
+    contents:
+    - firewall
+  "/etc/nftables/rules":
+    exists: true
+    contents:
+    - "type filter hook forward priority 0; policy drop;"
+  "/etc/logrotate.d/suricata":
+    exists: true
+    contents:
+    - "/var/log/suricata/*.log"
+    - "/var/log/suricata/*.json"
+>>>>>>> 7b4b8b338ef7c032b9cb22ccc831db7b4e022046
 {{ end }}
 {{ if eq .Env.OS "centos" }}
   centos:
     file: goss-centos.yaml
     skip: false
 {{ end }}
+<<<<<<< HEAD
 {{ if eq .Env.OS "almalinux" }}
   almalinux:
     file: goss-almalinux.yaml
     skip: false
+=======
+{{ if ne .Env.OS "centos" }}
+  ssh:
+    enabled: true
+    running: true
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  docker:
+    enabled: true
+    running: true
+  cloud-config-downloader:
+    enabled: true
+    running: false
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+  "chrony@vrf104009":
+    enabled: true
+    running: true
+  suricata:
+    enabled: true
+    running: true
+  suricata-update:
+    enabled: true
+    running: false
+  nftables:
+    enabled: true
+    running: true
+  firewall-controller:
+    enabled: true
+    running: false
+  droptailer:
+    enabled: true
+    running: false
+{{ end }}
+process:
+  bgpd:
+    running: true
+  zebra:
+    running: true
+dns:
+  google.com:
+    resolvable: true
+command:
+  "internet is reachable":
+    exec: "ping -W 1 -c 1 -n 8.8.8.8"
+    exit-status: 0
+{{ if ne .Env.OS "centos" }}
+  "systemd: timer for logrotation exists":
+    exec: "systemctl list-timers | grep logrotate"
+    exit-status: 0
+    stdout:
+    - "logrotate.timer"
+    - "logrotate.service"
+  "systemd: no pending jobs":
+    exec: systemctl list-jobs
+    exit-status: 0
+    stdout:
+    - "No jobs running."
+{{ end }}
+  "systemd: no failed units":
+    exec: systemctl list-units --failed --no-pager --no-legend
+    exit-status: 0
+    stdout:
+    - ""
+  "metal user: sudo is possible with the machine console password":
+    exec: |
+      su metal -c /bin/bash -c 'printf "test\n" | sudo --stdin -i id'
+    exit-status: 0
+    stdout:
+    - "uid=0(root)"
+  "boot-info contains kernel, initrd and cmdline":
+    exec: |
+      grep -q 'kernel:' /etc/metal/boot-info.yaml && \
+      grep -q 'initrd:' /etc/metal/boot-info.yaml && \
+      grep -q 'cmdline:' /etc/metal/boot-info.yaml
+    exit-status: 0
+    stdout:
+    - "!null"
+    stderr: []
+  "bgp has two peers visibile":
+    exec: "vtysh -c 'show bgp sum json' | jq '.ipv4Unicast.totalPeers'"
+    exit-status: 0
+    stdout:
+    - "2"
+  "bgp router-id matches":
+    exec: "vtysh -c 'show bgp json' | jq '.routerId'"
+    exit-status: 0
+    stdout:
+    - "{{ .Env.ROUTER_ID }}"
+  "bgp ASN matches":
+    exec: "vtysh -c 'show bgp json' | jq '.localAS'"
+    exit-status: 0
+    stdout:
+    - "{{ .Env.ASN }}"
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  "only ssh and bgpd is listening at 0.0.0.0":
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
+    exit-status: 0
+    stdout:
+    - "0"
+  "only ssh and bgpd is listening at [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179' | wc -l"
+    exit-status: 0
+    stdout:
+    - "0"
+{{ if ne .Env.OS "centos" }}
+  "timedatectl show -p NTPSynchronized":
+    exit-status: 0
+    stdout:
+    - "NTPSynchronized=yes"
+>>>>>>> 7b4b8b338ef7c032b9cb22ccc831db7b4e022046
 {{ end }}
 {{ end }}

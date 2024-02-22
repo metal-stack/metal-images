@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -12,7 +13,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 	"gopkg.in/yaml.v3"
 )
 
@@ -183,7 +183,7 @@ func Test_installer_detectFirmware(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -235,7 +235,7 @@ nameserver 8.8.4.4
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  afero.NewMemMapFs(),
 			}
 
@@ -277,7 +277,7 @@ func Test_installer_fixPermissions(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  afero.NewMemMapFs(),
 			}
 
@@ -335,7 +335,7 @@ func Test_installer_findMDUUID(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -380,8 +380,8 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					ExitCode: 0,
 				},
 			},
-			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 		},
 		{
 			name: "with raid",
@@ -400,8 +400,8 @@ func Test_installer_buildCMDLine(t *testing.T) {
 					ExitCode: 0,
 				},
 			},
-			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
-			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0 rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=543eb7f8:98d4d986:e669824d:bebe69e5",
+			// CMDLINE="console=${CONSOLE} root=UUID=${ROOT_UUID} init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
+			want: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0 rdloaddriver=raid0 rdloaddriver=raid1 rd.md.uuid=543eb7f8:98d4d986:e669824d:bebe69e5",
 		},
 	}
 	for _, tt := range tests {
@@ -412,7 +412,7 @@ func Test_installer_buildCMDLine(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -455,7 +455,7 @@ func Test_installer_unsetMachineID(t *testing.T) {
 			}
 
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  fs,
 			}
 
@@ -571,7 +571,7 @@ func Test_installer_writeBootInfo(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  fs,
 				oss: tt.oss,
 			}
@@ -674,7 +674,7 @@ func Test_installer_processUserdata(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -709,11 +709,11 @@ func Test_installer_grubInstall(t *testing.T) {
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osUbuntu,
 			execMocks: []fakeexecparams{
 				{
-					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu"},
+					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--removable"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -732,7 +732,7 @@ func Test_installer_grubInstall(t *testing.T) {
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=metal-ubuntu
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -741,7 +741,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osUbuntu,
 			execMocks: []fakeexecparams{
 				{
@@ -770,7 +770,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--no-nvram"},
+					WantCmd:  []string{"grub-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=metal-ubuntu", "--no-nvram", "--removable"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -789,7 +789,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=metal-ubuntu
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -801,7 +801,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osCentos,
 			execMocks: []fakeexecparams{
 				{
@@ -819,7 +819,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -831,7 +831,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
 			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0",
+			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
 			oss:     osCentos,
 			execMocks: []fakeexecparams{
 				{
@@ -865,7 +865,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 					ExitCode: 0,
 				},
 				{
-					WantCmd:  []string{"dracut", "--mdadm", "--kver", "1.2.3", "--kmoddir", "/lib/modules/1.2.3", "--include", "/lib/modules/1.2.3", "/lib/modules/1.2.3", "--fstab", "--add=\"dm mdraid\"", "--add-drivers=\"raid0 raid1\"", "--hostonly", "--force"},
+					WantCmd:  []string{"dracut", "--mdadmconf", "--kver", "1.2.3", "--kmoddir", "/lib/modules/1.2.3", "--include", "/lib/modules/1.2.3", "/lib/modules/1.2.3", "--fstab", "--add=dm mdraid", "--add-drivers=raid0 raid1", "--hostonly", "--force"},
 					Output:   "",
 					ExitCode: 0,
 				},
@@ -874,7 +874,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=4294967295 systemd.unified_cgroup_hierarchy=0"
+GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
 GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 		},
@@ -887,7 +887,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -917,29 +917,27 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 
 func Test_installer_writeBuildMeta(t *testing.T) {
 	tests := []struct {
-		name    string
-		fsMocks func(fs afero.Fs)
-		want    string
-		wantErr error
+		name      string
+		fsMocks   func(fs afero.Fs)
+		execMocks []fakeexecparams
+		want      string
+		wantErr   error
 	}{
 		{
-			name: "create file",
-			want: `---
-buildDate: ""
-buildSHA: abc
-buildVersion: "456"
-`,
-		},
-		{
-			name: "append to existing file",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/build-meta.yaml", []byte("---\nfrrVersion: 123"), 0700))
+			name: "build meta gets written",
+			execMocks: []fakeexecparams{
+				{
+					WantCmd:  []string{"ignition", "-version"},
+					Output:   "Ignition v0.36.2",
+					ExitCode: 0,
+				},
 			},
 			want: `---
+buildVersion: "456"
 buildDate: ""
 buildSHA: abc
-buildVersion: "456"
-frrVersion: 123
+buildRevision: revision
+ignitionVersion: Ignition v0.36.2
 `,
 		},
 	}
@@ -951,13 +949,20 @@ frrVersion: 123
 				tt.fsMocks(fs)
 			}
 
+			log := slog.Default()
+
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  fs,
+				exec: &cmdexec{
+					log: log,
+					c:   fakeCmd(t, tt.execMocks...),
+				},
 			}
 
 			v.Version = "456"
 			v.GitSHA1 = "abc"
+			v.Revision = "revision"
 
 			err := i.writeBuildMeta()
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {

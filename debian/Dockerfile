@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 
-FROM golang:1.19-buster as ignition-builder
+FROM golang:1.22-bookworm as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -21,6 +21,7 @@ ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
+ARG FRR_APT_CHANNEL
 ARG CRI_VERSION
 ARG SEMVER_MAJOR_MINOR
 ARG KERNEL_VERSION
@@ -36,11 +37,10 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 
 COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
-COPY context/kernel-and-timesyncd-installation.sh /
+COPY context/kernel-installation.sh /
 
 RUN set -ex \
- && sed 's@archive.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
- && sed 's@security.ubuntu.com@de.archive.ubuntu.com@' -i /etc/apt/sources.list \
+ && rm -f /.dockerenv \
  && apt-get update \
  && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends \
@@ -49,6 +49,7 @@ RUN set -ex \
     apt-utils \
     ca-certificates \
     cloud-init \
+    cpufrequtils \
     curl \
     dbus \
     efibootmgr \
@@ -68,29 +69,31 @@ RUN set -ex \
     locales \
     lvm2 \
     mdadm \
+    nvme-cli \
+    openssh-server \
     procps \
     socat \
-    software-properties-common \
     sudo \
     systemd \
     systemd-sysv \
+    systemd-timesyncd \
+    tcpdump \
+    traceroute \
     tzdata \
     watchdog \
     wget \
     vim \
+    zstd \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
- && add-apt-repository "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" \
+ && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
  && apt-get install --yes --no-install-recommends docker-ce \
- # docker is always installed in /usr/bin/docker, on ubuntu /bin is a link to /usr/bin
- # debian does not have this link, therefore /bin/docker does not exist.
- # gardener requires /bin/docker in their kubelet.service.
- && ln -s /usr/bin/docker /bin/docker || true \
  # Install crictl to be able to manipulate containers managed with containerd instead of dockerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
+ && chown root:root /usr/local/bin/crictl \
  && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  # Switch to use iptables-legacy on worker nodes
@@ -98,7 +101,7 @@ RUN set -ex \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  # install frr from frrouting debian package repo
  && curl -fLsS https://deb.frrouting.org/frr/keys.asc | apt-key add - \
- && add-apt-repository "deb [arch=amd64] https://deb.frrouting.org/frr $(lsb_release -s -c) ${FRR_VERSION}" \
+ && echo "deb [arch=amd64] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
  && apt update \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # Install Intel Firmware for e800 based network cards
@@ -106,24 +109,30 @@ RUN set -ex \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
  && mkdir -p /lib/firmware/intel/ice/ddp/ \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
+ && rm -rf ice* \
  # install kernel and stuff
- && /kernel-and-timesyncd-installation.sh \
+ && /kernel-installation.sh \
  # remove dhclient which could lead to dangerous configurations
  && apt-get remove --yes isc-dhcp-client \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
  && apt autoremove --yes \
- && rm -rf /tmp/* \
+ && rm -rf /tmp/* /var/log/apt/* \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker
 
-RUN echo "---" >> /etc/metal/build-meta.yaml \
- && echo "ignitionVersion: ${IGNITION_BRANCH}" >> /etc/metal/build-meta.yaml \
- && echo "golldpdVersion: ${GOLLDPD_VERSION}" >> /etc/metal/build-meta.yaml \
- && echo "frrVersion: ${FRR_VERSION}" >> /etc/metal/build-meta.yaml
-
 COPY context/ /
+
+# CIS 5.2.1 - permissions and ownership to root 600 for sshd_config
+RUN chmod 600 /etc/ssh/sshd_config \
+ && chown root:root /etc/ssh/sshd_config \
+# sudoers should be 440 (root:root)
+ && chmod 440 /etc/sudoers /etc/sudoers.d/* \
+ && chown root:root /etc/sudoers /etc/sudoers.d/* \
+# CIS 4.2.3 - set default permission on logfiles
+ && chmod -R 640 /var/log \
+ && chown -R root:root /var/log 
 
 # Copy the dependencies of `cloud-init-custom.service` into the image.
 COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
@@ -135,10 +144,12 @@ RUN systemctl set-default multi-user.target \
                      docker.service \
                      frr.service \
                      systemd-networkd \
-                     systemd-resolved \
                      systemd-timesyncd \
                      watchdog.service \
                      cloud-init-custom.service \
+                     serial-getty@ttyS1.service \
+ && systemctl disable console-getty.service \
+ && systemctl mask console-getty.service \
  && update-ca-certificates \
  # generate locale
  && locale-gen

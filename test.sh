@@ -2,7 +2,7 @@
 
 set -e
 
-# example: sudo OS_NAME=ubuntu ./test.sh quay.io/metalstack/ubuntu:19.10
+# example: sudo OS_NAME=ubuntu ./test.sh quay.io/metalstack/ubuntu:22.04
 hash ignite 2>/dev/null || { echo >&2 "ignite not found please install from: https://github.com/weaveworks/ignite"; exit 1; }
 
 IMAGE="${1}"
@@ -21,6 +21,7 @@ if [ "${KERNEL_IMAGE}" == "metal-kernel" ]; then
   cd test && docker build . -t metal-kernel:latest && cd -
 
   echo "import metal-kernel image to ignite"
+  sudo ignite kernel rm -f metal-kernel:latest || true
   sudo ignite kernel import --runtime=docker metal-kernel:latest
 fi
 
@@ -41,6 +42,7 @@ sudo ignite run "${IMAGE}" \
   --kernel-image "${KERNEL_IMAGE}" \
   --size 4G \
   --ssh=./test/key.pub \
+  --copy-files=${PWD}/test/ssh-default:/etc/default/ssh \
   --memory 1G --cpus 1 \
   --log-level debug
 

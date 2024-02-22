@@ -20,10 +20,11 @@ type fakeexec struct {
 	mocks     []fakeexecparams
 }
 
+// nolint:musttag
 type fakeexecparams struct {
-	WantCmd  []string
-	Output   string
-	ExitCode int
+	WantCmd  []string `json:"want_cmd"`
+	Output   string   `json:"output"`
+	ExitCode int      `json:"exit_code"`
 }
 
 func fakeCmd(t *testing.T, params ...fakeexecparams) func(ctx context.Context, command string, args ...string) *exec.Cmd {

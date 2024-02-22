@@ -1,4 +1,5 @@
-name: Pipeline
+---
+name: Release Pipeline
 
 on:
   release:
@@ -7,125 +8,43 @@ on:
 
 env:
   GCS_BUCKET: images.metal-pod.io
-  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  debian_ubuntu:
-    name: Build Debian and Ubuntu based OS images
-    strategy:
-      matrix:
-        os: [debian, ubuntu]
-    runs-on: self-hosted
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Set up Go 1.19
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.19.x'
-    - name: Lint
-      uses: golangci/golangci-lint-action@v2
-      with:
-        args: --build-tags integration -p bugs -p unused --timeout=3m
-    - name: build install
-      run: make
-    - name: Prepare build environment
-      shell: bash
-      run: ./prepare.sh ${{ matrix.os }}
-    - name: Build docker image for workers and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
-          --no-cache \
-          --summary \
-          --no-lint
-    - name: Build docker image for firewalls and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir firewall \
-          --build-only ${{ matrix.os }} \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint
-      if: ${{ matrix.os == 'ubuntu' }}
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-    - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
-  centos:
-    name: Build Centos based OS image
-    runs-on: self-hosted
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Set up Go 1.19
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.19.x'
-    - name: build install
-      run: make
-    - name: Prepare build environment
-      shell: bash
-      run: ./prepare.sh centos
-    - name: Build docker image for centos based workers and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir centos \
-          --file docker-make.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --no-push
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-    - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
+  copy:
+    name: Copy image tarballs from latest stable to release
+    runs-on: ubuntu-latest
 
-  almalinux:
-    name: Build Almalinux based OS image
-    runs-on: self-hosted
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Set up Go 1.19
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.19.x'
-    - name: build install
-      run: make
-    - name: Prepare build environment
-      shell: bash
-      run: ./prepare.sh almalinux
-    - name: Build docker image for almalinux based workers and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir almalinux \
-          --file docker-make.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --no-push
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-    - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
+      - uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+          cache: false
+
+      - run: |
+          # copy supported images (entire stable folder cannot be copied as a whole because it contains obsolete images as well)
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/almalinux/8 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/almalinux/8
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian/12
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/22.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/22.04
+
+          PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
+
+      - name: Update release body
+        id: update_release
+        uses: tubone24/update_release@v1.3.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          body_path: ./downloads.md
+          is_append_body: true

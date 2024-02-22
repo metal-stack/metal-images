@@ -4,8 +4,8 @@ name: almalinux
 username: metalstack
 registry-host: quay.io
 default-build-args:
-  - IGNITION_BRANCH=v0.35.0
-  - GOLLDPD_VERSION=v0.4.0
+  - IGNITION_BRANCH=v0.36.2
+  - GOLLDPD_VERSION=v0.4.2
   - FRR_VERSION=frr-8
   - OS_NAME=almalinux
   - SEMVER_PATCH=${SEMVER_PATCH}

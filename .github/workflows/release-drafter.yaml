@@ -1,0 +1,48 @@
+---
+name: Release Drafter Action
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: release-drafter/release-drafter@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # the following actions can be used to try out the update release action on the master branch.
+    # it adds a generated download table to the release body with images from the stable folder.
+
+    # - name: Checkout
+    #   uses: actions/checkout@v4
+
+    # - name: Set up Go 1.20
+    #   uses: actions/setup-go@v5
+    #   with:
+    #     go-version: '1.20.x'
+
+    # - uses: cardinalby/git-get-release-action@v1
+    #   id: get_release
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }}
+    #   with:
+    #     latest: true
+    #     draft: true
+
+    # - run: |
+    #     PREFIX=metal-os/stable go run ./cmd/tools/generate-table > downloads.md
+
+    # - name: Update release body
+    #   id: update_release
+    #   uses: tubone24/update_release@v1.3.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }}
+    #     RELEASE_ID: ${{ steps.get_release.outputs.id }}
+    #   with:
+    #     draft: true
+    #     body_path: ./downloads.md
+    #     is_append_body: true
