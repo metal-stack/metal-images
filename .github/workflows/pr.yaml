@@ -78,37 +78,10 @@ jobs:
           --no-push
       if: ${{ matrix.os == 'ubuntu' }}
 
-    - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
-
-  debian-nvidia:
-    name: Build Debian with NVidia support
-    runs-on: self-hosted
-    needs: debian-ubuntu
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - uses: google-github-actions/auth@v1
-      with:
-        credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
-
-    - name: Set up Go 1.22
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.22.x'
-        cache: false
-
-    - name: build install
-      run: make
-
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh debian-nvidia
+      if: ${{ matrix.os == 'debian' }}
 
     - name: Build docker image for debian-nvidia based workers and export tarball
       run: |
@@ -123,6 +96,7 @@ jobs:
           --summary \
           --no-lint \
           --no-push
+      if: ${{ matrix.os == 'debian' }}
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
