@@ -15,7 +15,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=12
       - BASE_OS_NAME=quay.io/metalstack/debian
-      - SEMVER_MAJOR_MINOR=3.0
+      - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

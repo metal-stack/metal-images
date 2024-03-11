@@ -85,14 +85,11 @@ jobs:
 
     - name: Build docker image for debian-nvidia based workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir debian-nvidia \
           --file docker-make.yaml \
           --no-cache \
-          --no-push \
           --summary \
           --no-lint \
           --no-push
