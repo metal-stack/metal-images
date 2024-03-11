@@ -84,6 +84,7 @@ jobs:
   debian-nvidia:
     name: Build Debian with NVidia support
     runs-on: self-hosted
+    needs: debian-ubuntu
 
     steps:
     - name: Checkout
