@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [debian, ubuntu]
+        os: [debian, ubuntu, debian-nvidia]
 
     runs-on: self-hosted
 
@@ -37,7 +37,7 @@ jobs:
         cache: false
 
     - name: Lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v4
       with:
         args: --build-tags integration -p bugs -p unused --timeout=3m
 
