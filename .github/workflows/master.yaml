@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [debian, ubuntu, debian-nvidia]
+        os: [debian, ubuntu]
 
     steps:
     - name: Checkout
