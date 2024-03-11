@@ -90,6 +90,7 @@ jobs:
           --work-dir debian-nvidia \
           --file docker-make.yaml \
           --no-cache \
+          --no-pull \
           --summary \
           --no-lint \
           --no-push
