@@ -5,7 +5,7 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
-  - GOLLDPD_VERSION=v0.4.6
+  - GOLLDPD_VERSION=v0.4.7
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=ubuntu
   - OS_NAME=ubuntu

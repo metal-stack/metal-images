@@ -58,6 +58,31 @@ REDHAT_SUPPORT_PRODUCT_VERSION="7"`), 0755))
 			wantErr: nil,
 		},
 		{
+			name: "almalinux 8",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/os-release", []byte(`NAME="AlmaLinux"
+VERSION="8.6 (Sky Tiger)"
+ID="almalinux"
+ID_LIKE="rhel centos fedora"
+VERSION_ID="8.6"
+PLATFORM_ID="platform:el8"
+PRETTY_NAME="AlmaLinux 8.6 (Sky Tiger)"
+ANSI_COLOR="0;34"
+LOGO="fedora-logo-icon"
+CPE_NAME="cpe:/o:almalinux:almalinux:8::baseos"
+HOME_URL="https://almalinux.org/"
+DOCUMENTATION_URL="https://wiki.almalinux.org/"
+BUG_REPORT_URL="https://bugs.almalinux.org/"
+
+ALMALINUX_MANTISBT_PROJECT="AlmaLinux-8"
+ALMALINUX_MANTISBT_PROJECT_VERSION="8.6"
+REDHAT_SUPPORT_PRODUCT="AlmaLinux"
+REDHAT_SUPPORT_PRODUCT_VERSION="8.6"`), 0755))
+			},
+			want:    osAlmalinux,
+			wantErr: nil,
+		},
+		{
 			name: "debian 10",
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/os-release", []byte(`PRETTY_NAME="Debian GNU/Linux 10 (buster)"
