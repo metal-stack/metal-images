@@ -95,6 +95,11 @@ jobs:
           --no-lint \
           --no-push
       if: ${{ matrix.os == 'debian' }}
+    
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh ubuntu-nvidia
+      if: ${{ matrix.os == 'ubuntu' }}
 
     - name: Build docker image for ubuntu-nvidia based workers and export tarball
       run: |
