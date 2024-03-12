@@ -5,7 +5,7 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
-  - OS_NAME=debian-nvidia
+  - OS_NAME=ubuntu-nvidia
 builds:
   -
     name: "Ubuntu Nvidia 22.04"
