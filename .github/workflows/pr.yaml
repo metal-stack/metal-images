@@ -96,6 +96,18 @@ jobs:
           --no-push
       if: ${{ matrix.os == 'debian' }}
 
+    - name: Build docker image for ubuntu-nvidia based workers and export tarball
+      run: |
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir ubuntu-nvidia \
+          --file docker-make.yaml \
+          --no-cache \
+          --no-pull \
+          --summary \
+          --no-lint \
+          --no-push
+      if: ${{ matrix.os == 'ubuntu' }}
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
 
