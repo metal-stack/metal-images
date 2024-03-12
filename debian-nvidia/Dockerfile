@@ -11,10 +11,12 @@ COPY context/ /
 
 RUN set -ex \
  && rm -f /.dockerenv \
+ && apt-get remove --yes linux-image-*-amd64 linux-headers-*-amd64 \
  && apt-get update \
  && apt-get upgrade --yes \
- && apt-get install --yes \
-    linux-headers-6.5.0-0.deb12.4-amd64 \
+ && apt-get install --yes -t bookworm-backports \
+    linux-image-amd64 \
+    linux-headers-amd64 \
     nvidia-driver \
     firmware-misc-nonfree \
     dkms
@@ -27,4 +29,3 @@ RUN set -ex \
  && apt-get update \
  && apt-get install --yes nvidia-container-toolkit
 
- 
