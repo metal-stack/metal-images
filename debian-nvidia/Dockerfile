@@ -11,7 +11,7 @@ COPY context/ /
 
 RUN set -ex \
  && rm -f /.dockerenv \
- && apt-get remove --yes linux-image-*-amd64 linux-headers-*-amd64 \
+ && apt-get remove --yes linux-image-*-amd64 \
  && apt-get update \
  && apt-get upgrade --yes \
  && apt-get install --yes -t bookworm-backports \
