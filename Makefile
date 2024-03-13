@@ -40,6 +40,10 @@ test:
 debian: binary
 	docker-make -nNL -w debian -f docker-make.debian.yaml
 
+.PHONY: nvidia
+nvidia: binary debian
+	docker-make -nNL -w debian-nvidia -f docker-make.yaml
+
 .PHONY: ubuntu
 ubuntu: binary
 	docker-make -nNL -w debian -f docker-make.ubuntu.yaml
