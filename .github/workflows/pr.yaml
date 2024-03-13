@@ -96,6 +96,9 @@ jobs:
           --no-push
       if: ${{ matrix.os == 'debian' }}
 
+    - name: Upload image tarballs to GCS
+      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+
   centos:
     name: Build Centos based OS image
     runs-on: self-hosted
