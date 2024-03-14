@@ -47,21 +47,23 @@ Currently these images are supported:
 1. Debian 12
 1. Ubuntu 22.04
 1. Firewall 3.0-ubuntu (based on Ubuntu 22.04)
-1. NVidia (based on Debian 12)
+1. Nvidia (based on Debian 12)
 
 ### GPU Support
 
-With the nvidia image a worker has GPU support. The cluster user must execute the following, to get GPU support in kubernetes:
+With the nvidia image a worker has GPU support. The cluster user must execute the following commands to get GPU support in Kubernetes:
 
 ```bash
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
-    && helm repo update
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
 
 kubectl create ns gpu-operator
 kubectl label --overwrite ns gpu-operator pod-security.kubernetes.io/enforce=privileged
 
-helm install --wait --generate-name \
-    -n gpu-operator --create-namespace \
+helm install --wait \
+  --generate-name \
+  --namespace gpu-operator \
+  --create-namespace \
     nvidia/gpu-operator \
     --set driver.enabled=false \
     --set toolkit.enabled=false

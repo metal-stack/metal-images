@@ -11,15 +11,19 @@ COPY context/ /
 
 RUN set -ex \
  && rm -f /.dockerenv \
- && apt-get remove --yes linux-image-*-amd64 \
  && apt-get update \
- && apt-get upgrade --yes \
+ && apt-get remove --yes linux-image-*-amd64 \
  && apt-get install --yes -t bookworm-backports \
     linux-image-amd64 \
     linux-headers-amd64 \
-    nvidia-driver \
-    firmware-misc-nonfree \
-    dkms
+    dkms \
+    software-properties-common \
+ && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb -o cuda-keyring_1.1-1_all.deb \
+ && dpkg -i cuda-keyring_1.1-1_all.deb \
+ && add-apt-repository contrib \
+ && apt-get update \
+ && apt-get install --yes \
+    cuda-drivers
 
 # For newer versions of cuda, it might be worth looking at:
 # https://developer.nvidia.com/cuda-downloads

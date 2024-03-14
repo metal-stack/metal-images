@@ -41,7 +41,7 @@ debian: binary
 	docker-make -nNL -w debian -f docker-make.debian.yaml
 
 .PHONY: nvidia
-nvidia: binary debian
+nvidia:
 	docker-make -nNL -w debian-nvidia -f docker-make.yaml
 
 .PHONY: ubuntu
