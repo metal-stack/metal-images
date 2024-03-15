@@ -59,9 +59,6 @@ PermitEmptyPasswords no
 # and ChallengeResponseAuthentication to 'no'.
 UsePAM yes
 
-# OVH 99.5.2.8 UsePrivilegeSeparation set to sandbox
-UsePrivilegeSeparation sandbox
-
 # CIS 5.2.3 - all special features in sshd_config are disabled
 AllowAgentForwarding no
 AllowTcpForwarding no
