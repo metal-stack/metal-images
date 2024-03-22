@@ -19,16 +19,16 @@ default-build-args:
 
 builds:
   -
-    name: "Ubuntu 22.04"
+    name: "Ubuntu 24.04"
     tags:
       - ${SEMVER}
       - ${SEMVER_MAJOR_MINOR}
     build-args:
-      - BASE_OS_VERSION=22.04
+      - BASE_OS_VERSION=24.04
       - FRR_VERSION=frr-8
       - FRR_VERSION_DETAIL=8.5.4-0~ubuntu22.04.1
       - FRR_APT_CHANNEL=jammy
-      - SEMVER_MAJOR_MINOR=22.04
+      - SEMVER_MAJOR_MINOR=24.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
       - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}

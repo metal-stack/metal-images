@@ -84,6 +84,8 @@ RUN set -ex \
     wget \
     vim \
     zstd \
+ # since ubuntu 24.04 there is a ubuntu user with uid 1000 which conflicts with metal user
+ && userdel -f ubuntu || true \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
