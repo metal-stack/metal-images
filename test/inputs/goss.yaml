@@ -59,6 +59,10 @@ file:
     exists: true
     contents:
     - firewall
+  "/etc/nftables/rules":
+    exists: true
+    contents:
+    - "type filter hook forward priority 0; policy drop;"
   "/etc/logrotate.d/suricata":
     exists: true
     contents:
