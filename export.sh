@@ -18,6 +18,8 @@ readonly PKG="packages.txt"
 mkdir -p "${EXPORT_DIRECTORY}"
 cd "${EXPORT_DIRECTORY}"
 docker export "$(docker create "${DOCKER_IMAGE}")" > ${TAR}
+# set /etc/resolv.conf
+tar --file ${TAR} --directory=export --append etc
 docker run --rm "${DOCKER_IMAGE}" bash -c "dpkg -l" > ${PKG}
 lz4 -f -9 ${TAR} ${LZ4}
 rm -f ${TAR}

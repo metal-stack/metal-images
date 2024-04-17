@@ -52,12 +52,6 @@ func (i *installer) do() error {
 		}
 	}
 
-	err = i.writeResolvConf()
-	if err != nil {
-		i.log.Warn("writing resolv.conf failed", "error", err)
-		return err
-	}
-
 	err = i.createMetalUser()
 	if err != nil {
 		return err
@@ -138,26 +132,6 @@ func (i *installer) fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
-}
-
-func (i *installer) writeResolvConf() error {
-	i.log.Info("write /etc/resolv.conf")
-	// Must be written here because during docker build this file is synthetic
-	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
-	// most probably because the resolved must be running in the internet facing vrf.
-	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
-	err := i.fs.Remove("/etc/resolv.conf")
-	if err != nil {
-		i.log.Info("no /etc/resolv.conf present")
-	}
-
-	// FIXME migrate to dns0.eu resolvers
-	content := []byte(
-		`nameserver 8.8.8.8
-nameserver 8.8.4.4
-`)
-	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
 }
 
 func (i *installer) buildCMDLine() string {
