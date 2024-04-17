@@ -52,7 +52,7 @@ jobs:
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
         DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
+        TMPDIR=~/tmp \
         docker-make \
           --work-dir debian \
           --file docker-make.${{ matrix.os }}.yaml \
@@ -67,7 +67,7 @@ jobs:
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
         DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
+        TMPDIR=~/tmp \
         docker-make \
           --work-dir firewall \
           --build-only ${{ matrix.os }} \
@@ -85,7 +85,7 @@ jobs:
 
     - name: Build docker image for debian-nvidia based workers and export tarball
       run: |
-        TMPDIR=/var/tmp \
+        TMPDIR=~/tmp \
         docker-make \
           --work-dir debian-nvidia \
           --file docker-make.yaml \
@@ -131,7 +131,7 @@ jobs:
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
         DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
+        TMPDIR=~/tmp \
         docker-make \
           --work-dir centos \
           --file docker-make.yaml \
