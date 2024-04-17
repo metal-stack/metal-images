@@ -292,7 +292,7 @@ func Test_installer_fixPermissions(t *testing.T) {
 
 			info, err := i.fs.Stat("/var/tmp")
 			require.NoError(t, err)
-			assert.Equal(t, fs.FileMode(1777).Perm(), info.Mode().Perm())
+			assert.Equal(t, fs.FileMode(01777).Perm(), info.Mode().Perm())
 
 			info, err = i.fs.Stat("/etc/hosts")
 			require.NoError(t, err)
