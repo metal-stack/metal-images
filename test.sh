@@ -28,7 +28,7 @@ fi
 echo "import image oci to ignite: ${IMAGE}"
 sudo ignite stop "${VM_NAME}" || true
 sudo ignite rm "${VM_NAME}" || true
-# cleaning up all prior images to prevent ambigious image names
+# cleaning up all prior images to prevent ambiguous image names
 for image in $(sudo ignite images -q); do
   sudo ignite image rm -f "$image"
 done

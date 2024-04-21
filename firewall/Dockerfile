@@ -1,6 +1,6 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
-ARG DROPTAILER_VERSION=v0.2.12
+ARG DROPTAILER_VERSION=v0.2.14
 ARG FIREWALL_CONTROLLER_VERSION=v2.3.0
 ARG TAILSCALE_VERSION=v1.50.1
 
@@ -15,7 +15,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NODE_EXPORTER_VERSION=1.7.0 \
-    NFTABLES_EXPORTER_VERSION=v0.2.8
+    NFTABLES_EXPORTER_VERSION=v0.2.9
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
@@ -41,7 +41,7 @@ RUN /suricata-and-chrony-installation.sh
 # also remove the most recent version of frr and install the distribution version
 # this should bring back frr-8.1 on ubuntu and frr-7.5.1 on debian
 # TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
-# This issue is fixed with 8.5.3 but we still face redundacy issues.
+# This issue is fixed with 8.5.3 but we still face redundancy issues.
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
 COPY --from=ghcr.io/metal-stack/frr:9.1-ubuntu-22.04 /artifacts/*.deb /tmp/

@@ -1,24 +1,24 @@
 # Configuration with disable filters.
-# - Overrided by --disable-conf
+# - Overridden by --disable-conf
 # - Default: /etc/suricata/disable.conf
 disable-conf: /etc/suricata/disable.conf
 
 # Configuration with enable filters.
-# - Overrided by --enable-conf
+# - Overridden by --enable-conf
 # - Default: /etc/suricata/enable.conf
 enable-conf: /etc/suricata/enable.conf
 
 # Configuration with drop filters.
-# - Overrided by --drop-conf
+# - Overridden by --drop-conf
 # - Default: /etc/suricata/drop.conf
 drop-conf: /etc/suricata/drop.conf
 
 # Configuration with modify filters.
-# - Overrided by --modify-conf
+# - Overridden by --modify-conf
 # - Default: /etc/suricata/modify.conf
 modify-conf: /etc/suricata/modify.conf
 
-# List of files to ignore. Overrided by the --ignore command line option.
+# List of files to ignore. Overridden by the --ignore command line option.
 ignore:
   - "*deleted.rules"
 
@@ -35,7 +35,7 @@ ignore:
 #test-command: ${SURICATA_PATH} -T -S ${OUTPUT_FILENAME} -l /tmp
 
 # Provide a command to reload the Suricata rules.
-# May be overrided by the --reload-command command line option.
+# May be overridden by the --reload-command command line option.
 reload-command: sudo systemctl reload suricata
 
 # Remote rule sources. Simply a list of URLs.
