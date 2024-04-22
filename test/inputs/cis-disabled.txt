@@ -1,4 +1,4 @@
-1.1.6_*       # we use separate partions for /var/lib, /var/log
+1.1.6_*       # we use separate partitions for /var/lib, /var/log
 1.1.6.[12]_*  # nodev and nosuid would break some containers
 1.1.[789]_*   # /var/tmp will be added by metal-hammer
 1.1.10_*      # /var/tmp will be added by metal-hammer
@@ -6,7 +6,7 @@
 1.1.17_*      # created by system - tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)
 1.1.1.7_*     # VFAT filesystem is needed for UEFI boot, we disabled USB-drives instead
 1.1.[2345]_*  # tmpfs (rw,nosuid,nodev,noexec,...) is used on the nodes, but not in the test
-1.1.12*       # auditd is not part of the image, we recomend deployment as daemonset
+1.1.12*       # auditd is not part of the image, we recommend deployment as daemonset
 1.1.13_*      # there are no regular users on the nodes (no /home needed)
 1.1.14*       # there are no regular users on the nodes (no /home needed)
 1.4.[12]_*    # tripwire should be deployed as daemonset
@@ -24,8 +24,8 @@
 3.3.7_*       # Kubernetes-nodes are required to act as a router
 3.3.9_*       # IPv6 is necessary for BGP-unnumbered
 3.5.4.1.1_*   # iptables-rules are managed by kube-proxy and the CNI plugin
-4.1.*         # auditd is not part of the image, we recomend deployment as daemonset
-4.2.1.*       # nodes only use journald, we recomend deploying log-shippers in Kubernetes
+4.1.*         # auditd is not part of the image, we recommend deployment as daemonset
+4.2.1.*       # nodes only use journald, we recommend deploying log-shippers in Kubernetes
 4.2.2.3_*     # Storage=persistent is set in /etc/systemd/journald.conf.d/01-journal-persistent.conf
 5.1.*         # cron is not installed/needed
 5.3.1_*       # setting passwords is not supported
