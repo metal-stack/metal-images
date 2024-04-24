@@ -44,7 +44,7 @@ RUN /suricata-and-chrony-installation.sh
 # This issue is fixed with 8.5.3 but we still face redundancy issues.
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
-COPY --from=ghcr.io/metal-stack/frr:9.1-ubuntu-22.04 /artifacts/*.deb /tmp/
+COPY --from=ghcr.io/metal-stack/frr:10.0-ubuntu-22.04 /artifacts/*.deb /tmp/
 
 RUN set -ex \
  && rm -f /etc/apt/sources.list.d/* \
