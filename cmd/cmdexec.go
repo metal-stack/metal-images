@@ -3,16 +3,15 @@ package main
 import (
 	"context"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
-
-	"go.uber.org/zap"
 )
 
 type cmdexec struct {
-	log *zap.SugaredLogger
+	log *slog.Logger
 	c   func(ctx context.Context, name string, arg ...string) *exec.Cmd
 }
 
@@ -31,7 +30,7 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 		start  = time.Now()
 		output []byte
 	)
-	i.log.Infow("running command", "commmand", strings.Join(append([]string{p.name}, p.args...), " "), "start", start.String())
+	i.log.Info("running command", "command", strings.Join(append([]string{p.name}, p.args...), " "), "start", start.String())
 
 	ctx := context.Background()
 	if p.timeout != 0 {
@@ -60,7 +59,7 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 			defer stdin.Close()
 			_, err = io.WriteString(stdin, p.stdin)
 			if err != nil {
-				i.log.Errorw("error when writing to command's stdin", "error", err)
+				i.log.Error("error when writing to command's stdin", "error", err)
 			}
 		}()
 	}
@@ -75,11 +74,11 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 	took := time.Since(start)
 
 	if err != nil {
-		i.log.Errorw("executed command with error", "output", out, "duration", took.String(), "error", err)
+		i.log.Error("executed command with error", "output", out, "duration", took.String(), "error", err)
 		return "", err
 	}
 
-	i.log.Infow("executed command", "output", out, "duration", took.String())
+	i.log.Info("executed command", "output", out, "duration", took.String())
 
 	return
 }

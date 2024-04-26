@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 
-FROM golang:1.21-bookworm as ignition-builder
+FROM golang:1.22-bookworm as ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -114,8 +114,8 @@ RUN set -ex \
  && rm -rf ice* \
  # install kernel and stuff
  && /kernel-installation.sh \
- # remove dhclient which could lead to dangerous configurations
- && apt-get remove --yes isc-dhcp-client \
+ # remove dhclient which could lead to dangerous configurations, not present anymore on ubuntu 24.04
+ && apt-get remove --yes isc-dhcp-client || true \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages

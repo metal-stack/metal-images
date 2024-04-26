@@ -23,18 +23,19 @@ jobs:
         uses: google-github-actions/setup-gcloud@v0
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Go 1.21
-        uses: actions/setup-go@v4
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21.x'
+          go-version: '1.22.x'
           cache: false
 
       - run: |
           # copy supported images (entire stable folder cannot be copied as a whole because it contains obsolete images as well)
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/centos/7 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/centos/7
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian/12
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian-nvidia/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian-nvidia/12
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/22.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/22.04
 

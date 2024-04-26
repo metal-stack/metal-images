@@ -33,6 +33,9 @@ make firewall
 
 # for centos images
 make centos
+
+# for nvidia images
+make nvidia
 ```
 
 For integration testing the images are started as [firecracker vm](https://firecracker-microvm.github.io/) with [weaveworks/ignite](https://github.com/weaveworks/ignite) and basic properties like interfaces to other metal-stack components, kernel parameters, internet reachability, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. The integration tests are also executed when you build an image locally with.
@@ -44,6 +47,42 @@ Currently these images are supported:
 1. Debian 12
 1. Ubuntu 22.04
 1. Firewall 3.0-ubuntu (based on Ubuntu 22.04)
+1. Nvidia (based on Debian 12)
+
+### GPU Support
+
+With the nvidia image a worker has GPU support. The cluster user must execute the following commands to get GPU support in Kubernetes:
+
+```bash
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
+
+kubectl create ns gpu-operator
+kubectl label --overwrite ns gpu-operator pod-security.kubernetes.io/enforce=privileged
+
+helm install --wait \
+  --generate-name \
+  --namespace gpu-operator \
+  --create-namespace \
+    nvidia/gpu-operator \
+    --set driver.enabled=false \
+    --set toolkit.enabled=false
+```
+
+After that `kubectl describe node` must show the gpu in the capacity like so:
+
+```plain
+...
+Capacity:
+  cpu:                64
+  ephemeral-storage:  100205640Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             263802860Ki
+  nvidia.com/gpu:     1
+  pods:               510
+...
+```
 
 Unsupported images:
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -12,7 +13,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 	"gopkg.in/yaml.v3"
 )
 
@@ -183,7 +183,7 @@ func Test_installer_detectFirmware(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -235,7 +235,7 @@ nameserver 8.8.4.4
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  afero.NewMemMapFs(),
 			}
 
@@ -277,7 +277,7 @@ func Test_installer_fixPermissions(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  afero.NewMemMapFs(),
 			}
 
@@ -292,7 +292,7 @@ func Test_installer_fixPermissions(t *testing.T) {
 
 			info, err := i.fs.Stat("/var/tmp")
 			require.NoError(t, err)
-			assert.Equal(t, fs.FileMode(1777).Perm(), info.Mode().Perm())
+			assert.Equal(t, fs.FileMode(01777).Perm(), info.Mode().Perm())
 
 			info, err = i.fs.Stat("/etc/hosts")
 			require.NoError(t, err)
@@ -335,7 +335,7 @@ func Test_installer_findMDUUID(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -412,7 +412,7 @@ func Test_installer_buildCMDLine(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -455,7 +455,7 @@ func Test_installer_unsetMachineID(t *testing.T) {
 			}
 
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  fs,
 			}
 
@@ -571,7 +571,7 @@ func Test_installer_writeBootInfo(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  fs,
 				oss: tt.oss,
 			}
@@ -674,7 +674,7 @@ func Test_installer_processUserdata(t *testing.T) {
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -887,7 +887,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
 				log: log,
@@ -949,10 +949,10 @@ ignitionVersion: Ignition v0.36.2
 				tt.fsMocks(fs)
 			}
 
-			log := zaptest.NewLogger(t).Sugar()
+			log := slog.Default()
 
 			i := &installer{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.Default(),
 				fs:  fs,
 				exec: &cmdexec{
 					log: log,
