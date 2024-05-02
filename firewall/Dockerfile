@@ -45,12 +45,12 @@ RUN /suricata-and-chrony-installation.sh
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
 # TODO update to frr from 24.04
-COPY --from=ghcr.io/metal-stack/frr:9.1-ubuntu-22.04 /artifacts/*.deb /tmp/
+COPY --from=ghcr.io/metal-stack/frr:10.0-ubuntu-24.04 /artifacts/*.deb /tmp/
 
 RUN set -ex \
  && rm -f /etc/apt/sources.list.d/* \
- && apt-get remove --yes frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
- && apt install --yes /tmp/frr*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
+ && apt-get remove --yes libyang2 frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
+ && apt install --yes /tmp/libyang2_*deb /tmp/frr_10*.deb  /tmp/frr-pythontools*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
  && apt --yes autoremove
 
 RUN systemctl disable chrony \
