@@ -354,7 +354,7 @@ func (i *installer) copySSHKeys() error {
 func (i *installer) fixPermissions() error {
 	i.log.Info("fix permissions")
 	for p, perm := range map[string]fs.FileMode{
-		"/var/tmp":   1777,
+		"/var/tmp":   01777,
 		"/etc/hosts": 0644,
 	} {
 		err := i.fs.Chmod(p, perm)

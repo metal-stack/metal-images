@@ -7,11 +7,11 @@ chmod 644 /etc/resolv.conf
 apt update && apt install -y git
 rm /var/log/apt/*
 git clone -b ${CIS_VERSION} --depth 1 https://github.com/ovh/debian-cis.git
-cd debian-cis
+cd debian-cis || exit
 cp debian/default /etc/default/cis-hardening
 sed -i "s#CIS_ROOT_DIR=.*#CIS_ROOT_DIR='$(pwd)'#" /etc/default/cis-hardening
 
-# Disable inapropriate checks
+# Disable inappropriate checks
 bin/hardening.sh --create-config-files-only --allow-unsupported-distribution --batch
 
 disable-testcase () {
@@ -25,7 +25,7 @@ disable-testcase () {
 
 grep -o '^[^#]*' /cis-disabled.txt | while read testcases; do
   for i in bin/hardening/$testcases ; do
-    disable-testcase `basename $i .sh`
+    disable-testcase $(basename $i .sh)
   done
 done
 

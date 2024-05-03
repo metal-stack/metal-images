@@ -14,6 +14,7 @@ if [ "${ID}" = "ubuntu" ] ; then
         https://kernel.ubuntu.com/mainline/${UBUNTU_MAINLINE_KERNEL_VERSION}/amd64/
 
     apt-get install --yes \
+        systemd-resolved \
         /tmp/linux-image* \
         /tmp/linux-modules* \
         intel-microcode

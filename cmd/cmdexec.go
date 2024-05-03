@@ -30,7 +30,7 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 		start  = time.Now()
 		output []byte
 	)
-	i.log.Info("running command", "commmand", strings.Join(append([]string{p.name}, p.args...), " "), "start", start.String())
+	i.log.Info("running command", "command", strings.Join(append([]string{p.name}, p.args...), " "), "start", start.String())
 
 	ctx := context.Background()
 	if p.timeout != 0 {

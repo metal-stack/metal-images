@@ -35,8 +35,10 @@ jobs:
           # copy supported images (entire stable folder cannot be copied as a whole because it contains obsolete images as well)
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/almalinux/8 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/almalinux/8
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian/12
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian-nvidia/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian-nvidia/12
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/22.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/22.04
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
 
           PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
 

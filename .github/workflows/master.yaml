@@ -37,7 +37,7 @@ jobs:
         cache: false
 
     - name: Lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v4
       with:
         args: --build-tags integration -p bugs -p unused --timeout=3m
 
@@ -75,6 +75,24 @@ jobs:
           --no-lint \
           --no-push
       if: ${{ matrix.os == 'ubuntu' }}
+
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh debian-nvidia
+      if: ${{ matrix.os == 'debian' }}
+
+    - name: Build docker image for debian-nvidia based workers and export tarball
+      run: |
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir debian-nvidia \
+          --file docker-make.yaml \
+          --no-cache \
+          --no-pull \
+          --summary \
+          --no-lint \
+          --no-push
+      if: ${{ matrix.os == 'debian' }}
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
