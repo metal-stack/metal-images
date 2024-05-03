@@ -26,7 +26,7 @@ builds:
       - ${SEMVER}
       - ${SEMVER_MAJOR_MINOR}
     build-args:
-      - BASE_OS_VERSION=22.04
+      - BASE_OS_VERSION=24.04
       - BASE_OS_NAME=quay.io/metalstack/ubuntu
       - SEMVER_MAJOR_MINOR=3.0-ubuntu
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}

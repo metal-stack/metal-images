@@ -3,7 +3,7 @@ set -e
 source /etc/os-release
 
 if [ "${ID}" = "ubuntu" ] ; then
-    echo "Ubuntu - Install suricata from suricata ppa repository"
+    echo "Ubuntu - Install suricata"
 
     # Pre-Configure chrony instead of systemd-timesyncd because it is able to run in a VRF context without issues.
     # Final setup is left to metal-networker that knows the internet-facing VRF.
@@ -13,13 +13,8 @@ if [ "${ID}" = "ubuntu" ] ; then
     # see https://github.com/systemd/systemd/issues/14061
 
     systemctl disable systemd-timesyncd
-
     apt-get update --quiet
-    apt-get install --yes --no-install-recommends software-properties-common
-    add-apt-repository --yes ppa:oisf/suricata-stable
-    apt-get remove --yes polkitd software-properties-common
-    apt-get update --quiet
-    apt-get install --yes --no-install-recommends chrony suricata nftables || true
+    apt-get install --yes --no-install-recommends chrony suricata suricata-update nftables || true
 else
     echo "Debian - Install suricata"
     apt-get install --yes --no-install-recommends chrony suricata suricata-update nftables || true

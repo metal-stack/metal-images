@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.14
-ARG FIREWALL_CONTROLLER_VERSION=v2.3.0
+ARG FIREWALL_CONTROLLER_VERSION=v2.3.2
 ARG TAILSCALE_VERSION=v1.50.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
@@ -14,7 +14,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.7.0 \
+    NODE_EXPORTER_VERSION=1.8.0 \
     NFTABLES_EXPORTER_VERSION=v0.2.9
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
@@ -44,12 +44,13 @@ RUN /suricata-and-chrony-installation.sh
 # This issue is fixed with 8.5.3 but we still face redundancy issues.
 # must be done after suricata installation because we need to remove the
 # apt sources entries, otherwise we will get back v8.5.x of frr.
-COPY --from=ghcr.io/metal-stack/frr:9.1-ubuntu-22.04 /artifacts/*.deb /tmp/
+# TODO update to frr from 24.04
+COPY --from=ghcr.io/metal-stack/frr:10.0-ubuntu-24.04 /artifacts/*.deb /tmp/
 
 RUN set -ex \
  && rm -f /etc/apt/sources.list.d/* \
- && apt-get remove --yes frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
- && apt install --yes /tmp/frr*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
+ && apt-get remove --yes libyang2 frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
+ && apt install --yes /tmp/libyang2_*deb /tmp/frr_10*.deb  /tmp/frr-pythontools*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
  && apt --yes autoremove
 
 RUN systemctl disable chrony \

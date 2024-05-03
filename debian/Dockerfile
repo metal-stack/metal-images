@@ -84,6 +84,8 @@ RUN set -ex \
     wget \
     vim \
     zstd \
+ # since ubuntu 24.04 there is a ubuntu user with uid 1000 which conflicts with metal user
+ && userdel -f ubuntu || true \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
@@ -100,8 +102,8 @@ RUN set -ex \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
  # install frr from frrouting debian package repo
- && curl -fLsS https://deb.frrouting.org/frr/keys.asc | apt-key add - \
- && echo "deb [arch=amd64] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
+ && curl -s https://deb.frrouting.org/frr/keys.gpg | tee /usr/share/keyrings/frrouting.gpg > /dev/null \
+ && echo "deb [signed-by=/usr/share/keyrings/frrouting.gpg] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
  && apt update \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # Install Intel Firmware for e800 based network cards
@@ -112,8 +114,10 @@ RUN set -ex \
  && rm -rf ice* \
  # install kernel and stuff
  && /kernel-installation.sh \
- # remove dhclient which could lead to dangerous configurations
- && apt-get remove --yes isc-dhcp-client \
+ # remove dhclient which could lead to dangerous configurations, not present anymore on ubuntu 24.04
+ && apt-get remove --yes isc-dhcp-client || true \
+ # remove netplan from ubuntu 24.04
+ && apt-get remove --yes netplan.io || true \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
