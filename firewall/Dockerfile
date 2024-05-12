@@ -2,7 +2,7 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.14
 ARG FIREWALL_CONTROLLER_VERSION=v2.3.2
-ARG TAILSCALE_VERSION=v1.50.1
+ARG TAILSCALE_VERSION=v1.64.2
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -48,10 +48,14 @@ RUN /suricata-and-chrony-installation.sh
 COPY --from=ghcr.io/metal-stack/frr:10.0-ubuntu-24.04 /artifacts/*.deb /tmp/
 
 RUN set -ex \
+ # since ubuntu 24.04 ubuntu apt sources are stored here
+ # keep them otherwise no package installation is possible
+ && mv /etc/apt/sources.list.d/ubuntu.sources /tmp || true \
  && rm -f /etc/apt/sources.list.d/* \
  && apt-get remove --yes libyang2 frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
  && apt install --yes /tmp/libyang2_*deb /tmp/frr_10*.deb  /tmp/frr-pythontools*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
- && apt --yes autoremove
+ && apt --yes autoremove \
+ && mv /tmp/ubuntu.sources /etc/apt/sources.list.d/ || true
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
