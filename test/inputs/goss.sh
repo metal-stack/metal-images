@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC1091
 source /etc/os-release
 
-export GOSS_VERSION=v0.4.2
+export GOSS_VERSION=v0.4.7
 export OS=$ID
 export MACHINE_TYPE=$1
 export ROUTER_ID=10.1.0.1

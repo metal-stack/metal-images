@@ -14,7 +14,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.8.0 \
+    NODE_EXPORTER_VERSION=1.8.1 \
     NFTABLES_EXPORTER_VERSION=v0.2.9
 
 # iptables reinstallation is required, so that image works in mini-lab environment.

@@ -6,7 +6,7 @@ chmod 644 /etc/resolv.conf
 # Install and configure OVH-CIS benchmark
 apt update && apt install -y git
 rm /var/log/apt/*
-git clone -b ${CIS_VERSION} --depth 1 https://github.com/ovh/debian-cis.git
+git clone -b "${CIS_VERSION}" --depth 1 https://github.com/ovh/debian-cis.git
 cd debian-cis || exit
 cp debian/default /etc/default/cis-hardening
 sed -i "s#CIS_ROOT_DIR=.*#CIS_ROOT_DIR='$(pwd)'#" /etc/default/cis-hardening
@@ -23,9 +23,9 @@ disable-testcase () {
   fi
 }
 
-grep -o '^[^#]*' /cis-disabled.txt | while read testcases; do
+grep -o '^[^#]*' /cis-disabled.txt | while read -r testcases; do
   for i in bin/hardening/$testcases ; do
-    disable-testcase $(basename $i .sh)
+    disable-testcase "$(basename "$i" .sh)"
   done
 done
 
