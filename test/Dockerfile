@@ -1,7 +1,7 @@
 FROM quay.io/metalstack/ubuntu:24.04 AS vmlinux-builder
 
 RUN apt-get update && apt-get install --yes binutils wget zstd
-RUN wget -O metal-kernel https://github.com/metal-stack/kernel/releases/download/6.4.32-143/metal-kernel
+RUN wget -O metal-kernel https://github.com/metal-stack/kernel/releases/download/6.6.32-143/metal-kernel
 RUN wget -O extract-vmlinux https://raw.githubusercontent.com/torvalds/linux/master/scripts/extract-vmlinux
 RUN chmod +x extract-vmlinux
 RUN rm -rf /boot/* && rm -rf /lib/modules/*
