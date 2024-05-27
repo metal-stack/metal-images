@@ -3,10 +3,10 @@ module github.com/metal-stack/metal-images
 go 1.22
 
 require (
-	github.com/aws/aws-sdk-go v1.52.3
+	github.com/aws/aws-sdk-go v1.53.10
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
-	github.com/metal-stack/metal-hammer v0.12.3
+	github.com/metal-stack/metal-hammer v0.13.0
 	github.com/metal-stack/metal-lib v0.16.2
 	github.com/metal-stack/metal-networker v0.43.1
 	github.com/metal-stack/v v1.0.3
@@ -52,6 +52,5 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
+	sigs.k8s.io/yaml v1.4.0 // indirect
 )
