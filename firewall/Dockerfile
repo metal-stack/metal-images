@@ -2,7 +2,7 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.14
 ARG FIREWALL_CONTROLLER_VERSION=v2.3.2
-ARG TAILSCALE_VERSION=v1.64.2
+ARG TAILSCALE_VERSION=v1.66.4
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -14,7 +14,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.8.0 \
+    NODE_EXPORTER_VERSION=1.8.1 \
     NFTABLES_EXPORTER_VERSION=v0.2.9
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
