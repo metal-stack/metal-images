@@ -1,8 +1,9 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.14
-ARG FIREWALL_CONTROLLER_VERSION=v2.3.2
+ARG FIREWALL_CONTROLLER_VERSION=v2.3.3
 ARG TAILSCALE_VERSION=v1.64.2
+ARG NODE_EXPORTER_VERSION=v1.8.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -10,12 +11,13 @@ FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} as f
 
 FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
+FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
+
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NODE_EXPORTER_VERSION=1.8.1 \
-    NFTABLES_EXPORTER_VERSION=v0.2.9
+    NFTABLES_EXPORTER_VERSION=v0.2.10
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
@@ -83,11 +85,7 @@ COPY --from=tailscale-artifacts /usr/local/bin/tailscaled /usr/local/bin/tailsca
 COPY --from=tailscale-artifacts /usr/local/bin/tailscale /usr/local/bin/tailscale
 
 # Install node_exporter
-WORKDIR /tmp/node_exporter
-RUN curl -fLsS https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz -o node_exporter.tgz \
- && tar xf node_exporter.tgz --strip-components=1 \
- && mv node_exporter /usr/local/bin/ \
- && rm -rf /tmp/*
+COPY --from=node_exporter-artifacts /bin/node_exporter /usr/local/bin/node_exporter
 
 # Install nftables-exporter
 WORKDIR /tmp/
