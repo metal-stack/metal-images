@@ -3,12 +3,12 @@ module github.com/metal-stack/metal-images
 go 1.22
 
 require (
-	github.com/aws/aws-sdk-go v1.53.10
+	github.com/aws/aws-sdk-go v1.53.17
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.13.0
-	github.com/metal-stack/metal-lib v0.16.2
-	github.com/metal-stack/metal-networker v0.43.1
+	github.com/metal-stack/metal-lib v0.16.3
+	github.com/metal-stack/metal-networker v0.43.2-0.20240603140206-5b8ba9022a35
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.11.0
@@ -39,7 +39,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/metal-stack/metal-go v0.29.0 // indirect
+	github.com/metal-stack/metal-go v0.31.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -48,8 +48,8 @@ require (
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.15.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
