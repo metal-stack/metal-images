@@ -24,6 +24,7 @@ COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 RUN set -ex \
  # with an empty /etc/machine-id nothing will be installed in /boot
  && echo "almalinux" > /etc/machine-id \ 
+ && dnf update -y \
  && dnf install -y \
     ca-certificates \
     chrony \
