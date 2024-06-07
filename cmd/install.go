@@ -648,12 +648,14 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		}
 	}
 
-	_, err = i.exec.command(&cmdParams{
-		name: i.oss.GrubInstallCmd(),
-		args: grubInstallArgs,
-	})
-	if err != nil {
-		return err
+	if i.oss != osAlmalinux {
+		_, err = i.exec.command(&cmdParams{
+			name: i.oss.GrubInstallCmd(),
+			args: grubInstallArgs,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	if i.oss == osCentos || i.oss == osAlmalinux {

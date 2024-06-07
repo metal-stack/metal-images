@@ -6,7 +6,7 @@ registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
   - GOLLDPD_VERSION=v0.4.7
-  - FRR_VERSION=frr-9
+  - FRR_VERSION=frr-10
   - OS_NAME=almalinux
   - SEMVER_PATCH=${SEMVER_PATCH}
 builds:

@@ -62,8 +62,11 @@ func (o operatingsystem) NeedUpdateInitRamfs() bool {
 
 func (o operatingsystem) GrubInstallCmd() string {
 	switch o {
-	case osCentos, osAlmalinux:
+	case osCentos:
 		return "grub2-install"
+	case osAlmalinux:
+		// FIXME
+		return ""
 	case osDebian, osUbuntu:
 		return "grub-install"
 	default:
