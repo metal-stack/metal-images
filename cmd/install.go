@@ -123,6 +123,9 @@ func (i *installer) isVirtual() bool {
 func (i *installer) unsetMachineID() error {
 	i.log.Info("unset machine-id")
 	for _, p := range []string{"/etc/machine-id", "/var/lib/dbus/machine-id"} {
+		if !i.fileExists(p) {
+			continue
+		}
 		f, err := i.fs.Create(p)
 		if err != nil {
 			return err
