@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 
-FROM golang:1.22-bookworm as ignition-builder
+FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
