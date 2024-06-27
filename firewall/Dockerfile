@@ -39,26 +39,6 @@ COPY context/ /
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh
 
-# Install frr from distribution
-# also remove the most recent version of frr and install the distribution version
-# this should bring back frr-8.1 on ubuntu and frr-7.5.1 on debian
-# TODO can be reverted once https://github.com/FRRouting/frr/issues/12391 is fixed upstream
-# This issue is fixed with 8.5.3 but we still face redundancy issues.
-# must be done after suricata installation because we need to remove the
-# apt sources entries, otherwise we will get back v8.5.x of frr.
-# TODO update to frr from 24.04
-# COPY --from=ghcr.io/metal-stack/frr:10.0-ubuntu-24.04 /artifacts/*.deb /tmp/
-
-# RUN set -ex \
-#  # since ubuntu 24.04 ubuntu apt sources are stored here
-#  # keep them otherwise no package installation is possible
-#  && mv /etc/apt/sources.list.d/ubuntu.sources /tmp || true \
-#  && rm -f /etc/apt/sources.list.d/* \
-#  && apt-get remove --yes libyang2 frr frr-pythontools --option=Dpkg::Options::=--force-confdef \
-#  && apt install --yes /tmp/libyang2_*deb /tmp/frr_10*.deb  /tmp/frr-pythontools*.deb --no-install-recommends  --option=Dpkg::Options::=--force-confdef \
-#  && apt --yes autoremove \
-#  && mv /tmp/ubuntu.sources /etc/apt/sources.list.d/ || true
-
 RUN systemctl disable chrony \
  && systemctl mask chrony \
  && systemctl disable systemd-time-wait-sync.service \
