@@ -26,9 +26,8 @@ builds:
     build-args:
       - BASE_OS_VERSION=24.04
       - FRR_VERSION=frr-10
-      # packages for noble not there yet
       - FRR_VERSION_DETAIL=10.0.1-0~ubuntu24.04.1
-      - FRR_APT_CHANNEL=jammy
+      - FRR_APT_CHANNEL=noble
       - SEMVER_MAJOR_MINOR=24.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
