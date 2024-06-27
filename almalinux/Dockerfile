@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION
 
-FROM golang:1.22-bullseye as ignition-builder
+FROM golang:1.22-bullseye AS ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -36,6 +36,8 @@ RUN set -ex \
     grub2 \
     grub2-efi-x64 \
     grub2-efi-x64-modules \
+    # see https://access.redhat.com/articles/3166931 for details
+    grubby \
     ipmitool \
     jq \
     kernel \
