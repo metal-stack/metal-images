@@ -13,7 +13,7 @@ default-build-args:
   - DOCKER_APT_CHANNEL=noble
   - CRI_VERSION=v1.30.0
   # see https://kernel.ubuntu.com/mainline for available versions
-  - UBUNTU_MAINLINE_KERNEL_VERSION=v6.6.32
+  - UBUNTU_MAINLINE_KERNEL_VERSION=v6.6.36
   - ICE_VERSION=1.14.9
   - ICE_PKG_VERSION=1.3.36.0
 
