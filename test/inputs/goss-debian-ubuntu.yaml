@@ -1,0 +1,27 @@
+---
+service:
+  ssh:
+    enabled: true
+    running: true
+  docker:
+    enabled: true
+    running: true
+  cloud-config-downloader:
+    enabled: true
+    running: false
+command:
+  "systemd: timer for logrotation exists":
+    exec: "systemctl list-timers | grep logrotate"
+    exit-status: 0
+    stdout:
+    - "logrotate.timer"
+    - "logrotate.service"
+  "systemd: no pending jobs":
+    exec: systemctl list-jobs
+    exit-status: 0
+    stdout:
+    - No jobs running.
+  "timedatectl show -p NTPSynchronized":
+    exit-status: 0
+    stdout:
+    - "NTPSynchronized=yes"

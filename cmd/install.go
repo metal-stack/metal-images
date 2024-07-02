@@ -123,6 +123,9 @@ func (i *installer) isVirtual() bool {
 func (i *installer) unsetMachineID() error {
 	i.log.Info("unset machine-id")
 	for _, p := range []string{"/etc/machine-id", "/var/lib/dbus/machine-id"} {
+		if !i.fileExists(p) {
+			continue
+		}
 		f, err := i.fs.Create(p)
 		if err != nil {
 			return err
@@ -573,7 +576,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
 	}
 
-	if i.oss == osCentos {
+	if i.oss == osCentos || i.oss == osAlmalinux {
 		_, err := i.exec.command(&cmdParams{
 			name: "grub2-mkconfig",
 			args: []string{"-o", "/boot/grub2/grub.cfg"},
@@ -604,7 +607,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 			return err
 		}
 
-		if i.oss != osCentos {
+		if i.oss.NeedUpdateInitRamfs() {
 			err = i.fs.MkdirAll("/var/lib/initramfs-tools", 0755)
 			if err != nil {
 				return err
@@ -633,7 +636,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 					return fmt.Errorf("unable to process blkid output lines")
 				}
 				shim := fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID())
-				if i.oss == osCentos {
+				if i.oss == osCentos || i.oss == osAlmalinux {
 					shim = fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
 				}
 
@@ -648,15 +651,17 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 		}
 	}
 
-	_, err = i.exec.command(&cmdParams{
-		name: i.oss.GrubInstallCmd(),
-		args: grubInstallArgs,
-	})
-	if err != nil {
-		return err
+	if i.oss != osAlmalinux {
+		_, err = i.exec.command(&cmdParams{
+			name: i.oss.GrubInstallCmd(),
+			args: grubInstallArgs,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
-	if i.oss == osCentos {
+	if i.oss == osCentos || i.oss == osAlmalinux {
 		if !i.config.RaidEnabled {
 			return nil
 		}

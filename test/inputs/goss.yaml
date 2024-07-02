@@ -1,4 +1,28 @@
 ---
+<<<<<<< HEAD
+gossfile:
+  common:
+    file: goss-common.yaml
+    skip: false
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+  firewall:
+    file: goss-firewall.yaml
+    skip: false
+{{ end }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+  machine:
+    file: goss-machine.yaml
+    skip: false
+{{ if eq .Env.OS "debian" }}
+  debian:
+    file: goss-debian-ubuntu.yaml
+    skip: false
+{{ end }}
+{{ if eq .Env.OS "ubuntu" }}
+  ubuntu:
+    file: goss-debian-ubuntu.yaml
+    skip: false
+=======
 user:
   metal:
     exists: true
@@ -68,19 +92,19 @@ file:
     contents:
     - "/var/log/suricata/*.log"
     - "/var/log/suricata/*.json"
+>>>>>>> 7b4b8b338ef7c032b9cb22ccc831db7b4e022046
 {{ end }}
-service:
-  lldpd:
-    enabled: true
-    running: false
-  frr:
-    enabled: true
-    running: true
 {{ if eq .Env.OS "centos" }}
-  sshd:
-    enabled: true
-    running: true
+  centos:
+    file: goss-centos.yaml
+    skip: false
 {{ end }}
+<<<<<<< HEAD
+{{ if eq .Env.OS "almalinux" }}
+  almalinux:
+    file: goss-almalinux.yaml
+    skip: false
+=======
 {{ if ne .Env.OS "centos" }}
   ssh:
     enabled: true
@@ -190,32 +214,6 @@ command:
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
+>>>>>>> 7b4b8b338ef7c032b9cb22ccc831db7b4e022046
 {{ end }}
 {{ end }}
-{{ if eq .Env.MACHINE_TYPE "firewall" }}
-  "only ssh,vxlan and bgpd is listening at 0.0.0.0":
-    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
-    exit-status: 0
-    stdout:
-    - "0"
-  "only ssh,vxlan,nftables-exporter and bgpd is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|4789|9630' | wc -l"
-    exit-status: 0
-    stdout:
-    - "0"
-{{ end }}
-kernel-param:
-  net.ipv6.conf.all.disable_ipv6:
-    value: "0"
-  net.ipv6.conf.default.disable_ipv6:
-    value: "0"
-  net.ipv4.conf.all.rp_filter:
-    value: "0"
-  net.ipv4.conf.default.rp_filter:
-    value: "0"
-  net.ipv4.fib_multipath_hash_policy:
-    value: "0"
-  net.ipv6.fib_multipath_hash_policy:
-    value: "0"
-  kernel.printk:
-    value: "2\t4\t1\t7"
