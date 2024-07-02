@@ -3,11 +3,11 @@ module github.com/metal-stack/metal-images
 go 1.22
 
 require (
-	github.com/aws/aws-sdk-go v1.53.17
+	github.com/aws/aws-sdk-go v1.54.12
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.13.0
-	github.com/metal-stack/metal-lib v0.16.3
+	github.com/metal-stack/metal-lib v0.17.0
 	github.com/metal-stack/metal-networker v0.44.0
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
@@ -46,11 +46,11 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.15.0 // indirect
+	go.mongodb.org/mongo-driver v1.16.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
