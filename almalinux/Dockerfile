@@ -48,6 +48,7 @@ RUN set -ex \
     openssl \
     openssh-clients \
     openssh-server \
+    os-prober \
     passwd \
     procps \
     shim \
