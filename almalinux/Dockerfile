@@ -23,7 +23,9 @@ COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 
 RUN set -ex \
  # with an empty /etc/machine-id nothing will be installed in /boot
- && echo "almalinux" > /etc/machine-id \ 
+ && echo "almalinux" > /etc/machine-id \
+ && dnf update -y \
+ && dnf install -y epel-release \
  && dnf update -y \
  && dnf install -y \
     ca-certificates \
@@ -56,6 +58,7 @@ RUN set -ex \
     socat \
     sudo \
     systemd \
+    systemd-networkd \
     watchdog \
     wget \
     vim \
@@ -89,7 +92,7 @@ RUN systemctl set-default multi-user.target \
  && update-ca-trust
 
 # execute dracut to regenerate initramfs with all drivers because otherwise only
-# a few drivers are included and the kexec into centos will fail because no disks where found
+# a few drivers are included and the kexec into almalinux will fail because no disks were found
 WORKDIR /boot
 RUN set -ex \
  && KERNEL_VERSION=$(rpm -q --queryformat "%{VERSION}-%{RELEASE}.x86_64" kernel) \
