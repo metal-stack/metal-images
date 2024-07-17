@@ -41,6 +41,7 @@ RUN set -ex \
     grub2-efi-x64-modules \
     # see https://access.redhat.com/articles/3166931 for details
     grubby \
+    haveged \
     ipmitool \
     jq \
     kernel \
