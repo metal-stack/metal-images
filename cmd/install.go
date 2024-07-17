@@ -595,9 +595,13 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 	}
 
 	if i.oss == osCentos || i.oss == osAlmalinux {
+		path := "/boot/grub2/grub.cfg"
+		if i.oss == osAlmalinux {
+			path = "/boot/efi/EFI/almalinux/grub.cfg"
+		}
 		_, err := i.exec.command(&cmdParams{
 			name: "grub2-mkconfig",
-			args: []string{"-o", "/boot/efi/EFI/almalinux/grub.cfg"},
+			args: []string{"-o", path},
 		})
 		if err != nil {
 			return err
