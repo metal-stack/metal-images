@@ -288,6 +288,19 @@ func (i *installer) createMetalUser() error {
 		return err
 	}
 
+	if i.oss == osAlmalinux {
+		// otherwise in rescue mode the root account is locked
+		_, err = i.exec.command(&cmdParams{
+			name:    "passwd",
+			args:    []string{"root"},
+			timeout: 10 * time.Second,
+			stdin:   i.config.Password + "\n" + i.config.Password + "\n",
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
