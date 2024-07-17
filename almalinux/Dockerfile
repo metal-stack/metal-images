@@ -92,6 +92,9 @@ RUN systemctl set-default multi-user.target \
  && systemctl enable lldpd.service \
                      frr.service \
                      watchdog.service \
+                     serial-getty@ttyS1.service \
+ && systemctl disable console-getty.service \
+ && systemctl mask console-getty.service \
  && update-ca-trust
 
 # execute dracut to regenerate initramfs with all drivers because otherwise only
