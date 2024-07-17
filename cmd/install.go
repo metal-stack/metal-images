@@ -579,7 +579,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(
 	if i.oss == osCentos || i.oss == osAlmalinux {
 		_, err := i.exec.command(&cmdParams{
 			name: "grub2-mkconfig",
-			args: []string{"-o", "/boot/grub2/grub.cfg"},
+			args: []string{"-o", "/boot/efi/EFI/almalinux/grub.cfg"},
 		})
 		if err != nil {
 			return err
