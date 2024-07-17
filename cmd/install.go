@@ -559,7 +559,9 @@ GRUB_DISTRIBUTOR=%s
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="%s"
 GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, i.oss.BootloaderID(), cmdLine, serialSpeed, serialPort)
+GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
+GRUB_ENABLE_BLSCFG=false
+`, i.oss.BootloaderID(), cmdLine, serialSpeed, serialPort)
 
 	err := afero.WriteFile(i.fs, "/etc/default/grub", []byte(defaultGrub), 0755)
 	if err != nil {
