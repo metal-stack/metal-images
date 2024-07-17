@@ -28,6 +28,7 @@ RUN set -ex \
  && dnf install -y epel-release \
  && dnf update -y \
  && dnf install -y \
+    audit \
     ca-certificates \
     chrony \
     cloud-init \
@@ -47,21 +48,23 @@ RUN set -ex \
     logrotate \
     lvm2 \
     mdadm \
-    openssl \
     openssh-clients \
     openssh-server \
+    openssl \
     os-prober \
     passwd \
     procps \
+    rsyslog \
     shim \
     shim-x64 \
     socat \
+    sssd \
     sudo \
     systemd \
     systemd-networkd \
+    vim \
     watchdog \
     wget \
-    vim \
     yum-utils
 RUN curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
