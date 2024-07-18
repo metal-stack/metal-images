@@ -2,5 +2,4 @@ enable lldpd.service
 enable frr.service
 enable systemd-networkd
 enable watchdog.service
-enable docker.service
 enable chronyd.service
