@@ -576,6 +576,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 `, i.oss.BootloaderID(), cmdLine, serialSpeed, serialPort)
 
 	if i.oss == osAlmalinux {
+		defaultGrub += fmt.Sprintf("GRUB_DEVICE=UUID=%s\n", i.config.RootUUID)
 		defaultGrub += "GRUB_ENABLE_BLSCFG=false\n"
 	}
 
