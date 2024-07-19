@@ -97,6 +97,7 @@ RUN systemctl set-default multi-user.target \
  && systemctl disable serial-getty@tty1.service \
  && systemctl mask serial-getty@tty1.service \
  && systemctl unmask getty.target \
+ && systemctl unmask systemd-remount-fs.service \
  && update-ca-trust
 
 # execute dracut to regenerate initramfs with all drivers because otherwise only
