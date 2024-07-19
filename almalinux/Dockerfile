@@ -106,5 +106,6 @@ RUN set -ex \
  && KERNEL_VERSION=$(rpm -q --queryformat "%{VERSION}-%{RELEASE}.x86_64" kernel) \
  && dracut \
     -f initramfs-${KERNEL_VERSION}.img \
+    --fscks "umount mount /sbin/fsck* e2fsck" \
     -i /lib/modules/${KERNEL_VERSION} /lib/modules/${KERNEL_VERSION} \
     ${KERNEL_VERSION}
