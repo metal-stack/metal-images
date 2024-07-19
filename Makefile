@@ -18,6 +18,7 @@ all: clean binary
 clean:
 	rm -f debian/context/install-go
 	rm -f centos/context/install-go
+	rm -f almalinux/context/install-go
 
 .PHONY: binary
 binary: test
