@@ -115,6 +115,8 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: '1.22.x'
+        cache: false
+
     - name: build install
       run: make
     - name: Prepare build environment

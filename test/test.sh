@@ -12,11 +12,12 @@ ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
     set -e
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     # install go fails in a vm because grub-install will always fail.
-    # When CI=true, some commands like grub-install are skipped in install.go
-    export CI=true
+    # When INSTALL_FROM_CI=true, some commands like grub-install are skipped in install.go
+    export INSTALL_FROM_CI=true
     /install-go
     systemctl restart systemd-networkd
     systemctl restart frr
+
     if [ ${MACHINE_TYPE} == "firewall" ]; then
         systemctl restart chrony@vrf104009
         systemctl daemon-reload

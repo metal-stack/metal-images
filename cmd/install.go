@@ -26,7 +26,7 @@ const (
 )
 
 func runFromCI() bool {
-	ciEnv := os.Getenv("CI")
+	ciEnv := os.Getenv("INSTALL_FROM_CI")
 
 	ci, err := strconv.ParseBool(ciEnv)
 	if err != nil {
