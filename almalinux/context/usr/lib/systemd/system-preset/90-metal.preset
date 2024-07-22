@@ -1,5 +1,0 @@
-enable lldpd.service
-enable frr.service
-enable systemd-networkd
-enable watchdog.service
-enable chronyd.service
