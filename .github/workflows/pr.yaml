@@ -10,94 +10,94 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  # debian-ubuntu:
-  #   name: Build Debian and Ubuntu based OS images
+  debian-ubuntu:
+    name: Build Debian and Ubuntu based OS images
 
-  #   strategy:
-  #     matrix:
-  #       os: [debian, ubuntu]
+    strategy:
+      matrix:
+        os: [debian, ubuntu]
 
-  #   runs-on: self-hosted
+    runs-on: self-hosted
 
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v4
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-  #   - uses: google-github-actions/auth@v2
-  #     with:
-  #       credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    - uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-  #   - name: Set up Cloud SDK
-  #     uses: google-github-actions/setup-gcloud@v2
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
 
-  #   - name: Set up Go 1.22
-  #     uses: actions/setup-go@v5
-  #     with:
-  #       go-version: '1.22.x'
-  #       cache: false
+    - name: Set up Go 1.22
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22.x'
+        cache: false
 
-  #   - name: Lint
-  #     uses: golangci/golangci-lint-action@v6
-  #     with:
-  #       args: --build-tags integration -p bugs -p unused --timeout=3m
+    - name: Lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        args: --build-tags integration -p bugs -p unused --timeout=3m
 
-  #   - name: build install
-  #     run: make
+    - name: build install
+      run: make
 
-  #   - name: Prepare build environment
-  #     shell: bash
-  #     run: ./prepare.sh ${{ matrix.os }}
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh ${{ matrix.os }}
 
-  #   - name: Build docker image for workers and export tarball
-  #     run: |
-  #       DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-  #       DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-  #       TMPDIR=/var/tmp \
-  #       docker-make \
-  #         --work-dir debian \
-  #         --file docker-make.${{ matrix.os }}.yaml \
-  #         --no-cache \
-  #         --summary \
-  #         --no-lint \
-  #         --no-push
+    - name: Build docker image for workers and export tarball
+      run: |
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir debian \
+          --file docker-make.${{ matrix.os }}.yaml \
+          --no-cache \
+          --summary \
+          --no-lint \
+          --no-push
 
-  #   # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
-  #   # and then goss tests fail
-  #   - name: Build docker image for firewalls and export tarball
-  #     run: |
-  #       DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-  #       DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-  #       TMPDIR=/var/tmp \
-  #       docker-make \
-  #         --work-dir firewall \
-  #         --build-only ${{ matrix.os }} \
-  #         --no-cache \
-  #         --no-pull \
-  #         --summary \
-  #         --no-lint \
-  #         --no-push
-  #     if: ${{ matrix.os == 'ubuntu' }}
+    # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
+    # and then goss tests fail
+    - name: Build docker image for firewalls and export tarball
+      run: |
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir firewall \
+          --build-only ${{ matrix.os }} \
+          --no-cache \
+          --no-pull \
+          --summary \
+          --no-lint \
+          --no-push
+      if: ${{ matrix.os == 'ubuntu' }}
 
-  #   - name: Prepare build environment
-  #     shell: bash
-  #     run: ./prepare.sh debian-nvidia
-  #     if: ${{ matrix.os == 'debian' }}
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh debian-nvidia
+      if: ${{ matrix.os == 'debian' }}
 
-  #   - name: Build docker image for debian-nvidia based workers and export tarball
-  #     run: |
-  #       TMPDIR=/var/tmp \
-  #       docker-make \
-  #         --work-dir debian-nvidia \
-  #         --file docker-make.yaml \
-  #         --no-cache \
-  #         --no-pull \
-  #         --summary \
-  #         --no-lint \
-  #         --no-push
-  #     if: ${{ matrix.os == 'debian' }}
+    - name: Build docker image for debian-nvidia based workers and export tarball
+      run: |
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir debian-nvidia \
+          --file docker-make.yaml \
+          --no-cache \
+          --no-pull \
+          --summary \
+          --no-lint \
+          --no-push
+      if: ${{ matrix.os == 'debian' }}
 
-  #   - name: Upload image tarballs to GCS
-  #     run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+    - name: Upload image tarballs to GCS
+      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
 
   almalinux:
     name: Build Almalinux based OS image
@@ -117,6 +117,7 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: '1.22.x'
+
     - name: build install
       run: make
     - name: Prepare build environment
@@ -135,9 +136,11 @@ jobs:
           --summary \
           --no-lint \
           --no-push
+
     - uses: google-github-actions/setup-gcloud@v0
       with:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
+
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
