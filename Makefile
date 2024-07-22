@@ -57,3 +57,7 @@ firewall: ubuntu
 .PHONY: centos
 centos: binary
 	docker-make -nNL -w centos -f docker-make.yaml
+
+.PHONY: almalinux
+almalinux: binary
+	docker-make -nNL -w almalinux -f docker-make.yaml
