@@ -70,17 +70,17 @@ file:
     - "/var/log/suricata/*.json"
 {{ end }}
 service:
+{{ if or (eq .Env.OS "centos") (eq .Env.OS "almalinux") }}
+  sshd:
+    enabled: true
+    running: true
+{{ else }}
   lldpd:
     enabled: true
     running: false
   frr:
     enabled: true
     running: true
-{{ if or (eq .Env.OS "centos") (eq .Env.OS "almalinux") }}
-  sshd:
-    enabled: true
-    running: true
-{{ else }}
   ssh:
     enabled: true
     running: true
