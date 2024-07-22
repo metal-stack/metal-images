@@ -32,6 +32,7 @@ RUN set -ex \
     ca-certificates \
     chrony \
     cloud-init \
+    curl \
     dbus \
     efibootmgr \
     gettext \

@@ -125,7 +125,7 @@ dns:
     resolvable: true
 command:
   "internet is reachable":
-    exec: "ping -W 1 -c 1 -n 8.8.8.8"
+    exec: "curl https://1.1.1.1"
     exit-status: 0
 {{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
   "systemd: timer for logrotation exists":
