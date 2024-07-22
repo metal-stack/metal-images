@@ -65,8 +65,7 @@ func (o operatingsystem) GrubInstallCmd() string {
 	case osCentos:
 		return "grub2-install"
 	case osAlmalinux:
-		// FIXME
-		return ""
+		return "" // no execution required
 	case osDebian, osUbuntu:
 		return "grub-install"
 	default:

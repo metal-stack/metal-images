@@ -674,7 +674,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 		}
 	}
 
-	if i.oss != osAlmalinux {
+	if i.oss.GrubInstallCmd() != "" {
 		_, err = i.exec.command(&cmdParams{
 			name: i.oss.GrubInstallCmd(),
 			args: grubInstallArgs,
