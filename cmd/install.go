@@ -25,6 +25,17 @@ const (
 	userdata    = "/etc/metal/userdata"
 )
 
+func runFromCI() bool {
+	ciEnv := os.Getenv("CI")
+
+	ci, err := strconv.ParseBool(ciEnv)
+	if err != nil {
+		return false
+	}
+
+	return ci
+}
+
 type installer struct {
 	log    *slog.Logger
 	fs     afero.Fs
@@ -674,7 +685,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 		}
 	}
 
-	if i.oss.GrubInstallCmd() != "" {
+	if i.oss.GrubInstallCmd() != "" && !runFromCI() {
 		_, err = i.exec.command(&cmdParams{
 			name: i.oss.GrubInstallCmd(),
 			args: grubInstallArgs,

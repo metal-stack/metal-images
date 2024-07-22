@@ -132,8 +132,9 @@ command:
     exec: "systemctl list-timers | grep logrotate"
     exit-status: 0
     stdout:
-    - "logrotate.timer"
-    - "logrotate.service"
+      have-patterns:
+      - "logrotate.timer"
+      - "logrotate.service"
   "systemd: no pending jobs":
     exec: systemctl list-jobs
     exit-status: 0
@@ -176,16 +177,16 @@ command:
     stdout:
     - "{{ .Env.ASN }}"
 {{ if eq .Env.MACHINE_TYPE "machine" }}
-  "only ssh and bgpd is listening at 0.0.0.0":
-    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
+  "only ssh, bgpd and mgmtd are listening on 0.0.0.0":
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|2623' | wc -l"
     exit-status: 0
-    stdout:
-    - "0"
-  "only ssh and bgpd is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179' | wc -l"
+    stdout: |
+      0
+  "only ssh, bgpd and mgmtd are listening on [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|2623' | wc -l"
     exit-status: 0
-    stdout:
-    - "0"
+    stdout: |
+      0
 {{ if ne .Env.OS "centos" }}
   "timedatectl show -p NTPSynchronized":
     exit-status: 0
