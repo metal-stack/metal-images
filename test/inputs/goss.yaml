@@ -124,13 +124,11 @@ dns:
   google.com:
     resolvable: true
 command:
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "internet is reachable":
-{{ if eq .Env.MACHINE_TYPE "firewall" }}
-    exec: "ip vrf exec vrf104009 curl https://1.1.1.1"
-{{ else }}
     exec: "curl https://1.1.1.1"
-{{ end }}
     exit-status: 0
+{{ end }}
 {{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
