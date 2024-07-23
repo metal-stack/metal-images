@@ -18,6 +18,7 @@ all: clean binary
 clean:
 	rm -f debian/context/install-go
 	rm -f centos/context/install-go
+	rm -f almalinux/context/install-go
 
 .PHONY: binary
 binary: test
@@ -31,6 +32,7 @@ binary: test
 	strip bin/$(BINARY)
 	cp bin/$(BINARY) debian/context/install-go
 	cp bin/$(BINARY) centos/context/install-go
+	cp bin/$(BINARY) almalinux/context/install-go
 
 .PHONY: test
 test:
@@ -55,3 +57,7 @@ firewall: ubuntu
 .PHONY: centos
 centos: binary
 	docker-make -nNL -w centos -f docker-make.yaml
+
+.PHONY: almalinux
+almalinux: binary
+	docker-make -nNL -w almalinux -f docker-make.yaml

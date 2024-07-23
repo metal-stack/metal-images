@@ -734,7 +734,8 @@ GRUB_DISTRIBUTOR=metal-ubuntu
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
+`,
 		},
 		{
 			name: "with raid debian/ubuntu",
@@ -791,7 +792,8 @@ GRUB_DISTRIBUTOR=metal-ubuntu
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
+`,
 		},
 		{
 			name: "without raid centos",
@@ -821,7 +823,8 @@ GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
+`,
 		},
 		{
 			name: "with raid centos",
@@ -876,7 +879,8 @@ GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"`,
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
+`,
 		},
 	}
 	for _, tt := range tests {

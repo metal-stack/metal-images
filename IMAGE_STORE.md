@@ -11,7 +11,7 @@ The actual directory layout should look like:
 
 Where `<imagesdir>` is `/` for the master branch and `/${CI_COMMIT_REF_SLUG}/` for branches and merge requests.
 
-`<os>` is the name of the os in use, we currently only have `ubuntu` and `firewall`, where `firewall` is derived from the `ubuntu` image.
+`<os>` is the name of the os in use, some images like `firewall` are derived from another os image (in this case the `ubuntu` image).
 
 `<major.minor>` specifies the major and minor number of the OS, which is case of ubuntu "19.10", "19.10", "20.04" and so on. This version must follow the semantic versioning specification, whereas we tolerate a leading zero for the minor version which is quite common for some OSes.
 
