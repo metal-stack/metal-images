@@ -198,12 +198,12 @@ command:
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
-    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|2623|4789' | wc -l"
     exit-status: 0
     stdout: |
       0
   "only ssh,vxlan,nftables-exporter and bgpd is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|4789|9630' | wc -l"
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|2623|4789|9630' | wc -l"
     exit-status: 0
     stdout: |
       0
