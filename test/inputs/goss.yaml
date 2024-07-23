@@ -125,6 +125,9 @@ dns:
     resolvable: true
 command:
   "internet is reachable":
+{{ if eq .Env.MACHINE_TYPE "firewall" }}
+    exec: "ip vrf exec vrf104009 curl https://1.1.1.1"
+{{ end }}
     exec: "curl https://1.1.1.1"
     exit-status: 0
 {{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
