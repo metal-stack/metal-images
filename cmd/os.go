@@ -13,13 +13,12 @@ type operatingsystem string
 const (
 	osUbuntu    = operatingsystem("ubuntu")
 	osDebian    = operatingsystem("debian")
-	osCentos    = operatingsystem("centos")
 	osAlmalinux = operatingsystem("almalinux")
 )
 
 func (o operatingsystem) BootloaderID() string {
 	switch o {
-	case osCentos, osAlmalinux:
+	case osAlmalinux:
 		return string(o)
 	case osDebian, osUbuntu:
 		return fmt.Sprintf("metal-%s", o)
@@ -30,7 +29,7 @@ func (o operatingsystem) BootloaderID() string {
 
 func (o operatingsystem) SudoGroup() string {
 	switch o {
-	case osCentos, osAlmalinux:
+	case osAlmalinux:
 		return "wheel"
 	case osDebian, osUbuntu:
 		return "sudo"
@@ -41,7 +40,7 @@ func (o operatingsystem) SudoGroup() string {
 
 func (o operatingsystem) Initramdisk(kernversion string) string {
 	switch o {
-	case osCentos, osAlmalinux:
+	case osAlmalinux:
 		return fmt.Sprintf("initramfs-%s.img", kernversion)
 	case osDebian, osUbuntu:
 		return fmt.Sprintf("initrd.img-%s", kernversion)
@@ -51,7 +50,7 @@ func (o operatingsystem) Initramdisk(kernversion string) string {
 }
 func (o operatingsystem) NeedUpdateInitRamfs() bool {
 	switch o {
-	case osCentos, osAlmalinux:
+	case osAlmalinux:
 		return false
 	case osDebian, osUbuntu:
 		return true
@@ -62,8 +61,6 @@ func (o operatingsystem) NeedUpdateInitRamfs() bool {
 
 func (o operatingsystem) GrubInstallCmd() string {
 	switch o {
-	case osCentos:
-		return "grub2-install"
 	case osAlmalinux:
 		return "" // no execution required
 	case osDebian, osUbuntu:
@@ -84,8 +81,6 @@ func operatingSystemFromString(s string) (operatingsystem, error) {
 		return osUbuntu, nil
 	case osDebian:
 		return osDebian, nil
-	case osCentos:
-		return osCentos, nil
 	case osAlmalinux:
 		return osAlmalinux, nil
 	default:

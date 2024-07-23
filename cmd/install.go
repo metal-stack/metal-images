@@ -512,20 +512,6 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
 	// -rw-r--r-- 1 root root  6962816 Aug 13 15:25 vmlinuz-5.10.0-17-amd64
 
-	// Centos 7
-	// [root@31f5556636196095 boot]# ls -l
-	// total 96704
-	// -rw------- 1 root root  3622646 Aug 10 18:25 System.map-3.10.0-1160.76.1.el7.x86_64
-	// -rw-r--r-- 1 root root   153619 Aug 10 18:25 config-3.10.0-1160.76.1.el7.x86_64
-	// -rw-r--r-- 1 root root    93842 Jul 19  2021 config-5.10.51
-	// drwxr-xr-x 3 root root     4096 Oct  6 08:34 efi
-	// drwx------ 2 root root     4096 Oct  6 08:34 grub2
-	// -rw------- 1 root root 44506213 Oct  6 08:38 initramfs-3.10.0-1160.76.1.el7.x86_64.img
-	// -rw-r--r-- 1 root root   320674 Aug 10 18:25 symvers-3.10.0-1160.76.1.el7.x86_64.gz
-	// lrwxrwxrwx 1 root root       21 Jul 19  2021 vmlinux -> /boot/vmlinux-5.10.51
-	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
-	// -rwxr-xr-x 1 root root  6781544 Aug 10 18:25 vmlinuz-3.10.0-1160.76.1.el7.x86_64
-
 	var (
 		bootPartition   = "/boot"
 		systemMapPrefix = "/boot/System.map-"
@@ -606,7 +592,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 		grubInstallArgs = append(grubInstallArgs, "--no-nvram")
 	}
 
-	if i.oss == osCentos || i.oss == osAlmalinux {
+	if i.oss == osAlmalinux {
 		path := "/boot/grub2/grub.cfg"
 		if i.oss == osAlmalinux {
 			path = "/boot/efi/EFI/almalinux/grub.cfg"
@@ -670,7 +656,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 					return fmt.Errorf("unable to process blkid output lines")
 				}
 				shim := fmt.Sprintf(`\\EFI\\%s\\grubx64.efi`, i.oss.BootloaderID())
-				if i.oss == osCentos || i.oss == osAlmalinux {
+				if i.oss == osAlmalinux {
 					shim = fmt.Sprintf(`\\EFI\\%s\\shimx64.efi`, i.oss.BootloaderID())
 				}
 
@@ -695,7 +681,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 		}
 	}
 
-	if i.oss == osCentos || i.oss == osAlmalinux {
+	if i.oss == osAlmalinux {
 		if !i.config.RaidEnabled {
 			return nil
 		}

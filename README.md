@@ -20,7 +20,6 @@ Currently these images are supported:
 
 We also publish images that we need for special purposes but do not officially support. Use at your own risk.
 
-1. CentOS 7
 1. Almalinux 9
 
 ### GPU Support
@@ -68,9 +67,6 @@ make ubuntu
 
 # for firewall images
 make firewall
-
-# for centos images
-make centos
 
 # for nvidia images
 make nvidia
