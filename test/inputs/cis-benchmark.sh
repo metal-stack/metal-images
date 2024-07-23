@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -e
+
 # Somehow /etc/resolve.conf is created with read permissions granted only to root.
 # As apt drops privileges during download this won't work. Allow reading for all.
 chmod 644 /etc/resolv.conf
@@ -7,12 +9,12 @@ chmod 644 /etc/resolv.conf
 apt update && apt install -y git
 rm /var/log/apt/*
 git clone -b "${CIS_VERSION}" --depth 1 https://github.com/ovh/debian-cis.git
-cd debian-cis || exit
+mv debian-cis /opt/cis-hardening
+cd /opt/cis-hardening
 cp debian/default /etc/default/cis-hardening
-sed -i "s#CIS_ROOT_DIR=.*#CIS_ROOT_DIR='$(pwd)'#" /etc/default/cis-hardening
 
 # Disable inappropriate checks
-bin/hardening.sh --create-config-files-only --allow-unsupported-distribution --batch
+bin/hardening.sh --create-config-files-only --allow-unsupported-distribution
 
 disable-testcase () {
   CONFFILE="etc/conf.d/$1.cfg"

@@ -3,6 +3,8 @@
 # shellcheck disable=SC1091
 source /etc/os-release
 
+set -e
+
 export GOSS_VERSION=v0.4.7
 export OS=$ID
 export MACHINE_TYPE=$1

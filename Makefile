@@ -17,7 +17,7 @@ all: clean binary
 .PHONY: clean
 clean:
 	rm -f debian/context/install-go
-	rm -f centos/context/install-go
+	rm -f almalinux/context/install-go
 
 .PHONY: binary
 binary: test
@@ -30,7 +30,7 @@ binary: test
 		github.com/metal-stack/metal-images/cmd
 	strip bin/$(BINARY)
 	cp bin/$(BINARY) debian/context/install-go
-	cp bin/$(BINARY) centos/context/install-go
+	cp bin/$(BINARY) almalinux/context/install-go
 
 .PHONY: test
 test:
@@ -52,6 +52,6 @@ ubuntu: binary
 firewall: ubuntu
 	docker-make -nNL -w firewall -f docker-make.yaml
 
-.PHONY: centos
-centos: binary
-	docker-make -nNL -w centos -f docker-make.yaml
+.PHONY: almalinux
+almalinux: binary
+	docker-make -nNL -w almalinux -f docker-make.yaml
