@@ -86,7 +86,7 @@ service:
     running: true
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
-{{ if not (or (eq .Env.OS "") (eq .Env.OS "almalinux")) }}
+{{ if ne .Env.OS "almalinux" }}
   docker:
     enabled: true
     running: true
@@ -129,7 +129,7 @@ command:
     exec: "curl https://1.1.1.1"
     exit-status: 0
 {{ end }}
-{{ if not eq .Env.OS "almalinux" }}
+{{ if ne .Env.OS "almalinux" }}
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
     exit-status: 0
