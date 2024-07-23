@@ -70,29 +70,30 @@ file:
     - "/var/log/suricata/*.json"
 {{ end }}
 service:
+{{ if or (eq .Env.OS "centos") (eq .Env.OS "almalinux") }}
+  sshd:
+    enabled: true
+    running: true
+{{ else }}
   lldpd:
     enabled: true
     running: false
   frr:
     enabled: true
     running: true
-{{ if eq .Env.OS "centos" }}
-  sshd:
-    enabled: true
-    running: true
-{{ end }}
-{{ if ne .Env.OS "centos" }}
   ssh:
     enabled: true
     running: true
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
+{{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
   docker:
     enabled: true
     running: true
   cloud-config-downloader:
     enabled: true
     running: false
+{{ end }}
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "chrony@vrf104009":
@@ -123,16 +124,19 @@ dns:
   google.com:
     resolvable: true
 command:
+{{ if eq .Env.MACHINE_TYPE "machine" }}
   "internet is reachable":
-    exec: "ping -W 1 -c 1 -n 8.8.8.8"
+    exec: "curl https://1.1.1.1"
     exit-status: 0
-{{ if ne .Env.OS "centos" }}
+{{ end }}
+{{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
     exit-status: 0
     stdout:
-    - "logrotate.timer"
-    - "logrotate.service"
+      have-patterns:
+      - "logrotate.timer"
+      - "logrotate.service"
   "systemd: no pending jobs":
     exec: systemctl list-jobs
     exit-status: 0
@@ -175,16 +179,16 @@ command:
     stdout:
     - "{{ .Env.ASN }}"
 {{ if eq .Env.MACHINE_TYPE "machine" }}
-  "only ssh and bgpd is listening at 0.0.0.0":
-    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179' | wc -l"
+  "only ssh, bgpd and mgmtd are listening on 0.0.0.0":
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|2623' | wc -l"
     exit-status: 0
-    stdout:
-    - "0"
-  "only ssh and bgpd is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179' | wc -l"
+    stdout: |
+      0
+  "only ssh, bgpd and mgmtd are listening on [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|2623' | wc -l"
     exit-status: 0
-    stdout:
-    - "0"
+    stdout: |
+      0
 {{ if ne .Env.OS "centos" }}
   "timedatectl show -p NTPSynchronized":
     exit-status: 0
@@ -194,15 +198,15 @@ command:
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
-    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|4789' | wc -l"
+    exec: "ss -4 -Hlntu src 0.0.0.0 | egrep -v '22|179|2623|4789' | wc -l"
     exit-status: 0
-    stdout:
-    - "0"
+    stdout: |
+      0
   "only ssh,vxlan,nftables-exporter and bgpd is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|4789|9630' | wc -l"
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|2623|4789|9630' | wc -l"
     exit-status: 0
-    stdout:
-    - "0"
+    stdout: |
+      0
 {{ end }}
 kernel-param:
   net.ipv6.conf.all.disable_ipv6:
