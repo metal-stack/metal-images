@@ -501,22 +501,6 @@ func Test_installer_writeBootInfo(t *testing.T) {
 			},
 		},
 		{
-			name:    "boot-info centos",
-			cmdline: "a-cmd-line",
-			oss:     osCentos,
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
-			},
-			want: &api.Bootinfo{
-				Initrd:       "/boot/initramfs-1.2.3.img",
-				Cmdline:      "a-cmd-line",
-				Kernel:       "/boot/vmlinuz-1.2.3",
-				BootloaderID: "centos",
-			},
-		},
-		{
 			name:    "more than one system.map present",
 			cmdline: "a-cmd-line",
 			oss:     osUbuntu,
@@ -611,25 +595,6 @@ func Test_installer_processUserdata(t *testing.T) {
 		{
 			name: "cloud-init",
 			oss:  osDebian,
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleCloudInit), 0700))
-			},
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"cloud-init", "devel", "schema", "--config-file", "/etc/metal/userdata"},
-					Output:   "",
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"systemctl", "preset-all"},
-					Output:   "",
-					ExitCode: 0,
-				},
-			},
-		},
-		{
-			name: "cloud-init for centos",
-			oss:  osCentos,
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/metal/userdata", []byte(sampleCloudInit), 0700))
 			},
@@ -789,93 +754,6 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
 			wantGrubCfg: `GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=metal-ubuntu
-GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
-GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
-`,
-		},
-		{
-			name: "without raid centos",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallYAML), 0700))
-			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
-			oss:     osCentos,
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
-					Output:   sampleBlkidOutput,
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=centos", "UUID=543eb7f8-98d4-d986-e669-824dbebe69e5"},
-					Output:   "",
-					ExitCode: 0,
-				},
-			},
-			wantGrubCfg: `GRUB_DEFAULT=0
-GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=centos
-GRUB_CMDLINE_LINUX_DEFAULT=""
-GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=543eb7f8-98d4-d986-e669-824dbebe69e5 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
-GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
-`,
-		},
-		{
-			name: "with raid centos",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/boot/System.map-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/vmlinuz-1.2.3", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/boot/initramfs-1.2.3.img", nil, 0700))
-				require.NoError(t, afero.WriteFile(fs, "/etc/metal/install.yaml", []byte(sampleInstallWithRaidYAML), 0700))
-			},
-			cmdline: "console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0",
-			oss:     osCentos,
-			execMocks: []fakeexecparams{
-				{
-					WantCmd:  []string{"grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"},
-					Output:   sampleBlkidOutput,
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"mdadm", "--examine", "--scan"},
-					Output:   sampleMdadmScanOutput,
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"blkid"},
-					Output:   sampleBlkidOutput,
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sda1", "-p1", "-l", "\\\\EFI\\\\centos\\\\shimx64.efi", "-L", "centos"},
-					Output:   "",
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"efibootmgr", "-c", "-d", "/dev/sdb1", "-p1", "-l", "\\\\EFI\\\\centos\\\\shimx64.efi", "-L", "centos"},
-					Output:   "",
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"grub2-install", "--target=x86_64-efi", "--efi-directory=/boot/efi", "--boot-directory=/boot", "--bootloader-id=centos", "--no-nvram", "UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9"},
-					Output:   "",
-					ExitCode: 0,
-				},
-				{
-					WantCmd:  []string{"dracut", "--mdadmconf", "--kver", "1.2.3", "--kmoddir", "/lib/modules/1.2.3", "--include", "/lib/modules/1.2.3", "/lib/modules/1.2.3", "--fstab", "--add=dm mdraid", "--add-drivers=raid0 raid1", "--hostonly", "--force"},
-					Output:   "",
-					ExitCode: 0,
-				},
-			},
-			wantGrubCfg: `GRUB_DEFAULT=0
-GRUB_TIMEOUT=5
-GRUB_DISTRIBUTOR=centos
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="console=ttyS1,115200n8 root=UUID=ace079b5-06be-4429-bbf0-081ea4d7d0d9 init=/sbin/init net.ifnames=0 biosdevname=0 nvme_core.io_timeout=300 systemd.unified_cgroup_hierarchy=0"
 GRUB_TERMINAL=serial

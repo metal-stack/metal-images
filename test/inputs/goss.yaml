@@ -70,7 +70,7 @@ file:
     - "/var/log/suricata/*.json"
 {{ end }}
 service:
-{{ if or (eq .Env.OS "centos") (eq .Env.OS "almalinux") }}
+{{ if eq .Env.OS "almalinux" }}
   sshd:
     enabled: true
     running: true
@@ -86,7 +86,7 @@ service:
     running: true
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
-{{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
+{{ if not (or (eq .Env.OS "") (eq .Env.OS "almalinux")) }}
   docker:
     enabled: true
     running: true
@@ -129,7 +129,7 @@ command:
     exec: "curl https://1.1.1.1"
     exit-status: 0
 {{ end }}
-{{ if not (or (eq .Env.OS "centos") (eq .Env.OS "almalinux")) }}
+{{ if not eq .Env.OS "almalinux" }}
   "systemd: timer for logrotation exists":
     exec: "systemctl list-timers | grep logrotate"
     exit-status: 0
@@ -189,12 +189,10 @@ command:
     exit-status: 0
     stdout: |
       0
-{{ if ne .Env.OS "centos" }}
   "timedatectl show -p NTPSynchronized":
     exit-status: 0
     stdout:
     - "NTPSynchronized=yes"
-{{ end }}
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":
