@@ -3,7 +3,7 @@ module github.com/metal-stack/metal-images
 go 1.22
 
 require (
-	github.com/aws/aws-sdk-go v1.54.12
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.13.3
