@@ -25,7 +25,7 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=24.04
-      - FRR_VERSION=frr-10
+      - FRR_VERSION=frr-10.0
       - FRR_VERSION_DETAIL=10.0.1-0~ubuntu24.04.1
       - FRR_APT_CHANNEL=noble
       - SEMVER_MAJOR_MINOR=24.04

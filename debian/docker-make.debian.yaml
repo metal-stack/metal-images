@@ -23,7 +23,7 @@ builds:
     build-args:
       - BASE_OS_VERSION=bookworm
       - DOCKER_APT_CHANNEL=bookworm
-      - FRR_VERSION=frr-10
+      - FRR_VERSION=frr-10.0
       - FRR_VERSION_DETAIL=10.0.1-0~deb12u1
       - FRR_APT_CHANNEL=bookworm
       - SEMVER_MAJOR_MINOR=12
