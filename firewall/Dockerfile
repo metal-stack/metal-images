@@ -2,8 +2,8 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG DROPTAILER_VERSION=v0.2.15
 ARG FIREWALL_CONTROLLER_VERSION=v2.3.3
-ARG TAILSCALE_VERSION=v1.68.1
-ARG NODE_EXPORTER_VERSION=v1.8.1
+ARG TAILSCALE_VERSION=v1.70.0
+ARG NODE_EXPORTER_VERSION=v1.8.2
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -17,7 +17,7 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NFTABLES_EXPORTER_VERSION=v0.2.10
+    NFTABLES_EXPORTER_VERSION=v0.3.0
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
@@ -69,7 +69,7 @@ COPY --from=node_exporter-artifacts /bin/node_exporter /usr/local/bin/node_expor
 
 # Install nftables-exporter
 WORKDIR /tmp/
-RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter.tgz -o nftables-exporter.tgz \
+RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter-linux-amd64.tgz -o nftables-exporter.tgz \
  && tar xvf nftables-exporter.tgz -C / \
  && systemctl enable nftables-exporter \
  && rm -rf /tmp/*

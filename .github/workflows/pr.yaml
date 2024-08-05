@@ -48,6 +48,12 @@ jobs:
       shell: bash
       run: ./prepare.sh ${{ matrix.os }}
 
+    - name: use our lz4 which is version 1.10 with multithread support
+      shell: bash
+      run: |
+        chmod +x test/lz4
+        sudo cp test/lz4 /usr/bin/lz4
+
     - name: Build docker image for workers and export tarball
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
