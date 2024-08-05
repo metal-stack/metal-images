@@ -3,12 +3,12 @@ module github.com/metal-stack/metal-images
 go 1.22
 
 require (
-	github.com/aws/aws-sdk-go v1.54.12
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
-	github.com/metal-stack/metal-hammer v0.13.0
-	github.com/metal-stack/metal-lib v0.17.0
-	github.com/metal-stack/metal-networker v0.45.0
+	github.com/metal-stack/metal-hammer v0.13.3
+	github.com/metal-stack/metal-lib v0.18.0
+	github.com/metal-stack/metal-networker v0.45.1-0.20240805114033-18863dd635ab
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.11.0
@@ -38,7 +38,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/metal-stack/metal-go v0.32.3 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
