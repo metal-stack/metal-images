@@ -29,7 +29,7 @@ builds:
       - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-      - KERNEL_VERSION=6.1.0-23
+      - KERNEL_VERSION=6.1.0-25
     after:
       - cd ../ && OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
