@@ -7,7 +7,7 @@ require (
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.6.0
 	github.com/metal-stack/metal-hammer v0.13.6-0.20240913090340-9614ed97fba9
-	github.com/metal-stack/metal-lib v0.18.1
+	github.com/metal-stack/metal-lib v0.18.3
 	github.com/metal-stack/metal-networker v0.45.2
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
@@ -46,7 +46,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.16.1 // indirect
+	go.mongodb.org/mongo-driver v1.17.1 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect

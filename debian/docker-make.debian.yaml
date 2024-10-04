@@ -5,7 +5,7 @@ username: metalstack
 registry-host: quay.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
-  - GOLLDPD_VERSION=v0.4.7
+  - GOLLDPD_VERSION=v0.4.8
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - OS_NAME=debian
@@ -24,7 +24,7 @@ builds:
       - BASE_OS_VERSION=bookworm
       - DOCKER_APT_CHANNEL=bookworm
       - FRR_VERSION=frr-10.0
-      - FRR_VERSION_DETAIL=10.0.1-0~deb12u1
+      - FRR_VERSION_DETAIL=10.0.2-0~deb12u1
       - FRR_APT_CHANNEL=bookworm
       - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
