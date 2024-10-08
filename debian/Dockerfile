@@ -53,6 +53,7 @@ RUN set -ex \
     curl \
     dbus \
     efibootmgr \
+    ethtool \
     gettext-base \
     gnupg2 \
     gpg-agent \
