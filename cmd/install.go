@@ -171,6 +171,14 @@ func (i *installer) writeResolvConf() error {
 		`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
+
+	if i.config.DNSServers != nil {
+		var s strings.Builder
+		for _, ip := range i.config.DNSServers {
+			s.WriteString("nameserver " + ip + "\n")
+		}
+		content = []byte(s.String())
+	}
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
 }
 
