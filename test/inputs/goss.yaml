@@ -54,6 +54,19 @@ file:
     contents:
     - "#!/bin/bash"
 {{ end }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+{{ if eq .Env.OS "almalinux" }}
+  "/etc/chrony.conf":
+    exists: true
+    contents:
+    - server custom.1.ntp.org prefer iburst
+{{ else }}
+  "/etc/systemd/timesyncd.conf":
+    exists: true
+    contents:
+    - NTP=custom.1.ntp.org
+{{ end }}
+{{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "/etc/hostname":
     exists: true
@@ -68,6 +81,10 @@ file:
     contents:
     - "/var/log/suricata/*.log"
     - "/var/log/suricata/*.json"
+  "/etc/chrony/chrony.conf":
+    exists: true
+    contents:
+    - server custom.1.ntp.org iburst
 {{ end }}
 service:
 {{ if eq .Env.OS "almalinux" }}

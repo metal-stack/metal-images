@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -67,6 +68,14 @@ func (i *installer) do() error {
 	if err != nil {
 		i.log.Warn("writing resolv.conf failed", "error", err)
 		return err
+	}
+
+	if i.config.NTPServers != nil {
+		err = i.writeNTPConf()
+		if err != nil {
+			i.log.Warn("writing ntp configuration failed", "err", err)
+			return err
+		}
 	}
 
 	err = i.createMetalUser()
@@ -172,7 +181,7 @@ func (i *installer) writeResolvConf() error {
 nameserver 8.8.4.4
 `)
 
-	if i.config.DNSServers != nil {
+	if i.config != nil && i.config.DNSServers != nil {
 		var s strings.Builder
 		for _, ip := range i.config.DNSServers {
 			s.WriteString("nameserver " + ip + "\n")
@@ -180,6 +189,71 @@ nameserver 8.8.4.4
 		content = []byte(s.String())
 	}
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
+}
+
+func (i *installer) writeNTPConf() error {
+	var ntpConfigPath string
+	var content []byte
+	var s strings.Builder
+
+	switch i.config.Role {
+	case "firewall":
+		ntpConfigPath = "/etc/chrony/chrony.conf"
+		f, err := i.fs.Open(ntpConfigPath)
+		if err != nil {
+			i.log.Info("error opening ntp config file")
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			l := scanner.Text()
+			if !strings.HasPrefix(l, "pool") {
+				s.WriteString(l + "\n")
+			}
+		}
+		for _, ntp := range i.config.NTPServers {
+			s.WriteString("server " + ntp + " iburst\n")
+		}
+	case "machine":
+		if i.oss == osDebian || i.oss == osUbuntu {
+			ntpConfigPath = "/etc/systemd/timesyncd.conf"
+			s.WriteString("[Time]\nNTP=")
+			for _, ntp := range i.config.NTPServers {
+				s.WriteString(ntp + " ")
+			}
+		}
+		if i.oss == osAlmalinux {
+			ntpConfigPath = "/etc/chrony.conf"
+			f, err := i.fs.Open(ntpConfigPath)
+			if err != nil {
+				i.log.Info("error opening ntp config file")
+			}
+			defer f.Close()
+
+			scanner := bufio.NewScanner(f)
+			for scanner.Scan() {
+				l := scanner.Text()
+				if !strings.HasPrefix(l, "server") {
+					s.WriteString(l + "\n")
+				}
+			}
+			for _, ntp := range i.config.NTPServers {
+				s.WriteString("server " + ntp + " prefer iburst\n")
+			}
+		}
+	default:
+		return fmt.Errorf("unknown role:%s", i.config.Role)
+	}
+
+	content = []byte(s.String())
+	i.log.Info("write " + ntpConfigPath)
+	err := i.fs.Remove(ntpConfigPath)
+	if err != nil {
+		i.log.Info("no " + ntpConfigPath + " present")
+	}
+
+	return afero.WriteFile(i.fs, ntpConfigPath, content, 0644)
 }
 
 func (i *installer) buildCMDLine() string {
