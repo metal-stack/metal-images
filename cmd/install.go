@@ -70,7 +70,7 @@ func (i *installer) do() error {
 		return err
 	}
 
-	if i.config.DNSServers != nil {
+	if i.oss != osAlmalinux && i.config.DNSServers != nil {
 		err = i.writeDNSconf()
 		if err != nil {
 			i.log.Warn("writing dns configuration failed", "err", err)
