@@ -70,6 +70,10 @@ file:
     contents:
     - DNS=1.1.1.1
 {{ end }}
+  "/etc/resolv.conf":
+    exists: true
+    contents:
+    - nameserver 1.1.1.1
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "/etc/hostname":
