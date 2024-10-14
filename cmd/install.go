@@ -13,6 +13,7 @@ import (
 	"time"
 
 	config "github.com/flatcar/ignition/config/v2_4"
+	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	v1 "github.com/metal-stack/metal-images/cmd/v1"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
@@ -68,14 +69,6 @@ func (i *installer) do() error {
 	if err != nil {
 		i.log.Warn("writing resolv.conf failed", "error", err)
 		return err
-	}
-
-	if i.oss != osAlmalinux && i.config.DNSServers != nil {
-		err = i.writeDNSconf()
-		if err != nil {
-			i.log.Warn("writing dns configuration failed", "err", err)
-			return err
-		}
 	}
 
 	if i.config.NTPServers != nil {
@@ -189,12 +182,21 @@ func (i *installer) writeResolvConf() error {
 nameserver 8.8.4.4
 `)
 
-	if i.config != nil && i.config.DNSServers != nil {
+	if i.config.DNSServers != nil {
 		var s strings.Builder
 		for _, ip := range i.config.DNSServers {
 			s.WriteString("nameserver " + ip + "\n")
 		}
 		content = []byte(s.String())
+
+		if i.oss != osAlmalinux {
+			err = i.writeDNSconf()
+			if err != nil {
+				i.log.Warn("writing dns configuration failed", "err", err)
+				return err
+			}
+		}
+
 	}
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
 }
@@ -222,12 +224,14 @@ func (i *installer) writeDNSconf() error {
 }
 
 func (i *installer) writeNTPConf() error {
-	var ntpConfigPath string
-	var content []byte
-	var s strings.Builder
+	var (
+		ntpConfigPath string
+		content       []byte
+		s             strings.Builder
+	)
 
 	switch i.config.Role {
-	case "firewall":
+	case models.V1MachineAllocationRoleFirewall:
 		ntpConfigPath = "/etc/chrony/chrony.conf"
 		f, err := i.fs.Open(ntpConfigPath)
 		if err != nil {
@@ -245,7 +249,7 @@ func (i *installer) writeNTPConf() error {
 		for _, ntp := range i.config.NTPServers {
 			s.WriteString("server " + ntp + " iburst\n")
 		}
-	case "machine":
+	case models.V1MachineAllocationRoleMachine:
 		if i.oss == osDebian || i.oss == osUbuntu {
 			ntpConfigPath = "/etc/systemd/timesyncd.conf"
 			s.WriteString("[Time]\nNTP=")
@@ -439,9 +443,9 @@ func (i *installer) configureNetwork() error {
 
 	var kind netconf.BareMetalType
 	switch i.config.Role {
-	case "firewall":
+	case models.V1MachineAllocationRoleFirewall:
 		kind = netconf.Firewall
-	case "machine":
+	case models.V1MachineAllocationRoleMachine:
 		kind = netconf.Machine
 	default:
 		return fmt.Errorf("unknown role:%s", i.config.Role)
