@@ -70,6 +70,14 @@ func (i *installer) do() error {
 		return err
 	}
 
+	if i.config.DNSServers != nil {
+		err = i.writeDNSconf()
+		if err != nil {
+			i.log.Warn("writing dns configuration failed", "err", err)
+			return err
+		}
+	}
+
 	if i.config.NTPServers != nil {
 		err = i.writeNTPConf()
 		if err != nil {
@@ -191,6 +199,28 @@ nameserver 8.8.4.4
 	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
 }
 
+func (i *installer) writeDNSconf() error {
+	i.log.Info("write /etc/systemd/resolved.conf.d/dns.conf")
+
+	err := i.fs.Remove("/etc/systemd/resolved.conf.d/dns.conf")
+	if err != nil {
+		i.log.Info("no /etc/systemd/resolved.conf.d/dns.conf present")
+	}
+
+	var s strings.Builder
+	s.WriteString("[Resolve]\nDNS=")
+	for _, dns := range i.config.DNSServers {
+		s.WriteString(dns + " ")
+	}
+	ts := strings.TrimRight(s.String(), " ")
+	s.Reset()
+	s.WriteString(ts)
+	s.WriteString("\nLLMNR=no")
+
+	content := []byte(s.String())
+	return afero.WriteFile(i.fs, "/etc/systemd/resolved.conf.d/dns.conf", content, 0644)
+}
+
 func (i *installer) writeNTPConf() error {
 	var ntpConfigPath string
 	var content []byte
@@ -222,6 +252,9 @@ func (i *installer) writeNTPConf() error {
 			for _, ntp := range i.config.NTPServers {
 				s.WriteString(ntp + " ")
 			}
+			ts := strings.TrimRight(s.String(), " ")
+			s.Reset()
+			s.WriteString(ts)
 		}
 		if i.oss == osAlmalinux {
 			ntpConfigPath = "/etc/chrony.conf"

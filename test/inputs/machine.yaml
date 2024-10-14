@@ -35,3 +35,5 @@ nics:
         neighbors: []
 ntp_servers:
   - custom.1.ntp.org
+dns_servers:
+  - 1.1.1.1
