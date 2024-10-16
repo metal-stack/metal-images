@@ -210,6 +210,7 @@ func Test_installer_writeResolvConf(t *testing.T) {
 	tests := []struct {
 		name    string
 		fsMocks func(fs afero.Fs)
+		config  *api.InstallerConfig
 		want    string
 		wantErr error
 	}{
@@ -230,17 +231,30 @@ nameserver 8.8.4.4
 `,
 			wantErr: nil,
 		},
+		{
+			name:   "overwrite resolv.conf with custom DNS",
+			config: &api.InstallerConfig{DNSServers: []string{"1.2.3.4", "5.6.7.8"}},
+			want: `nameserver 1.2.3.4
+nameserver 5.6.7.8
+`,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
-				log: slog.Default(),
-				fs:  afero.NewMemMapFs(),
+				log:    slog.Default(),
+				fs:     afero.NewMemMapFs(),
+				config: &api.InstallerConfig{},
 			}
 
 			if tt.fsMocks != nil {
 				tt.fsMocks(i.fs)
+			}
+
+			if tt.config != nil {
+				i.config = tt.config
 			}
 
 			err := i.writeResolvConf()
@@ -249,6 +263,234 @@ nameserver 8.8.4.4
 			}
 
 			content, err := afero.ReadFile(i.fs, "/etc/resolv.conf")
+			require.NoError(t, err)
+
+			if diff := cmp.Diff(tt.want, string(content)); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+		})
+	}
+}
+
+func Test_installer_writeDNSConf(t *testing.T) {
+	tests := []struct {
+		name    string
+		fsMocks func(fs afero.Fs)
+		config  *api.InstallerConfig
+		want    string
+		wantErr error
+	}{
+		{
+			name: "overwrite /etc/systemd/resolved.conf.d/dns.conf with custom DNS",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/resolved.conf.d/dns.conf", []byte(""), 0755))
+			},
+			config: &api.InstallerConfig{DNSServers: []string{"1.2.3.4", "5.6.7.8"}},
+			want: `[Resolve]
+DNS=1.2.3.4 5.6.7.8
+LLMNR=no`,
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			i := &installer{
+				log:    slog.Default(),
+				fs:     afero.NewMemMapFs(),
+				config: &api.InstallerConfig{},
+			}
+
+			if tt.fsMocks != nil {
+				tt.fsMocks(i.fs)
+			}
+
+			i.config = tt.config
+
+			err := i.writeDNSconf()
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+
+			content, err := afero.ReadFile(i.fs, "/etc/systemd/resolved.conf.d/dns.conf")
+			require.NoError(t, err)
+
+			if diff := cmp.Diff(tt.want, string(content)); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+		})
+	}
+}
+
+func Test_installer_writeNTPConf(t *testing.T) {
+	tests := []struct {
+		name       string
+		fsMocks    func(fs afero.Fs)
+		oss        operatingsystem
+		role       string
+		ntpServers []string
+		ntpPath    string
+		want       string
+		wantErr    error
+	}{
+		{
+			name: "configure custom ntp for ubuntu machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath:    "/etc/systemd/timesyncd.conf",
+			oss:        osUbuntu,
+			role:       "machine",
+			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
+			want: `[Time]
+NTP=custom.1.ntp.org custom.2.ntp.org`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for ubuntu machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath: "/etc/systemd/timesyncd.conf",
+			oss:     osUbuntu,
+			role:    "machine",
+			want: `[Time]
+`,
+			wantErr: nil,
+		},
+		{
+			name: "configure custom ntp for debian machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath:    "/etc/systemd/timesyncd.conf",
+			oss:        osDebian,
+			role:       "machine",
+			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
+			want: `[Time]
+NTP=custom.1.ntp.org custom.2.ntp.org`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for debian machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath: "/etc/systemd/timesyncd.conf",
+			oss:     osDebian,
+			role:    "machine",
+			want: `[Time]
+`,
+			wantErr: nil,
+		},
+		{
+			name: "configure ntp for almalinux machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony.conf", []byte(""), 0644))
+			},
+			oss:        osAlmalinux,
+			ntpPath:    "/etc/chrony.conf",
+			role:       "machine",
+			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
+			want: `server custom.1.ntp.org prefer iburst
+server custom.2.ntp.org prefer iburst
+keyfile /etc/chrony/chrony.keys
+driftfile /var/lib/chrony/drift
+log tracking measurements statistics
+logdir /var/log/chrony
+maxupdateskew 100.0
+dumponexit
+dumpdir /var/lib/chrony
+local stratum 10
+logchange 0.5
+hwclockfile /etc/adjtime
+rtcsync
+sourcedir /run/chrony-dhcp`,
+
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for almalinux machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony.conf", []byte(""), 0644))
+			},
+			oss:     osAlmalinux,
+			ntpPath: "/etc/chrony.conf",
+			role:    "machine",
+			want: `server 0.pool.ntp.org prefer iburst
+server 1.pool.ntp.org prefer iburst
+server 2.pool.ntp.org prefer iburst
+server 3.pool.ntp.org prefer iburst
+keyfile /etc/chrony/chrony.keys
+driftfile /var/lib/chrony/drift
+log tracking measurements statistics
+logdir /var/log/chrony
+maxupdateskew 100.0
+dumponexit
+dumpdir /var/lib/chrony
+local stratum 10
+logchange 0.5
+hwclockfile /etc/adjtime
+rtcsync
+sourcedir /run/chrony-dhcp`,
+
+			wantErr: nil,
+		},
+		{
+			name: "configure custom ntp for firewall",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony/chrony.conf", []byte(""), 0644))
+			},
+			ntpPath:    "/etc/chrony/chrony.conf",
+			role:       "firewall",
+			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
+			want: `server custom.1.ntp.org iburst
+server custom.2.ntp.org iburst
+keyfile /etc/chrony/chrony.keys
+driftfile /var/lib/chrony/chrony.drift
+logdir /var/log/chrony
+maxupdateskew 100.0
+rtcsync
+makestep 1 3`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for firewall",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony/chrony.conf", []byte(""), 0644))
+			},
+			ntpPath: "/etc/chrony/chrony.conf",
+			role:    "firewall",
+			want: `pool time.cloudflare.com iburst
+keyfile /etc/chrony/chrony.keys
+driftfile /var/lib/chrony/chrony.drift
+logdir /var/log/chrony
+maxupdateskew 100.0
+rtcsync
+makestep 1 3`,
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			i := &installer{
+				log:    slog.Default(),
+				fs:     afero.NewMemMapFs(),
+				config: &api.InstallerConfig{Role: tt.role, NTPServers: tt.ntpServers},
+				oss:    tt.oss,
+			}
+
+			if tt.fsMocks != nil {
+				tt.fsMocks(i.fs)
+			}
+
+			err := i.writeNTPConf()
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+
+			content, err := afero.ReadFile(i.fs, tt.ntpPath)
 			require.NoError(t, err)
 
 			if diff := cmp.Diff(tt.want, string(content)); diff != "" {

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	config "github.com/flatcar/ignition/config/v2_4"
+	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	v1 "github.com/metal-stack/metal-images/cmd/v1"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
@@ -66,6 +67,12 @@ func (i *installer) do() error {
 	err = i.writeResolvConf()
 	if err != nil {
 		i.log.Warn("writing resolv.conf failed", "error", err)
+		return err
+	}
+
+	err = i.writeNTPConf()
+	if err != nil {
+		i.log.Warn("writing ntp configuration failed", "err", err)
 		return err
 	}
 
@@ -155,15 +162,16 @@ func (i *installer) fileExists(filename string) bool {
 }
 
 func (i *installer) writeResolvConf() error {
-	i.log.Info("write /etc/resolv.conf")
+	const f = "/etc/resolv.conf"
+	i.log.Info("write " + f)
 	// Must be written here because during docker build this file is synthetic
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
 	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
-	err := i.fs.Remove("/etc/resolv.conf")
+	err := i.fs.Remove(f)
 	if err != nil {
-		i.log.Info("no /etc/resolv.conf present")
+		i.log.Info("no " + f + " present")
 	}
 
 	// FIXME migrate to dns0.eu resolvers
@@ -171,7 +179,126 @@ func (i *installer) writeResolvConf() error {
 		`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
-	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
+
+	if i.config.DNSServers != nil {
+		var s string
+		for _, ip := range i.config.DNSServers {
+			s += "nameserver " + ip + "\n"
+		}
+		content = []byte(s)
+
+		if i.oss != osAlmalinux {
+			err = i.writeDNSconf()
+			if err != nil {
+				i.log.Warn("writing dns configuration failed", "err", err)
+				return err
+			}
+		}
+
+	}
+	return afero.WriteFile(i.fs, f, content, 0644)
+}
+
+func (i *installer) writeDNSconf() error {
+	const f = "/etc/systemd/resolved.conf.d/dns.conf"
+	i.log.Info("write " + f)
+
+	err := i.fs.Remove(f)
+	if err != nil {
+		i.log.Info("no " + f + " present")
+	}
+
+	s := "[Resolve]\nDNS="
+	for _, dns := range i.config.DNSServers {
+		s += dns + " "
+	}
+	s = strings.TrimSpace(s)
+	s += "\nLLMNR=no"
+
+	content := []byte(s)
+	return afero.WriteFile(i.fs, f, content, 0644)
+}
+
+func (i *installer) writeNTPConf() error {
+	var (
+		ntpConfigPath string
+		content       []byte
+		s             string
+	)
+
+	switch i.config.Role {
+	case models.V1MachineAllocationRoleFirewall:
+		ntpConfigPath = "/etc/chrony/chrony.conf"
+
+		if i.config.NTPServers != nil {
+			for _, ntp := range i.config.NTPServers {
+				s += "server " + ntp + " iburst\n"
+			}
+		} else {
+			s += "pool time.cloudflare.com iburst\n"
+		}
+
+		s += `keyfile /etc/chrony/chrony.keys
+driftfile /var/lib/chrony/chrony.drift
+logdir /var/log/chrony
+maxupdateskew 100.0
+rtcsync
+makestep 1 3`
+
+	case models.V1MachineAllocationRoleMachine:
+		if i.oss == osDebian || i.oss == osUbuntu {
+			ntpConfigPath = "/etc/systemd/timesyncd.conf"
+			s = "[Time]\n"
+
+			if i.config.NTPServers != nil {
+				s += "NTP="
+				for _, ntp := range i.config.NTPServers {
+					s += ntp + " "
+				}
+				s = strings.TrimSpace(s)
+			}
+		}
+
+		if i.oss == osAlmalinux {
+			ntpConfigPath = "/etc/chrony.conf"
+
+			if i.config.NTPServers != nil {
+				for _, ntp := range i.config.NTPServers {
+					s += "server " + ntp + " prefer iburst\n"
+				}
+			} else {
+				s += `server 0.pool.ntp.org prefer iburst
+server 1.pool.ntp.org prefer iburst
+server 2.pool.ntp.org prefer iburst
+server 3.pool.ntp.org prefer iburst
+`
+			}
+
+			s += `keyfile /etc/chrony/chrony.keys
+driftfile /var/lib/chrony/drift
+log tracking measurements statistics
+logdir /var/log/chrony
+maxupdateskew 100.0
+dumponexit
+dumpdir /var/lib/chrony
+local stratum 10
+logchange 0.5
+hwclockfile /etc/adjtime
+rtcsync
+sourcedir /run/chrony-dhcp`
+		}
+	default:
+		return fmt.Errorf("unknown role:%s", i.config.Role)
+	}
+
+	content = []byte(s)
+	i.log.Info("write " + ntpConfigPath)
+	err := i.fs.Remove(ntpConfigPath)
+	if err != nil {
+		i.log.Info("no " + ntpConfigPath + " present")
+	}
+
+	return afero.WriteFile(i.fs, ntpConfigPath, content, 0644)
 }
 
 func (i *installer) buildCMDLine() string {
@@ -324,9 +451,9 @@ func (i *installer) configureNetwork() error {
 
 	var kind netconf.BareMetalType
 	switch i.config.Role {
-	case "firewall":
+	case models.V1MachineAllocationRoleFirewall:
 		kind = netconf.Firewall
-	case "machine":
+	case models.V1MachineAllocationRoleMachine:
 		kind = netconf.Machine
 	default:
 		return fmt.Errorf("unknown role:%s", i.config.Role)

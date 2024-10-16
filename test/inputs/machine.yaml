@@ -33,3 +33,7 @@ nics:
       - mac: "44:38:39:00:00:04"
         name: null
         neighbors: []
+ntp_servers:
+  - custom.1.ntp.org
+dns_servers:
+  - 1.1.1.1
