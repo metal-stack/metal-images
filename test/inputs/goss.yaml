@@ -64,7 +64,7 @@ file:
   "/etc/systemd/timesyncd.conf":
     exists: true
     contents:
-    - NTP=1.pool.ntp.org iburst
+    - "NTP=1.pool.ntp.org"
   "/etc/systemd/resolved.conf.d/dns.conf":
     exists: true
     contents:
