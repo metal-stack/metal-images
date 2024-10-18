@@ -290,7 +290,8 @@ func Test_installer_writeDNSConf(t *testing.T) {
 			config: &api.InstallerConfig{DNSServers: []*models.MetalDNSServer{{IP: pointer.Pointer("1.2.3.4")}, {IP: pointer.Pointer("5.6.7.8")}}},
 			want: `[Resolve]
 DNS=1.2.3.4 5.6.7.8
-LLMNR=no`,
+LLMNR=no
+`,
 			wantErr: nil,
 		},
 	}
@@ -492,7 +493,7 @@ makestep 1 3`,
 			},
 			ntpPath: "/etc/chrony/chrony.conf",
 			role:    "firewall",
-			want: "",
+			want:    "",
 			wantErr: nil,
 		},
 	}

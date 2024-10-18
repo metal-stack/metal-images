@@ -175,7 +175,6 @@ func (i *installer) writeResolvConf() error {
 		i.log.Info("config file not present", "file", f)
 	}
 
-	// FIXME migrate to dns0.eu resolvers
 	content := []byte(
 		`nameserver 8.8.8.8
 nameserver 8.8.4.4
@@ -209,12 +208,14 @@ func (i *installer) writeDNSconf() error {
 		i.log.Info("config file not present", "file", f)
 	}
 
-	s := "[Resolve]\nDNS="
+	var addresses []string
 	for _, dnsServer := range i.config.DNSServers {
-		s += *dnsServer.IP + " "
+		if dnsServer.IP == nil {
+			continue
+		}
+		addresses = append(addresses, *dnsServer.IP)
 	}
-	s = strings.TrimSpace(s)
-	s += "\nLLMNR=no"
+	s := fmt.Sprintf("[Resolve]\nDNS=%s\nLLMNR=no\n", strings.Join(addresses, " "))
 
 	content := []byte(s)
 	return afero.WriteFile(i.fs, f, content, 0644)
