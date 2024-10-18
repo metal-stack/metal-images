@@ -220,67 +220,52 @@ func (i *installer) writeDNSconf() error {
 	return afero.WriteFile(i.fs, f, content, 0644)
 }
 
-func configureChrony(i *installer, n string) string {
-	ntp := []*models.MetalNTPServer{
-		{
-			Address: &n,
-		},
-	}
-
-	if i.config.NTPServers != nil {
-		ntp = i.config.NTPServers
-	}
-
-	r, err := templates.RenderChronyTemplate(templates.Chrony{NTPServers: ntp})
-
-	if err != nil {
-		i.log.Error("error rendering chrony template", "error", err)
-	}
-
-	return r
-}
-
 func (i *installer) writeNTPConf() error {
+	if len(i.config.NTPServers) == 0 {
+		return nil
+	}
+
 	var (
 		ntpConfigPath string
-		content       []byte
 		s             string
+		err           error
 	)
 
 	switch i.config.Role {
 	case models.V1MachineAllocationRoleFirewall:
 		ntpConfigPath = "/etc/chrony/chrony.conf"
-		defaultNTPServer := "time.cloudflare.com"
-
-		s = configureChrony(i, defaultNTPServer)
+		s, err = templates.RenderChronyTemplate(templates.Chrony{NTPServers: i.config.NTPServers})
+		if err != nil {
+			return fmt.Errorf("error rendering chrony template %w", err)
+		}
 
 	case models.V1MachineAllocationRoleMachine:
 		if i.oss == osDebian || i.oss == osUbuntu {
 			ntpConfigPath = "/etc/systemd/timesyncd.conf"
-			s = "[Time]\n"
-
-			if i.config.NTPServers != nil {
-				s += "NTP="
-				for _, ntp := range i.config.NTPServers {
-					s += *ntp.Address + " "
+			var addresses []string
+			for _, ntp := range i.config.NTPServers {
+				if ntp.Address == nil {
+					continue
 				}
-				s = strings.TrimSpace(s)
+				addresses = append(addresses, *ntp.Address)
 			}
+			s = fmt.Sprintf("[Time]\nNTP=%s\n", strings.Join(addresses, " "))
 		}
 
 		if i.oss == osAlmalinux {
 			ntpConfigPath = "/etc/chrony.conf"
-			defaultNTPServer := "pool.ntp.org"
-
-			s = configureChrony(i, defaultNTPServer)
+			s, err = templates.RenderChronyTemplate(templates.Chrony{NTPServers: i.config.NTPServers})
+			if err != nil {
+				return fmt.Errorf("error rendering chrony template %w", err)
+			}
 		}
 	default:
 		return fmt.Errorf("unknown role:%s", i.config.Role)
 	}
 
-	content = []byte(s)
+	content := []byte(s)
 	i.log.Info("write configuration", "file", ntpConfigPath)
-	err := i.fs.Remove(ntpConfigPath)
+	err = i.fs.Remove(ntpConfigPath)
 	if err != nil {
 		i.log.Info("config file not present", "file", ntpConfigPath)
 	}

@@ -34,6 +34,6 @@ nics:
         name: null
         neighbors: []
 ntp_servers:
-  - address: custom.1.ntp.org
+  - address: 1.pool.ntp.org
 dns_servers:
-  - ip: 1.1.1.1
+  - ip: 8.8.8.8

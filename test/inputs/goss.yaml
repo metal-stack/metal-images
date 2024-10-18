@@ -59,21 +59,21 @@ file:
   "/etc/chrony.conf":
     exists: true
     contents:
-    - server custom.1.ntp.org prefer iburst
+    - pool 1.pool.ntp.org iburst
 {{ else }}
   "/etc/systemd/timesyncd.conf":
     exists: true
     contents:
-    - NTP=custom.1.ntp.org
+    - NTP=1.pool.ntp.org iburst
   "/etc/systemd/resolved.conf.d/dns.conf":
     exists: true
     contents:
-    - DNS=1.1.1.1
+    - DNS=8.8.8.8
 {{ end }}
   "/etc/resolv.conf":
     exists: true
     contents:
-    - nameserver 1.1.1.1
+    - nameserver 8.8.8.8
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "/etc/hostname":
@@ -92,7 +92,7 @@ file:
   "/etc/chrony/chrony.conf":
     exists: true
     contents:
-    - server custom.1.ntp.org iburst
+    - pool 1.pool.ntp.org iburst
 {{ end }}
 service:
 {{ if eq .Env.OS "almalinux" }}
