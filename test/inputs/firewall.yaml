@@ -61,4 +61,4 @@ nics:
         name: null
         neighbors: []
 ntp_servers:
-  - custom.1.ntp.org
+  - address: custom.1.ntp.org

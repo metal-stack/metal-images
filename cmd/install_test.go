@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	"github.com/metal-stack/v"
@@ -206,6 +207,10 @@ func Test_installer_detectFirmware(t *testing.T) {
 	}
 }
 
+func stringPtr(s string) *string {
+	return &s
+}
+
 func Test_installer_writeResolvConf(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -233,7 +238,7 @@ nameserver 8.8.4.4
 		},
 		{
 			name:   "overwrite resolv.conf with custom DNS",
-			config: &api.InstallerConfig{DNSServers: []string{"1.2.3.4", "5.6.7.8"}},
+			config: &api.InstallerConfig{DNSServers: []*models.MetalDNSServer{{IP: stringPtr("1.2.3.4")}, {IP: stringPtr("5.6.7.8")}}},
 			want: `nameserver 1.2.3.4
 nameserver 5.6.7.8
 `,
@@ -285,7 +290,7 @@ func Test_installer_writeDNSConf(t *testing.T) {
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/resolved.conf.d/dns.conf", []byte(""), 0755))
 			},
-			config: &api.InstallerConfig{DNSServers: []string{"1.2.3.4", "5.6.7.8"}},
+			config: &api.InstallerConfig{DNSServers: []*models.MetalDNSServer{{IP: stringPtr("1.2.3.4")}, {IP: stringPtr("5.6.7.8")}}},
 			want: `[Resolve]
 DNS=1.2.3.4 5.6.7.8
 LLMNR=no`,
@@ -328,7 +333,7 @@ func Test_installer_writeNTPConf(t *testing.T) {
 		fsMocks    func(fs afero.Fs)
 		oss        operatingsystem
 		role       string
-		ntpServers []string
+		ntpServers []*models.MetalNTPServer
 		ntpPath    string
 		want       string
 		wantErr    error
@@ -341,7 +346,7 @@ func Test_installer_writeNTPConf(t *testing.T) {
 			ntpPath:    "/etc/systemd/timesyncd.conf",
 			oss:        osUbuntu,
 			role:       "machine",
-			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
+			ntpServers: []*models.MetalNTPServer{{Address: stringPtr("custom.1.ntp.org")}, {Address: stringPtr("custom.2.ntp.org")}},
 			want: `[Time]
 NTP=custom.1.ntp.org custom.2.ntp.org`,
 			wantErr: nil,
@@ -366,7 +371,7 @@ NTP=custom.1.ntp.org custom.2.ntp.org`,
 			ntpPath:    "/etc/systemd/timesyncd.conf",
 			oss:        osDebian,
 			role:       "machine",
-			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
+			ntpServers: []*models.MetalNTPServer{{Address: stringPtr("custom.1.ntp.org")}, {Address: stringPtr("custom.2.ntp.org")}},
 			want: `[Time]
 NTP=custom.1.ntp.org custom.2.ntp.org`,
 			wantErr: nil,
@@ -391,22 +396,41 @@ NTP=custom.1.ntp.org custom.2.ntp.org`,
 			oss:        osAlmalinux,
 			ntpPath:    "/etc/chrony.conf",
 			role:       "machine",
-			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
-			want: `server custom.1.ntp.org prefer iburst
-server custom.2.ntp.org prefer iburst
-keyfile /etc/chrony/chrony.keys
-driftfile /var/lib/chrony/drift
-log tracking measurements statistics
-logdir /var/log/chrony
-maxupdateskew 100.0
-dumponexit
-dumpdir /var/lib/chrony
-local stratum 10
-logchange 0.5
-hwclockfile /etc/adjtime
-rtcsync
-sourcedir /run/chrony-dhcp`,
+			ntpServers: []*models.MetalNTPServer{{Address: stringPtr("custom.1.ntp.org")}, {Address: stringPtr("custom.2.ntp.org")}},
+			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
 
+# In case no custom NTP server is provided
+# Cloudflare offers a free public time service that allows us to use their
+# anycast network of 180+ locations to synchronize time from their closest server.
+# See https://blog.cloudflare.com/secure-time/
+pool custom.1.ntp.org iburst
+pool custom.2.ntp.org iburst
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
+keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
+driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
+logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
+maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
+rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
+makestep 1 3`,
 			wantErr: nil,
 		},
 		{
@@ -417,23 +441,39 @@ sourcedir /run/chrony-dhcp`,
 			oss:     osAlmalinux,
 			ntpPath: "/etc/chrony.conf",
 			role:    "machine",
-			want: `server 0.pool.ntp.org prefer iburst
-server 1.pool.ntp.org prefer iburst
-server 2.pool.ntp.org prefer iburst
-server 3.pool.ntp.org prefer iburst
-keyfile /etc/chrony/chrony.keys
-driftfile /var/lib/chrony/drift
-log tracking measurements statistics
-logdir /var/log/chrony
-maxupdateskew 100.0
-dumponexit
-dumpdir /var/lib/chrony
-local stratum 10
-logchange 0.5
-hwclockfile /etc/adjtime
-rtcsync
-sourcedir /run/chrony-dhcp`,
+			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
 
+# In case no custom NTP server is provided
+# Cloudflare offers a free public time service that allows us to use their
+# anycast network of 180+ locations to synchronize time from their closest server.
+# See https://blog.cloudflare.com/secure-time/
+pool pool.ntp.org iburst
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
+keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
+driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
+logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
+maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
+rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
+makestep 1 3`,
 			wantErr: nil,
 		},
 		{
@@ -443,14 +483,40 @@ sourcedir /run/chrony-dhcp`,
 			},
 			ntpPath:    "/etc/chrony/chrony.conf",
 			role:       "firewall",
-			ntpServers: []string{"custom.1.ntp.org", "custom.2.ntp.org"},
-			want: `server custom.1.ntp.org iburst
-server custom.2.ntp.org iburst
+			ntpServers: []*models.MetalNTPServer{{Address: stringPtr("custom.1.ntp.org")}, {Address: stringPtr("custom.2.ntp.org")}},
+			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
+
+# In case no custom NTP server is provided
+# Cloudflare offers a free public time service that allows us to use their
+# anycast network of 180+ locations to synchronize time from their closest server.
+# See https://blog.cloudflare.com/secure-time/
+pool custom.1.ntp.org iburst
+pool custom.2.ntp.org iburst
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
 keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
 driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
 logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
 maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
 rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
 makestep 1 3`,
 			wantErr: nil,
 		},
@@ -461,12 +527,38 @@ makestep 1 3`,
 			},
 			ntpPath: "/etc/chrony/chrony.conf",
 			role:    "firewall",
-			want: `pool time.cloudflare.com iburst
+			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
+
+# In case no custom NTP server is provided
+# Cloudflare offers a free public time service that allows us to use their
+# anycast network of 180+ locations to synchronize time from their closest server.
+# See https://blog.cloudflare.com/secure-time/
+pool time.cloudflare.com iburst
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
 keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
 driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
 logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
 maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
 rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
 makestep 1 3`,
 			wantErr: nil,
 		},

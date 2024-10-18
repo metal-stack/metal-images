@@ -14,6 +14,7 @@ import (
 	config "github.com/flatcar/ignition/config/v2_4"
 	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
+	"github.com/metal-stack/metal-images/cmd/templates"
 	v1 "github.com/metal-stack/metal-images/cmd/v1"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/metal-stack/v"
@@ -163,7 +164,7 @@ func (i *installer) fileExists(filename string) bool {
 
 func (i *installer) writeResolvConf() error {
 	const f = "/etc/resolv.conf"
-	i.log.Info("write " + f)
+	i.log.Info("write configuration", "file", f)
 	// Must be written here because during docker build this file is synthetic
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
@@ -171,7 +172,7 @@ func (i *installer) writeResolvConf() error {
 	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove(f)
 	if err != nil {
-		i.log.Info("no " + f + " present")
+		i.log.Info("config file not present", "file", f)
 	}
 
 	// FIXME migrate to dns0.eu resolvers
@@ -182,8 +183,8 @@ nameserver 8.8.4.4
 
 	if i.config.DNSServers != nil {
 		var s string
-		for _, ip := range i.config.DNSServers {
-			s += "nameserver " + ip + "\n"
+		for _, dnsServer := range i.config.DNSServers {
+			s += "nameserver " + *dnsServer.IP + "\n"
 		}
 		content = []byte(s)
 
@@ -201,22 +202,42 @@ nameserver 8.8.4.4
 
 func (i *installer) writeDNSconf() error {
 	const f = "/etc/systemd/resolved.conf.d/dns.conf"
-	i.log.Info("write " + f)
+	i.log.Info("write configuration", "file", f)
 
 	err := i.fs.Remove(f)
 	if err != nil {
-		i.log.Info("no " + f + " present")
+		i.log.Info("config file not present", "file", f)
 	}
 
 	s := "[Resolve]\nDNS="
-	for _, dns := range i.config.DNSServers {
-		s += dns + " "
+	for _, dnsServer := range i.config.DNSServers {
+		s += *dnsServer.IP + " "
 	}
 	s = strings.TrimSpace(s)
 	s += "\nLLMNR=no"
 
 	content := []byte(s)
 	return afero.WriteFile(i.fs, f, content, 0644)
+}
+
+func configureChrony(i *installer, n string) string {
+	ntp := []*models.MetalNTPServer{
+		{
+			Address: &n,
+		},
+	}
+
+	if i.config.NTPServers != nil {
+		ntp = i.config.NTPServers
+	}
+
+	r, err := templates.RenderChronyTemplate(templates.Chrony{NTPServers: ntp})
+
+	if err != nil {
+		i.log.Error("error rendering chrony template", "error", err)
+	}
+
+	return r
 }
 
 func (i *installer) writeNTPConf() error {
@@ -229,21 +250,9 @@ func (i *installer) writeNTPConf() error {
 	switch i.config.Role {
 	case models.V1MachineAllocationRoleFirewall:
 		ntpConfigPath = "/etc/chrony/chrony.conf"
+		defaultNTPServer := "time.cloudflare.com"
 
-		if i.config.NTPServers != nil {
-			for _, ntp := range i.config.NTPServers {
-				s += "server " + ntp + " iburst\n"
-			}
-		} else {
-			s += "pool time.cloudflare.com iburst\n"
-		}
-
-		s += `keyfile /etc/chrony/chrony.keys
-driftfile /var/lib/chrony/chrony.drift
-logdir /var/log/chrony
-maxupdateskew 100.0
-rtcsync
-makestep 1 3`
+		s = configureChrony(i, defaultNTPServer)
 
 	case models.V1MachineAllocationRoleMachine:
 		if i.oss == osDebian || i.oss == osUbuntu {
@@ -253,7 +262,7 @@ makestep 1 3`
 			if i.config.NTPServers != nil {
 				s += "NTP="
 				for _, ntp := range i.config.NTPServers {
-					s += ntp + " "
+					s += *ntp.Address + " "
 				}
 				s = strings.TrimSpace(s)
 			}
@@ -261,41 +270,19 @@ makestep 1 3`
 
 		if i.oss == osAlmalinux {
 			ntpConfigPath = "/etc/chrony.conf"
+			defaultNTPServer := "pool.ntp.org"
 
-			if i.config.NTPServers != nil {
-				for _, ntp := range i.config.NTPServers {
-					s += "server " + ntp + " prefer iburst\n"
-				}
-			} else {
-				s += `server 0.pool.ntp.org prefer iburst
-server 1.pool.ntp.org prefer iburst
-server 2.pool.ntp.org prefer iburst
-server 3.pool.ntp.org prefer iburst
-`
-			}
-
-			s += `keyfile /etc/chrony/chrony.keys
-driftfile /var/lib/chrony/drift
-log tracking measurements statistics
-logdir /var/log/chrony
-maxupdateskew 100.0
-dumponexit
-dumpdir /var/lib/chrony
-local stratum 10
-logchange 0.5
-hwclockfile /etc/adjtime
-rtcsync
-sourcedir /run/chrony-dhcp`
+			s = configureChrony(i, defaultNTPServer)
 		}
 	default:
 		return fmt.Errorf("unknown role:%s", i.config.Role)
 	}
 
 	content = []byte(s)
-	i.log.Info("write " + ntpConfigPath)
+	i.log.Info("write configuration", "file", ntpConfigPath)
 	err := i.fs.Remove(ntpConfigPath)
 	if err != nil {
-		i.log.Info("no " + ntpConfigPath + " present")
+		i.log.Info("config file not present", "file", ntpConfigPath)
 	}
 
 	return afero.WriteFile(i.fs, ntpConfigPath, content, 0644)
