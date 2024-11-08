@@ -11,7 +11,7 @@ import (
 
 func TestDefaultChronyTemplate(t *testing.T) {
 	defaultNTPServer := "time.cloudflare.com"
-	ntpServers := []*models.MetalNTPServer{
+	ntpServers := []*models.V1NTPServer{
 		{
 			Address: &defaultNTPServer,
 		},
@@ -25,7 +25,7 @@ func TestDefaultChronyTemplate(t *testing.T) {
 
 func TestCustomChronyTemplate(t *testing.T) {
 	customNTPServer := "custom.1.ntp.org"
-	ntpServers := []*models.MetalNTPServer{
+	ntpServers := []*models.V1NTPServer{
 		{
 			Address: &customNTPServer,
 		},

@@ -9,7 +9,7 @@ import (
 )
 
 type Chrony struct {
-	NTPServers []*models.MetalNTPServer
+	NTPServers []*models.V1NTPServer
 }
 
 //go:embed chrony.conf.tpl
