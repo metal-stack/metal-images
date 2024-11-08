@@ -187,38 +187,8 @@ nameserver 8.8.4.4
 		}
 		content = []byte(s)
 
-		if i.oss != osAlmalinux {
-			err = i.writeDNSconf()
-			if err != nil {
-				i.log.Warn("writing dns configuration failed", "err", err)
-				return err
-			}
-		}
-
 	}
 
-	return afero.WriteFile(i.fs, f, content, 0644)
-}
-
-func (i *installer) writeDNSconf() error {
-	const f = "/etc/systemd/resolved.conf.d/dns.conf"
-	i.log.Info("write configuration", "file", f)
-
-	err := i.fs.Remove(f)
-	if err != nil {
-		i.log.Info("config file not present", "file", f)
-	}
-
-	var addresses []string
-	for _, dnsServer := range i.config.DNSServers {
-		if dnsServer.IP == nil {
-			continue
-		}
-		addresses = append(addresses, *dnsServer.IP)
-	}
-	s := fmt.Sprintf("[Resolve]\nDNS=%s\nLLMNR=no\n", strings.Join(addresses, " "))
-
-	content := []byte(s)
 	return afero.WriteFile(i.fs, f, content, 0644)
 }
 

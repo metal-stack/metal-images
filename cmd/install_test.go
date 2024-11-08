@@ -274,57 +274,6 @@ nameserver 5.6.7.8
 	}
 }
 
-func Test_installer_writeDNSConf(t *testing.T) {
-	tests := []struct {
-		name    string
-		fsMocks func(fs afero.Fs)
-		config  *api.InstallerConfig
-		want    string
-		wantErr error
-	}{
-		{
-			name: "overwrite /etc/systemd/resolved.conf.d/dns.conf with custom DNS",
-			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/resolved.conf.d/dns.conf", []byte(""), 0755))
-			},
-			config: &api.InstallerConfig{DNSServers: []*models.V1DNSServer{{IP: pointer.Pointer("1.2.3.4")}, {IP: pointer.Pointer("5.6.7.8")}}},
-			want: `[Resolve]
-DNS=1.2.3.4 5.6.7.8
-LLMNR=no
-`,
-			wantErr: nil,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			i := &installer{
-				log:    slog.Default(),
-				fs:     afero.NewMemMapFs(),
-				config: &api.InstallerConfig{},
-			}
-
-			if tt.fsMocks != nil {
-				tt.fsMocks(i.fs)
-			}
-
-			i.config = tt.config
-
-			err := i.writeDNSconf()
-			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
-				t.Errorf("error diff (+got -want):\n %s", diff)
-			}
-
-			content, err := afero.ReadFile(i.fs, "/etc/systemd/resolved.conf.d/dns.conf")
-			require.NoError(t, err)
-
-			if diff := cmp.Diff(tt.want, string(content)); diff != "" {
-				t.Errorf("error diff (+got -want):\n %s", diff)
-			}
-		})
-	}
-}
-
 func Test_installer_writeNTPConf(t *testing.T) {
 	tests := []struct {
 		name       string
