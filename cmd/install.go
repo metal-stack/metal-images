@@ -12,7 +12,9 @@ import (
 	"time"
 
 	config "github.com/flatcar/ignition/config/v2_4"
+	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
+	"github.com/metal-stack/metal-images/cmd/templates"
 	v1 "github.com/metal-stack/metal-images/cmd/v1"
 	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/metal-stack/v"
@@ -66,6 +68,12 @@ func (i *installer) do() error {
 	err = i.writeResolvConf()
 	if err != nil {
 		i.log.Warn("writing resolv.conf failed", "error", err)
+		return err
+	}
+
+	err = i.writeNTPConf()
+	if err != nil {
+		i.log.Warn("writing ntp configuration failed", "err", err)
 		return err
 	}
 
@@ -155,23 +163,86 @@ func (i *installer) fileExists(filename string) bool {
 }
 
 func (i *installer) writeResolvConf() error {
-	i.log.Info("write /etc/resolv.conf")
+	const f = "/etc/resolv.conf"
+	i.log.Info("write configuration", "file", f)
 	// Must be written here because during docker build this file is synthetic
 	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
 	// most probably because the resolved must be running in the internet facing vrf.
 	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
-	err := i.fs.Remove("/etc/resolv.conf")
+	err := i.fs.Remove(f)
 	if err != nil {
-		i.log.Info("no /etc/resolv.conf present")
+		i.log.Info("config file not present", "file", f)
 	}
 
-	// FIXME migrate to dns0.eu resolvers
 	content := []byte(
 		`nameserver 8.8.8.8
 nameserver 8.8.4.4
 `)
-	return afero.WriteFile(i.fs, "/etc/resolv.conf", content, 0644)
+
+	if len(i.config.DNSServers) > 0 {
+		var s string
+		for _, dnsServer := range i.config.DNSServers {
+			s += "nameserver " + *dnsServer.IP + "\n"
+		}
+		content = []byte(s)
+
+	}
+
+	return afero.WriteFile(i.fs, f, content, 0644)
+}
+
+func (i *installer) writeNTPConf() error {
+	if len(i.config.NTPServers) == 0 {
+		return nil
+	}
+
+	var (
+		ntpConfigPath string
+		s             string
+		err           error
+	)
+
+	switch i.config.Role {
+	case models.V1MachineAllocationRoleFirewall:
+		ntpConfigPath = "/etc/chrony/chrony.conf"
+		s, err = templates.RenderChronyTemplate(templates.Chrony{NTPServers: i.config.NTPServers})
+		if err != nil {
+			return fmt.Errorf("error rendering chrony template %w", err)
+		}
+
+	case models.V1MachineAllocationRoleMachine:
+		if i.oss == osDebian || i.oss == osUbuntu {
+			ntpConfigPath = "/etc/systemd/timesyncd.conf"
+			var addresses []string
+			for _, ntp := range i.config.NTPServers {
+				if ntp.Address == nil {
+					continue
+				}
+				addresses = append(addresses, *ntp.Address)
+			}
+			s = fmt.Sprintf("[Time]\nNTP=%s\n", strings.Join(addresses, " "))
+		}
+
+		if i.oss == osAlmalinux {
+			ntpConfigPath = "/etc/chrony.conf"
+			s, err = templates.RenderChronyTemplate(templates.Chrony{NTPServers: i.config.NTPServers})
+			if err != nil {
+				return fmt.Errorf("error rendering chrony template %w", err)
+			}
+		}
+	default:
+		return fmt.Errorf("unknown role:%s", i.config.Role)
+	}
+
+	content := []byte(s)
+	i.log.Info("write configuration", "file", ntpConfigPath)
+	err = i.fs.Remove(ntpConfigPath)
+	if err != nil {
+		i.log.Info("config file not present", "file", ntpConfigPath)
+	}
+
+	return afero.WriteFile(i.fs, ntpConfigPath, content, 0644)
 }
 
 func (i *installer) buildCMDLine() string {
@@ -324,9 +395,9 @@ func (i *installer) configureNetwork() error {
 
 	var kind netconf.BareMetalType
 	switch i.config.Role {
-	case "firewall":
+	case models.V1MachineAllocationRoleFirewall:
 		kind = netconf.Firewall
-	case "machine":
+	case models.V1MachineAllocationRoleMachine:
 		kind = netconf.Machine
 	default:
 		return fmt.Errorf("unknown role:%s", i.config.Role)
