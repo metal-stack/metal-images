@@ -54,6 +54,27 @@ file:
     contents:
     - "#!/bin/bash"
 {{ end }}
+{{ if eq .Env.MACHINE_TYPE "machine" }}
+{{ if eq .Env.OS "almalinux" }}
+  "/etc/chrony.conf":
+    exists: true
+    contents:
+    - pool 1.pool.ntp.org iburst
+{{ else }}
+  "/etc/systemd/timesyncd.conf":
+    exists: true
+    contents:
+    - "NTP=1.pool.ntp.org"
+  "/etc/systemd/resolved.conf.d/dns.conf":
+    exists: true
+    contents:
+    - DNS=8.8.8.8
+{{ end }}
+  "/etc/resolv.conf":
+    exists: true
+    contents:
+    - nameserver 8.8.8.8
+{{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "/etc/hostname":
     exists: true
@@ -68,6 +89,10 @@ file:
     contents:
     - "/var/log/suricata/*.log"
     - "/var/log/suricata/*.json"
+  "/etc/chrony/chrony.conf":
+    exists: true
+    contents:
+    - pool 1.pool.ntp.org iburst
 {{ end }}
 service:
 {{ if eq .Env.OS "almalinux" }}

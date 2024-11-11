@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
+	"github.com/metal-stack/metal-lib/pkg/pointer"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
@@ -210,6 +212,7 @@ func Test_installer_writeResolvConf(t *testing.T) {
 	tests := []struct {
 		name    string
 		fsMocks func(fs afero.Fs)
+		config  *api.InstallerConfig
 		want    string
 		wantErr error
 	}{
@@ -230,17 +233,30 @@ nameserver 8.8.4.4
 `,
 			wantErr: nil,
 		},
+		{
+			name:   "overwrite resolv.conf with custom DNS",
+			config: &api.InstallerConfig{DNSServers: []*models.V1DNSServer{{IP: pointer.Pointer("1.2.3.4")}, {IP: pointer.Pointer("5.6.7.8")}}},
+			want: `nameserver 1.2.3.4
+nameserver 5.6.7.8
+`,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
-				log: slog.Default(),
-				fs:  afero.NewMemMapFs(),
+				log:    slog.Default(),
+				fs:     afero.NewMemMapFs(),
+				config: &api.InstallerConfig{},
 			}
 
 			if tt.fsMocks != nil {
 				tt.fsMocks(i.fs)
+			}
+
+			if tt.config != nil {
+				i.config = tt.config
 			}
 
 			err := i.writeResolvConf()
@@ -249,6 +265,207 @@ nameserver 8.8.4.4
 			}
 
 			content, err := afero.ReadFile(i.fs, "/etc/resolv.conf")
+			require.NoError(t, err)
+
+			if diff := cmp.Diff(tt.want, string(content)); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+		})
+	}
+}
+
+func Test_installer_writeNTPConf(t *testing.T) {
+	tests := []struct {
+		name       string
+		fsMocks    func(fs afero.Fs)
+		oss        operatingsystem
+		role       string
+		ntpServers []*models.V1NTPServer
+		ntpPath    string
+		want       string
+		wantErr    error
+	}{
+		{
+			name: "configure custom ntp for ubuntu machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath:    "/etc/systemd/timesyncd.conf",
+			oss:        osUbuntu,
+			role:       "machine",
+			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			want: `[Time]
+NTP=custom.1.ntp.org custom.2.ntp.org
+`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for ubuntu machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath: "/etc/systemd/timesyncd.conf",
+			oss:     osUbuntu,
+			role:    "machine",
+			want:    "",
+			wantErr: nil,
+		},
+		{
+			name: "configure custom ntp for debian machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath:    "/etc/systemd/timesyncd.conf",
+			oss:        osDebian,
+			role:       "machine",
+			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			want: `[Time]
+NTP=custom.1.ntp.org custom.2.ntp.org
+`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for debian machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/timesyncd.conf", []byte(""), 0644))
+			},
+			ntpPath: "/etc/systemd/timesyncd.conf",
+			oss:     osDebian,
+			role:    "machine",
+			want:    "",
+			wantErr: nil,
+		},
+		{
+			name: "configure ntp for almalinux machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony.conf", []byte(""), 0644))
+			},
+			oss:        osAlmalinux,
+			ntpPath:    "/etc/chrony.conf",
+			role:       "machine",
+			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
+
+# In case no custom NTP server is provided
+# Cloudflare offers a free public time service that allows us to use their
+# anycast network of 180+ locations to synchronize time from their closest server.
+# See https://blog.cloudflare.com/secure-time/
+pool custom.1.ntp.org iburst
+pool custom.2.ntp.org iburst
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
+keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
+driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
+logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
+maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
+rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
+makestep 1 3`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for almalinux machine",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony.conf", []byte(""), 0644))
+			},
+			oss:     osAlmalinux,
+			ntpPath: "/etc/chrony.conf",
+			role:    "machine",
+			want:    "",
+			wantErr: nil,
+		},
+		{
+			name: "configure custom ntp for firewall",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony/chrony.conf", []byte(""), 0644))
+			},
+			ntpPath:    "/etc/chrony/chrony.conf",
+			role:       "firewall",
+			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
+
+# In case no custom NTP server is provided
+# Cloudflare offers a free public time service that allows us to use their
+# anycast network of 180+ locations to synchronize time from their closest server.
+# See https://blog.cloudflare.com/secure-time/
+pool custom.1.ntp.org iburst
+pool custom.2.ntp.org iburst
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
+keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
+driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
+logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
+maxupdateskew 100.0
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
+rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
+makestep 1 3`,
+			wantErr: nil,
+		},
+		{
+			name: "use default ntp for firewall",
+			fsMocks: func(fs afero.Fs) {
+				require.NoError(t, afero.WriteFile(fs, "/etc/chrony/chrony.conf", []byte(""), 0644))
+			},
+			ntpPath: "/etc/chrony/chrony.conf",
+			role:    "firewall",
+			want:    "",
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			i := &installer{
+				log:    slog.Default(),
+				fs:     afero.NewMemMapFs(),
+				config: &api.InstallerConfig{Role: tt.role, NTPServers: tt.ntpServers},
+				oss:    tt.oss,
+			}
+
+			if tt.fsMocks != nil {
+				tt.fsMocks(i.fs)
+			}
+
+			err := i.writeNTPConf()
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
+				t.Errorf("error diff (+got -want):\n %s", diff)
+			}
+
+			content, err := afero.ReadFile(i.fs, tt.ntpPath)
 			require.NoError(t, err)
 
 			if diff := cmp.Diff(tt.want, string(content)); diff != "" {
