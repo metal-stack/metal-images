@@ -12,8 +12,8 @@ Information about our initial architectural decisions can be found in [ARCHITECT
 Currently these images are supported:
 
 1. Debian 12
-1. Ubuntu 22.04
-1. Firewall 3.0-ubuntu (based on Ubuntu 22.04)
+1. Ubuntu 24.04
+1. Firewall 3.0-ubuntu (based on Ubuntu 24.04)
 1. Nvidia (based on Debian 12)
 
 ## Unsupported Images
@@ -32,7 +32,7 @@ Images are synchronized to partitions using a service called [metal-image-cache-
 
 Released images are tagged with the release date and can be accessed using the following image URL pattern:
 
-`https://images.metal-stack.io/metal-os/20230710/debian/12/img.tar.lz4`
+`https://images.metal-stack.io/metal-os/20240913/debian/12/img.tar.lz4`
 
 Images built from the master branch are accessible at an image URL like this:
 
