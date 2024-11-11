@@ -87,7 +87,7 @@ service:
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
 {{ if ne .Env.OS "almalinux" }}
-  docker:
+  containerd:
     enabled: true
     running: true
   cloud-config-downloader:
