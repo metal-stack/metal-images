@@ -92,7 +92,7 @@ RUN set -ex \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
  && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
- && apt-get install --yes --no-install-recommends containerd \
+ && apt-get install --yes --no-install-recommends containerd.io \
  # Install crictl to be able to manipulate containers managed with containerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
