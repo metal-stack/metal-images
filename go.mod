@@ -2,8 +2,6 @@ module github.com/metal-stack/metal-images
 
 go 1.23.0
 
-toolchain go1.23.2
-
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/flatcar/ignition v0.36.2
