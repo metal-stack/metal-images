@@ -23,7 +23,8 @@ COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 
 RUN set -ex \
  # with an empty /etc/machine-id nothing will be installed in /boot
- && echo "almalinux" > /etc/machine-id \
+ # machine-id must a valid, see man machine-id
+ && echo "7b9f54e12f3b4f06a34c9d0f4b0e68c2" > /etc/machine-id \
  && dnf update -y \
  && dnf install -y epel-release \
  && dnf update -y \
