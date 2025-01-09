@@ -23,12 +23,14 @@ func main() {
 
 	oss, err := detectOS(fs)
 	if err != nil {
-		panic(err)
+		log.Error("installation failed", "error", err)
+		os.Exit(1)
 	}
 
 	config, err := parseInstallYAML(fs)
 	if err != nil {
-		panic(err)
+		log.Error("installation failed", "error", err)
+		os.Exit(1)
 	}
 
 	i := installer{
@@ -44,11 +46,11 @@ func main() {
 
 	err = i.do()
 	if err != nil {
-		i.log.Error("installation failed", "duration", time.Since(start))
-		panic(err)
+		i.log.Error("installation failed", "error", err, "duration", time.Since(start).String())
+		os.Exit(1)
 	}
 
-	i.log.Info("installation succeeded", "duration", time.Since(start))
+	i.log.Info("installation succeeded", "duration", time.Since(start).String())
 }
 
 func parseInstallYAML(fs afero.Fs) (*api.InstallerConfig, error) {
