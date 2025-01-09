@@ -584,18 +584,19 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 	// -rw-r--r-- 1 root root  6962816 Aug 13 15:25 vmlinuz-5.10.0-17-amd64
 
 	// Almalinux 9
-	// 	[root@6033f6affd2b7d5f boot]# ls -l /boot/
-	// total 137360
+	// [root@14231d4e67d28390 ~]# ls -l /boot/
+	// total 160420
+	// -rw------- 1 root root  8876661 Jan  7 23:19 System.map-5.14.0-503.19.1.el9_5.x86_64
 	// -rw-r--r-- 1 root root    93842 Jul 19  2021 config-5.10.51
+	// -rw-r--r-- 1 root root   226249 Jan  7 23:19 config-5.14.0-503.19.1.el9_5.x86_64
 	// drwx------ 3 root root     4096 Jun  8  2022 efi
-	// drwx------ 3 root root     4096 Nov 28 08:58 grub2
-	// -rw------- 1 root root 97018892 Nov 28 09:00 initramfs-5.14.0-503.14.1.el9_5.x86_64.img
-	// drwxr-xr-x 3 root root     4096 Nov 28 08:58 loader
+	// drwx------ 3 root root     4096 Jan  9 08:02 grub2
+	// -rw------- 1 root root 97054329 Jan  9 08:04 initramfs-5.14.0-503.19.1.el9_5.x86_64.img
+	// drwxr-xr-x 3 root root     4096 Jan  9 08:02 loader
+	// lrwxrwxrwx 1 root root       52 Jan  9 08:03 symvers-5.14.0-503.19.1.el9_5.x86_64.gz -> /lib/modules/5.14.0-503.19.1.el9_5.x86_64/symvers.gz
 	// lrwxrwxrwx 1 root root       21 Jul 19  2021 vmlinux -> /boot/vmlinux-5.10.51
 	// -rwxr-xr-x 1 root root 43526368 Jul 19  2021 vmlinux-5.10.51
-	//
-	// [root@6033f6affd2b7d5f boot]# find / -name System.map
-	// /usr/lib/modules/5.14.0-503.14.1.el9_5.x86_64/System.map
+	// -rwxr-xr-x 1 root root 14467384 Jan  7 23:19 vmlinuz-5.14.0-503.19.1.el9_5.x86_64
 
 	var (
 		bootPartition   = "/boot"
