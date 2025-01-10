@@ -92,7 +92,8 @@ RUN set -ex \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
  && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
- && apt-get install --yes --no-install-recommends containerd.io \
+ # FIXME remove once containerd v1.7.25 is released, 1.7.24 is broken because runc < 1.2.4 breaks TAP/TUN devices required for vpn-shoot
+ && apt-get install --yes --no-install-recommends containerd.io=1.7.23-1 \
  # Install crictl to be able to manipulate containers managed with containerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
