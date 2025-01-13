@@ -11,10 +11,10 @@ require (
 	github.com/metal-stack/metal-go v0.39.4
 	github.com/metal-stack/metal-hammer v0.13.10
 	github.com/metal-stack/metal-lib v0.19.0
-	github.com/metal-stack/metal-networker v0.45.3
+	github.com/metal-stack/metal-networker v0.45.4
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/spf13/afero v1.11.0
+	github.com/spf13/afero v1.12.0
 	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )

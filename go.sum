@@ -134,8 +134,8 @@ github.com/metal-stack/metal-hammer v0.13.10 h1:p1L2rGeABbjv8jRnua7dYF8nDjLZ+Boh
 github.com/metal-stack/metal-hammer v0.13.10/go.mod h1:cOdArIOW1VBICPX3dlpyg1Wf3PsMeGjyw7mJJmCTqeU=
 github.com/metal-stack/metal-lib v0.19.0 h1:4yBnp/jPGgX9KeCje3A4MFL2oDjgjOjgsIK391LltRI=
 github.com/metal-stack/metal-lib v0.19.0/go.mod h1:fCMaWwVGA/xAoGvBk72/nfzqBkHly0iOzrWpc55Fau4=
-github.com/metal-stack/metal-networker v0.45.3 h1:GALlPsSMYw70vuQLcmwEEX9VNJVWkZk/4pP7eERD/VU=
-github.com/metal-stack/metal-networker v0.45.3/go.mod h1:DUjaql5THUSJd/7M1ZlcYgX/bllp1IhXwOFM+Nvkaus=
+github.com/metal-stack/metal-networker v0.45.4 h1:WJ/l+kKzL+/pamPl7DjYd1q+goHqjJ1sAhFgvzDVyfk=
+github.com/metal-stack/metal-networker v0.45.4/go.mod h1:DUjaql5THUSJd/7M1ZlcYgX/bllp1IhXwOFM+Nvkaus=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=
 github.com/metal-stack/v v1.0.3/go.mod h1:YTahEu7/ishwpYKnp/VaW/7nf8+PInogkfGwLcGPdXg=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
@@ -161,8 +161,8 @@ github.com/sigma/bdoor v0.0.0-20160202064022-babf2a4017b0/go.mod h1:WBu7REWbxC/s
 github.com/sigma/vmw-guestinfo v0.0.0-20160204083807-95dd4126d6e8/go.mod h1:JrRFFC0veyh0cibh0DAhriSY7/gV3kDdNaVUOmfx01U=
 github.com/smartystreets/assertions v1.2.0/go.mod h1:tcbTF8ujkAEcZ8TElKY+i30BzYlVhC/LOxJk7iOWnoo=
 github.com/smartystreets/goconvey v1.7.2/go.mod h1:Vw0tHAZW6lzCRk3xgdin6fKYcG+G3Pg9vgXWeJpQFMM=
-github.com/spf13/afero v1.11.0 h1:WJQKhtpdm3v2IzqG8VMqrr6Rf3UYpEF239Jy9wNepM8=
-github.com/spf13/afero v1.11.0/go.mod h1:GH9Y3pIexgf1MTIWtNGyogA5MwRIDXGUr+hbWNoBjkY=
+github.com/spf13/afero v1.12.0 h1:UcOPyRBYczmFn6yvphxkn9ZEOY65cpwGKb5mL36mrqs=
+github.com/spf13/afero v1.12.0/go.mod h1:ZTlWwG4/ahT8W7T0WQ5uYmjI9duaLQGy3Q2OAl4sk/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
 github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
