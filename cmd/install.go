@@ -470,11 +470,6 @@ func (i *installer) processUserdata() error {
 		return nil
 	}
 
-	content, err := afero.ReadFile(i.fs, userdata)
-	if err != nil {
-		return err
-	}
-
 	defer func() {
 		out, err := i.exec.command(&cmdParams{
 			name: "systemctl",
@@ -485,19 +480,7 @@ func (i *installer) processUserdata() error {
 		}
 	}()
 
-	if isCloudInitFile(content) {
-		_, err := i.exec.command(&cmdParams{
-			name: "cloud-init",
-			args: []string{"devel", "schema", "--config-file", userdata},
-		})
-		if err != nil {
-			i.log.Error("error when running cloud-init userdata, continuing anyway", "error", err)
-		}
-
-		return nil
-	}
-
-	err = i.fs.Rename(userdata, "/etc/metal/config.ign")
+	err := i.fs.Rename(userdata, "/etc/metal/config.ign")
 	if err != nil {
 		return err
 	}
@@ -522,18 +505,6 @@ func (i *installer) processUserdata() error {
 	}
 
 	return nil
-}
-
-func isCloudInitFile(content []byte) bool {
-	for i, line := range strings.Split(string(content), "\n") {
-		if strings.Contains(line, "#cloud-config") {
-			return true
-		}
-		if i > 1 {
-			return false
-		}
-	}
-	return false
 }
 
 func (i *installer) writeBootInfo(cmdLine string) error {
