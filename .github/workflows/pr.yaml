@@ -10,12 +10,8 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  debian-ubuntu:
-    name: Build Debian and Ubuntu based OS images
-
-    strategy:
-      matrix:
-        os: [debian, ubuntu]
+  cluster-api:
+    name: Build Ubuntu based OS image for Cluster API
 
     runs-on: self-hosted
 
@@ -46,7 +42,7 @@ jobs:
 
     - name: Prepare build environment
       shell: bash
-      run: ./prepare.sh ${{ matrix.os }}
+      run: ./prepare.sh ubuntu
 
     - name: use our lz4 which is version 1.10 with multithread support
       shell: bash
@@ -61,93 +57,23 @@ jobs:
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
+          --file docker-make.ubuntu.yaml \
           --no-cache \
           --summary \
           --no-lint \
           --no-push
 
-    # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
-    # and then goss tests fail
-    - name: Build docker image for firewalls and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir firewall \
-          --build-only ${{ matrix.os }} \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --no-push
-      if: ${{ matrix.os == 'ubuntu' }}
-
-    - name: Prepare build environment
-      shell: bash
-      run: ./prepare.sh debian-nvidia
-      if: ${{ matrix.os == 'debian' }}
-
-    - name: Build docker image for debian-nvidia based workers and export tarball
+    - name: Build docker image for cluster api images and export tarball
       run: |
         TMPDIR=/var/tmp \
         docker-make \
-          --work-dir debian-nvidia \
+          --work-dir cluster-api \
           --file docker-make.yaml \
           --no-cache \
           --no-pull \
           --summary \
           --no-lint \
           --no-push
-      if: ${{ matrix.os == 'debian' }}
-
-    - name: Upload image tarballs to GCS
-      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
-
-  almalinux:
-    name: Build Almalinux based OS image
-    runs-on: self-hosted
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - uses: google-github-actions/auth@v2
-      with:
-        credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-
-    - name: Set up Go 1.23
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.23.x'
-        cache: false
-
-    - name: build install
-      run: make
-    - name: Prepare build environment
-      shell: bash
-      run: ./prepare.sh almalinux
-    - name: Build docker image for almalinux based workers and export tarball
-      run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir almalinux \
-          --file docker-make.yaml \
-          --no-cache \
-          --no-push \
-          --summary \
-          --no-lint \
-          --no-push
-
-    - uses: google-github-actions/setup-gcloud@v0
-      with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/

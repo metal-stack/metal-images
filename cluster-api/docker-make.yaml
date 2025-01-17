@@ -1,0 +1,24 @@
+---
+version: '1'
+name: cluster-api
+username: metalstack
+registry-host: quay.io
+default-build-args:
+  - SEMVER_PATCH=${SEMVER_PATCH}
+  - OS_NAME=cluster-api
+builds:
+  -
+    name: ubuntu
+    tags:
+      - ${SEMVER}
+      - ${SEMVER_MAJOR_MINOR}
+    build-args:
+      - BASE_OS_NAME=quay.io/metalstack/ubuntu
+      - BASE_OS_VERSION=24.04
+      - KUBE_APT_BRANCH=v1.30
+      - KUBE_VERSION=1.30.6
+      - SEMVER_MAJOR_MINOR=cluster-api-k8s-${KUBE_VERSION}
+      - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+    after:
+      - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
