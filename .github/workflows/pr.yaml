@@ -71,6 +71,7 @@ jobs:
       run: |
         DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
         DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        docker tag quay.io/metalstack/debian:12 quay.io/metalstack/debian:12.${GITHUB_REF##*/}
         docker push quay.io/metalstack/debian:12.${GITHUB_REF##*/}
       if: ${{ matrix.os == 'debian' }}
 
