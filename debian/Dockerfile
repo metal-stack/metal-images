@@ -114,10 +114,6 @@ RUN set -ex \
  && rm -rf ice* \
  # install kernel and stuff
  && /kernel-installation.sh \
- # remove dhclient which could lead to dangerous configurations, not present anymore on ubuntu 24.04
- && apt-get remove --yes isc-dhcp-client || true \
- # remove netplan from ubuntu 24.04
- && apt-get remove --yes netplan.io || true \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
