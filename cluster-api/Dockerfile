@@ -9,6 +9,8 @@ ARG KUBE_VERSION
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive"
 
+COPY context/ /
+
 RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg \
  && echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list \
  && apt update \
