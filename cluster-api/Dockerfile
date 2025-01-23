@@ -19,5 +19,3 @@ RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/Release.
         kubectl=${KUBE_VERSION}-1.1 \
         kubelet=${KUBE_VERSION}-1.1 \
         kubernetes-cni
-
-RUN systemctl enable kubelet.service
