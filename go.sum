@@ -17,6 +17,8 @@ cloud.google.com/go/storage v1.5.0/go.mod h1:tpKbwo567HUNpVclU5sGELwQWBDZ8gh0Zeo
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
+github.com/Masterminds/semver/v3 v3.3.0 h1:B8LGeaivUe71a5qox1ICM/JLl0NqZSW5CHyL+hmvYS0=
+github.com/Masterminds/semver/v3 v3.3.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/ajeddeloh/go-json v0.0.0-20160803184958-73d058cf8437 h1:gZCtZ+Hh/e3CGEX8q/yAcp8wWu5ZS6NMk6VGzpQhI3s=
 github.com/ajeddeloh/go-json v0.0.0-20160803184958-73d058cf8437/go.mod h1:otnto4/Icqn88WCcM4bhIJNSgsh9VLBuspyyCfvof9c=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
@@ -134,8 +136,8 @@ github.com/metal-stack/metal-hammer v0.13.10 h1:p1L2rGeABbjv8jRnua7dYF8nDjLZ+Boh
 github.com/metal-stack/metal-hammer v0.13.10/go.mod h1:cOdArIOW1VBICPX3dlpyg1Wf3PsMeGjyw7mJJmCTqeU=
 github.com/metal-stack/metal-lib v0.19.0 h1:4yBnp/jPGgX9KeCje3A4MFL2oDjgjOjgsIK391LltRI=
 github.com/metal-stack/metal-lib v0.19.0/go.mod h1:fCMaWwVGA/xAoGvBk72/nfzqBkHly0iOzrWpc55Fau4=
-github.com/metal-stack/metal-networker v0.46.0 h1:fRC+LHRWvvYK9ernI6Wasr9wPseVS1s9q7PAVV3JZKc=
-github.com/metal-stack/metal-networker v0.46.0/go.mod h1:C2bsFq4o6p6GwGS2j14/r+nwKGpGSl3uIISzPrhO8+A=
+github.com/metal-stack/metal-networker v0.46.2-0.20250124061932-625ee637a148 h1:hffPPWd5B1yyYOrWogpamiJcy897WXLdLzDt/eL6Yo4=
+github.com/metal-stack/metal-networker v0.46.2-0.20250124061932-625ee637a148/go.mod h1:FyG88QowtyZ7J2bBf36HRZsdm7JK1HCNVNrCMU7THQA=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=
 github.com/metal-stack/v v1.0.3/go.mod h1:YTahEu7/ishwpYKnp/VaW/7nf8+PInogkfGwLcGPdXg=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=

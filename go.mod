@@ -11,7 +11,7 @@ require (
 	github.com/metal-stack/metal-go v0.39.4
 	github.com/metal-stack/metal-hammer v0.13.10
 	github.com/metal-stack/metal-lib v0.19.0
-	github.com/metal-stack/metal-networker v0.46.0
+	github.com/metal-stack/metal-networker v0.46.2-0.20250124061932-625ee637a148
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.12.0
@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/ajeddeloh/go-json v0.0.0-20160803184958-73d058cf8437 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
