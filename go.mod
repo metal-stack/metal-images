@@ -11,7 +11,7 @@ require (
 	github.com/metal-stack/metal-go v0.39.7
 	github.com/metal-stack/metal-hammer v0.13.11
 	github.com/metal-stack/metal-lib v0.19.0
-	github.com/metal-stack/metal-networker v0.46.1
+	github.com/metal-stack/metal-networker v0.46.2-0.20250123073059-cbcd15c32290
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.12.0
