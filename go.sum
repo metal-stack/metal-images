@@ -130,12 +130,12 @@ github.com/mailru/easyjson v0.9.0/go.mod h1:1+xMtQp2MRNVL/V1bOzuP3aP8VNwRW55fQUt
 github.com/mattn/go-runewidth v0.0.9/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
 github.com/mattn/go-runewidth v0.0.16 h1:E5ScNMtiwvlvB5paMFdw9p4kSQzbXFikJ5SQO6TULQc=
 github.com/mattn/go-runewidth v0.0.16/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
-github.com/metal-stack/metal-go v0.39.7 h1:kKbwF6jCXGj5JZr65muJyR/oDMAUKbVn2f+vJ+kx7Qw=
-github.com/metal-stack/metal-go v0.39.7/go.mod h1:ltItf/Md/z588c7Dr3X6iemCeOFh3rJ8nDL5Dpb9zFQ=
+github.com/metal-stack/metal-go v0.40.3 h1:ekgdTY23zHs/XGOg8bUJQFYPTX1GnaqgaT/lgVxS3JI=
+github.com/metal-stack/metal-go v0.40.3/go.mod h1:ltItf/Md/z588c7Dr3X6iemCeOFh3rJ8nDL5Dpb9zFQ=
 github.com/metal-stack/metal-hammer v0.13.11 h1:mZbJEtYN9lGs5O7gv+fa0H0wLXFA5cbOUiibfjRRaHE=
 github.com/metal-stack/metal-hammer v0.13.11/go.mod h1:78fKY5J8UsLdm0juEtAYxhgPOu4717QutqR5zM0QOMc=
-github.com/metal-stack/metal-lib v0.19.0 h1:4yBnp/jPGgX9KeCje3A4MFL2oDjgjOjgsIK391LltRI=
-github.com/metal-stack/metal-lib v0.19.0/go.mod h1:fCMaWwVGA/xAoGvBk72/nfzqBkHly0iOzrWpc55Fau4=
+github.com/metal-stack/metal-lib v0.20.1 h1:gxNg512dS5yzDebELtPZjmoWond0Gw0HHEkSVIAOWRE=
+github.com/metal-stack/metal-lib v0.20.1/go.mod h1:zYzXYpNA4nQ+ANx19s/+1Yb/Q6xhS1nQK2yK2/ryXZM=
 github.com/metal-stack/metal-networker v0.46.1 h1:X4UKEom7ZU9sY0ndrqWhtfUDR0jShGauCpBXVSzAocY=
 github.com/metal-stack/metal-networker v0.46.1/go.mod h1:FyG88QowtyZ7J2bBf36HRZsdm7JK1HCNVNrCMU7THQA=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=

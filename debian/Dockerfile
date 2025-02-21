@@ -31,7 +31,7 @@ ARG ICE_PKG_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    DOCKER_URL=https://download.docker.com \
+    DOCKER_URL= \
     SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} \
     UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
 
@@ -93,6 +93,8 @@ RUN set -ex \
  && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
  && apt-get install --yes --no-install-recommends containerd.io \
+ # generate a default containerd config because the one coming with the package prevents GNA to create a proper config for cgroup v2
+ && /usr/bin/containerd config default > /etc/containerd/config.toml \
  # Install crictl to be able to manipulate containers managed with containerd
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
