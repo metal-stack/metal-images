@@ -5,8 +5,8 @@ go 1.24.0
 require (
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/flatcar/ignition v0.36.2
-	github.com/google/go-cmp v0.6.0
-	github.com/metal-stack/metal-go v0.39.8
+	github.com/google/go-cmp v0.7.0
+	github.com/metal-stack/metal-go v0.40.3
 	github.com/metal-stack/metal-hammer v0.13.11
 	github.com/metal-stack/metal-lib v0.20.1
 	github.com/metal-stack/metal-networker v0.46.1
