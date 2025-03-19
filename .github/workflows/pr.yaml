@@ -75,6 +75,14 @@ jobs:
         docker push quay.io/metalstack/debian:12.${GITHUB_REF##*/}
       if: ${{ matrix.os == 'debian' }}
 
+    - name: push to quay.io
+      run: |
+        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
+        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
+        docker tag quay.io/metalstack/ubuntu:24.04 quay.io/metalstack/ubuntu:24.04.${GITHUB_REF##*/}
+        docker push quay.io/metalstack/ubuntu:24.04.${GITHUB_REF##*/}
+      if: ${{ matrix.os == 'ubuntu' }}
+
     # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
     # and then goss tests fail
     - name: Build docker image for firewalls and export tarball

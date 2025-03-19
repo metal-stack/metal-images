@@ -42,6 +42,7 @@ jobs:
           DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
           DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
           docker push quay.io/metalstack/debian:12.${GITHUB_REF##*/}
+          docker push quay.io/metalstack/ubuntu:24.04.${GITHUB_REF##*/}
 
           PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
 
