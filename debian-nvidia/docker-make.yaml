@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: debian-nvidia
-username: metalstack
-registry-host: quay.io
+username: metal-stack
+registry-host: ghcr.io
 default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
   - OS_NAME=debian-nvidia
@@ -14,7 +14,7 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=12
-      - BASE_OS_NAME=quay.io/metalstack/debian
+      - BASE_OS_NAME=ghcr.io/metal-stack/debian
       - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:

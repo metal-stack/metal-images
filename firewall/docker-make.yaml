@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: firewall
-username: metalstack
-registry-host: quay.io
+username: metal-stack
+registry-host: ghcr.io
 default-build-args:
   - SEMVER_PATCH=${SEMVER_PATCH}
   - OS_NAME=firewall
@@ -14,11 +14,11 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=12
-      - BASE_OS_NAME=quay.io/metalstack/debian
+      - BASE_OS_NAME=ghcr.io/metal-stack/debian
       - SEMVER_MAJOR_MINOR=3.0
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
   -
     name: ubuntu
@@ -27,9 +27,9 @@ builds:
       - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=24.04
-      - BASE_OS_NAME=quay.io/metalstack/ubuntu
+      - BASE_OS_NAME=ghcr.io/metal-stack/ubuntu
       - SEMVER_MAJOR_MINOR=3.0-ubuntu
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${SEMVER}-${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

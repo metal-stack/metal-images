@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: almalinux
-username: metalstack
-registry-host: quay.io
+username: metal-stack
+registry-host: ghcr.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
   - GOLLDPD_VERSION=v0.4.8
@@ -20,5 +20,5 @@ builds:
       - SEMVER_MAJOR_MINOR=9
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=almalinux SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
