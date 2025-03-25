@@ -23,6 +23,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: metal-stack
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - uses: google-github-actions/auth@v2
       with:
         credentials_json: '${{ secrets.GCP_SA_KEY }}'
@@ -56,8 +63,6 @@ jobs:
 
     - name: Build docker image for workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir debian \
@@ -69,16 +74,12 @@ jobs:
 
     - name: push to ghcr.io
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         docker tag ghcr.io/metal-stack/debian:12 ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/}
         docker push ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/}
       if: ${{ matrix.os == 'debian' }}
 
     - name: push to ghcr.io
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         docker tag ghcr.io/metal-stack/ubuntu:24.04 ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/}
         docker push ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/}
       if: ${{ matrix.os == 'ubuntu' }}
@@ -87,8 +88,6 @@ jobs:
     # and then goss tests fail
     - name: Build docker image for firewalls and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir firewall \
@@ -128,6 +127,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: metal-stack
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - uses: google-github-actions/auth@v2
       with:
         credentials_json: '${{ secrets.GCP_SA_KEY }}'
@@ -148,8 +154,6 @@ jobs:
       run: ./prepare.sh almalinux
     - name: Build docker image for almalinux based workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir almalinux \

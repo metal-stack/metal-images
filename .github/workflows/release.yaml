@@ -19,6 +19,13 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: metal-stack
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
@@ -39,8 +46,6 @@ jobs:
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
 
-          DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-          DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
           docker push ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/}
           docker push ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/}
 

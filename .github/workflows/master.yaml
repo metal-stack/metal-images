@@ -23,6 +23,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: metal-stack
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - uses: google-github-actions/auth@v2
       with:
         credentials_json: '${{ secrets.GCP_SA_KEY }}'
@@ -50,8 +57,6 @@ jobs:
 
     - name: Build docker image for workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir debian \
@@ -63,8 +68,6 @@ jobs:
 
     - name: Build docker image for firewalls and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir firewall \
@@ -124,8 +127,6 @@ jobs:
       run: ./prepare.sh almalinux
     - name: Build docker image for almalinux based workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metal-stack" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.GITHUB_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir almalinux \
