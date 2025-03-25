@@ -74,14 +74,14 @@ jobs:
 
     - name: push to ghcr.io
       run: |
-        docker tag ghcr.io/metal-stack/debian:12 ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/}
-        docker push ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/}
+        docker tag ghcr.io/metal-stack/debian:12 ghcr.io/metal-stack/debian:12.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/debian:12.${{ github.head_ref }}
       if: ${{ matrix.os == 'debian' }}
 
     - name: push to ghcr.io
       run: |
-        docker tag ghcr.io/metal-stack/ubuntu:24.04 ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/}
-        docker push ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/}
+        docker tag ghcr.io/metal-stack/ubuntu:24.04 ghcr.io/metal-stack/ubuntu:24.04.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/ubuntu:24.04.${{ github.head_ref }}
       if: ${{ matrix.os == 'ubuntu' }}
 
     # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
