@@ -61,7 +61,6 @@ RUN set -ex \
     grub2 \
     haveged \
     initramfs-tools \
-    ipmitool \
     iptables \
     iputils-ping \
     iproute2 \

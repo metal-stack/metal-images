@@ -63,7 +63,7 @@ func TestHelperProcess(t *testing.T) {
 	err := json.Unmarshal([]byte(os.Args[3]), &f)
 	require.NoError(t, err)
 
-	fmt.Fprint(os.Stdout, f.Output)
+	_, _ = fmt.Fprint(os.Stdout, f.Output)
 
 	os.Exit(f.ExitCode)
 }
