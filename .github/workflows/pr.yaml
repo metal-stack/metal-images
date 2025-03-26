@@ -70,19 +70,7 @@ jobs:
           --no-cache \
           --summary \
           --no-lint \
-          --no-push
-
-    - name: push to ghcr.io
-      run: |
-        docker tag ghcr.io/metal-stack/debian:12 ghcr.io/metal-stack/debian:12.${{ github.head_ref }}
-        docker push ghcr.io/metal-stack/debian:12.${{ github.head_ref }}
-      if: ${{ matrix.os == 'debian' }}
-
-    - name: push to ghcr.io
-      run: |
-        docker tag ghcr.io/metal-stack/ubuntu:24.04 ghcr.io/metal-stack/ubuntu:24.04.${{ github.head_ref }}
-        docker push ghcr.io/metal-stack/ubuntu:24.04.${{ github.head_ref }}
-      if: ${{ matrix.os == 'ubuntu' }}
+          --build-arg SEMVER=12.${{ github.head_ref }}
 
     # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
     # and then goss tests fail
@@ -96,7 +84,7 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --no-push
+          --build-arg SEMVER=12.${{ github.head_ref }}
       if: ${{ matrix.os == 'ubuntu' }}
 
     - name: Prepare build environment
@@ -114,7 +102,7 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --no-push
+          --build-arg SEMVER=12.${{ github.head_ref }}
       if: ${{ matrix.os == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -159,10 +147,9 @@ jobs:
           --work-dir almalinux \
           --file docker-make.yaml \
           --no-cache \
-          --no-push \
           --summary \
           --no-lint \
-          --no-push
+          --build-arg SEMVER=12.${{ github.head_ref }}
 
     - uses: google-github-actions/setup-gcloud@v0
       with:
