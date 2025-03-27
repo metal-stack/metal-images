@@ -104,7 +104,7 @@ jobs:
           --no-lint \
           --build-arg SEMVER_PATCH=.${{ github.head_ref }} \
           --no-push
-        docker push debian-nvidia:${{ matrix.os.version }}.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/debian-nvidia:${{ matrix.os.version }}.${{ github.head_ref }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
