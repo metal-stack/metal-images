@@ -17,7 +17,11 @@ jobs:
 
     strategy:
       matrix:
-        os: [debian, ubuntu]
+        os:
+        - name: debian
+          version: 24.04
+        - name: ubuntu
+          version: 12
 
     steps:
     - name: Checkout
@@ -53,34 +57,39 @@ jobs:
 
     - name: Prepare build environment
       shell: bash
-      run: ./prepare.sh ${{ matrix.os }}
+      run: ./prepare.sh ${{ matrix.os.name }}
 
     - name: Build docker image for workers and export tarball
       run: |
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
+          --file docker-make.${{ matrix.os.name }}.yaml \
           --no-cache \
           --summary \
-          --no-lint
+          --no-lint \
+          --build-arg SEMVER_PATCH=${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/${{ matrix.os.name }}:${{ matrix.os.version }}.${{ github.head_ref }}
 
     - name: Build docker image for firewalls and export tarball
       run: |
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir firewall \
-          --build-only ${{ matrix.os }} \
+          --build-only ${{ matrix.os.name }} \
           --no-cache \
           --no-pull \
           --summary \
-          --no-lint
-      if: ${{ matrix.os == 'ubuntu' }}
+          --no-lint \
+          --build-arg SEMVER_PATCH=${{ github.head_ref }} \
+          --no-push
+        docker push ghcr.io/metal-stack/firewall:3.0-ubuntu.${{ github.head_ref }}
+      if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh debian-nvidia
-      if: ${{ matrix.os == 'debian' }}
+      if: ${{ matrix.os.name == 'debian' }}
 
     - name: Build docker image for debian-nvidia based workers and export tarball
       run: |
@@ -91,8 +100,11 @@ jobs:
           --no-cache \
           --no-pull \
           --summary \
-          --no-lint
-      if: ${{ matrix.os == 'debian' }}
+          --no-lint \
+          --build-arg SEMVER_PATCH=${{ github.head_ref }} \
+          --no-push
+        docker push debian-nvidia:${{ matrix.os.version }}.${{ github.head_ref }}
+      if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
@@ -130,6 +142,10 @@ jobs:
           --file docker-make.yaml \
           --no-cache \
           --summary \
-          --no-lint
+          --no-lint \
+          --build-arg SEMVER_PATCH=${{ github.head_ref }} \
+          --no-push
+        docker push ghcr.io/metal-stack/almalinux:9.${{ github.head_ref }}
+
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
