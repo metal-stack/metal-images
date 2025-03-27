@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: debian
-username: metalstack
-registry-host: quay.io
+username: metal-stack
+registry-host: ghcr.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
   - GOLLDPD_VERSION=v0.4.9
@@ -19,7 +19,6 @@ builds:
     name: "Debian 12"
     tags:
       - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=bookworm
       - DOCKER_APT_CHANNEL=bookworm
@@ -31,5 +30,5 @@ builds:
       # see https://packages.debian.org/bookworm/kernel/ for available versions
       - KERNEL_VERSION=6.1.0-32
     after:
-      - cd ../ && OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

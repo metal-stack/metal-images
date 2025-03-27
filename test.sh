@@ -2,7 +2,7 @@
 
 set -e
 
-# example: sudo OS_NAME=ubuntu ./test.sh quay.io/metalstack/ubuntu:22.04
+# example: sudo OS_NAME=ubuntu ./test.sh ghcr.io/metal-stack/ubuntu:22.04
 hash ignite 2>/dev/null || { echo >&2 "ignite not found please install from: https://github.com/weaveworks/ignite"; exit 1; }
 
 IMAGE="${1}"

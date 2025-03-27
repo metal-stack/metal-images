@@ -1,8 +1,8 @@
 ---
 version: '1'
 name: ubuntu
-username: metalstack
-registry-host: quay.io
+username: metal-stack
+registry-host: ghcr.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
   - GOLLDPD_VERSION=v0.4.9
@@ -22,7 +22,6 @@ builds:
     name: "Ubuntu 24.04"
     tags:
       - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=24.04
       - FRR_VERSION=frr-10.0
@@ -31,5 +30,5 @@ builds:
       - SEMVER_MAJOR_MINOR=24.04
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
     after:
-      - cd ../ && OS_NAME=${OS_NAME} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
