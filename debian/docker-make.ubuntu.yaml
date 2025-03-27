@@ -22,7 +22,6 @@ builds:
     name: "Ubuntu 24.04"
     tags:
       - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=24.04
       - FRR_VERSION=frr-10.0

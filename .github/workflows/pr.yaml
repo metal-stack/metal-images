@@ -74,9 +74,7 @@ jobs:
           --no-cache \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }} \
-          --no-push
-        docker push ghcr.io/metal-stack/${{ matrix.os.name }}:${{ matrix.os.version }}-${{ github.head_ref }}
+          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
 
     # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
     # and then goss tests fail
@@ -90,9 +88,7 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }} \
-          --no-push
-        docker push ghcr.io/metal-stack/firewall:3.0-ubuntu-${{ github.head_ref }}
+          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
@@ -110,9 +106,7 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }} \
-          --no-push
-        docker push ghcr.io/metal-stack/debian-nvidia:${{ matrix.os.version }}-${{ github.head_ref }}
+          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -159,9 +153,7 @@ jobs:
           --no-cache \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }} \
-          --no-push
-        docker push ghcr.io/metal-stack/almalinux:9-${{ github.head_ref }}
+          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
 
     - uses: google-github-actions/setup-gcloud@v0
       with:

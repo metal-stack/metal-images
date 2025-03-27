@@ -19,7 +19,6 @@ builds:
     name: "Debian 12"
     tags:
       - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=bookworm
       - DOCKER_APT_CHANNEL=bookworm

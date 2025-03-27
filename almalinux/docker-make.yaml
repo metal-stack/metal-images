@@ -14,7 +14,6 @@ builds:
     name: "Almalinux 9"
     tags:
       - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=9
       - SEMVER_MAJOR_MINOR=9
