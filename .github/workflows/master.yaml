@@ -68,9 +68,9 @@ jobs:
           --no-cache \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=.${{ github.head_ref }} \
+          --build-arg SEMVER_PATCH=-stable \
           --no-push
-        docker push ghcr.io/metal-stack/${{ matrix.os.name }}:${{ matrix.os.version }}.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/${{ matrix.os.name }}:${{ matrix.os.version }}-stable
 
     - name: Build docker image for firewalls and export tarball
       run: |
@@ -82,9 +82,9 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=.${{ github.head_ref }} \
+          --build-arg SEMVER_PATCH=-stable \
           --no-push
-        docker push ghcr.io/metal-stack/firewall:3.0-ubuntu.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
@@ -102,9 +102,9 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=.${{ github.head_ref }} \
+          --build-arg SEMVER_PATCH=-stable \
           --no-push
-        docker push ghcr.io/metal-stack/debian-nvidia:${{ matrix.os.version }}.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/debian-nvidia:${{ matrix.os.version }}-stable
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -144,9 +144,9 @@ jobs:
           --no-cache \
           --summary \
           --no-lint \
-          --build-arg SEMVER_PATCH=.${{ github.head_ref }} \
+          --build-arg SEMVER_PATCH=-stable \
           --no-push
-        docker push ghcr.io/metal-stack/almalinux:9.${{ github.head_ref }}
+        docker push ghcr.io/metal-stack/almalinux:9-stable
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os

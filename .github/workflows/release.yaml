@@ -46,29 +46,29 @@ jobs:
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
 
-          docker pull ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/}
-          docker tag ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/} ghcr.io/metal-stack/debian:12
-          docker tag ghcr.io/metal-stack/debian:12.${GITHUB_REF##*/} ghcr.io/metal-stack/debian:latest
+          docker pull ghcr.io/metal-stack/debian:12-stable
+          docker tag ghcr.io/metal-stack/debian:12-stable ghcr.io/metal-stack/debian:12
+          docker tag ghcr.io/metal-stack/debian:12-stable ghcr.io/metal-stack/debian:latest
           docker push ghcr.io/metal-stack/debian:12
 
-          docker pull ghcr.io/metal-stack/debian-nvidia:12.${GITHUB_REF##*/}
-          docker tag ghcr.io/metal-stack/debian-nvidia:12.${GITHUB_REF##*/} ghcr.io/metal-stack/debian-nvidia:12
-          docker tag ghcr.io/metal-stack/debian-nvidia:12.${GITHUB_REF##*/} ghcr.io/metal-stack/debian-nvidia:latest
+          docker pull ghcr.io/metal-stack/debian-nvidia:12-stable
+          docker tag ghcr.io/metal-stack/debian-nvidia:12-stable ghcr.io/metal-stack/debian-nvidia:12
+          docker tag ghcr.io/metal-stack/debian-nvidia:12-stable ghcr.io/metal-stack/debian-nvidia:latest
           docker push ghcr.io/metal-stack/debian-nvidia:12
 
-          docker pull ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/}
-          docker tag ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/} ghcr.io/metal-stack/ubuntu:24.04
-          docker tag ghcr.io/metal-stack/ubuntu:24.04.${GITHUB_REF##*/} ghcr.io/metal-stack/ubuntu:latest
+          docker pull ghcr.io/metal-stack/ubuntu:24.04-stable
+          docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:24.04
+          docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:latest
           docker push ghcr.io/metal-stack/ubuntu:24.04
 
-          docker pull ghcr.io/metal-stack/almalinux:9.${GITHUB_REF##*/}
-          docker tag ghcr.io/metal-stack/almalinux:9.${GITHUB_REF##*/} ghcr.io/metal-stack/almalinux:9
-          docker tag ghcr.io/metal-stack/almalinux:9.${GITHUB_REF##*/} ghcr.io/metal-stack/almalinux:latest
+          docker pull ghcr.io/metal-stack/almalinux:9-stable
+          docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:9
+          docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:latest
           docker push ghcr.io/metal-stack/almalinux:9
 
-          docker pull ghcr.io/metal-stack/firewall:3.0-ubuntu.${GITHUB_REF##*/}
-          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu.${GITHUB_REF##*/} ghcr.io/metal-stack/firewall:3.0-ubuntu
-          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu.${GITHUB_REF##*/} ghcr.io/metal-stack/firewall:latest
+          docker pull ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
+          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu-stable ghcr.io/metal-stack/firewall:3.0-ubuntu
+          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu-stable ghcr.io/metal-stack/firewall:latest
           docker push ghcr.io/metal-stack/firewall:3.0-ubuntu
 
           PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
