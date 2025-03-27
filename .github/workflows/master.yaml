@@ -19,9 +19,9 @@ jobs:
       matrix:
         os:
         - name: debian
-          version: 24.04
-        - name: ubuntu
           version: 12
+        - name: ubuntu
+          version: 24.04
 
     steps:
     - name: Checkout
