@@ -56,7 +56,9 @@ func (i *cmdexec) command(p *cmdParams) (out string, err error) {
 		}
 
 		go func() {
-			defer stdin.Close()
+			defer func() {
+				_ = stdin.Close()
+			}()
 			_, err = io.WriteString(stdin, p.stdin)
 			if err != nil {
 				i.log.Error("error when writing to command's stdin", "error", err)

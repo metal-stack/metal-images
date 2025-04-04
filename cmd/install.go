@@ -149,7 +149,7 @@ func (i *installer) unsetMachineID() error {
 		if err != nil {
 			return err
 		}
-		f.Close()
+		_ = f.Close()
 	}
 	return nil
 }
