@@ -1,0 +1,50 @@
+name: Scheduled Registry Scan
+
+on:
+  schedule:
+    - cron: '6 0 * * 1'  # Weekly scan on Monday 6am
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  issues: write
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🛡️  Run Grype scan for debian
+        id: grype-scan-debian
+        uses: anchore/scan-action@v6
+        with:
+          image: ghcr.io/metal-stack/debian:latest
+          fail-build: false
+          additional-args: "-c .grype.yaml"
+          output-format: table
+          output-file: scan-results.md
+
+      - name: 📮 Create issue if vulnerabilities found in debian
+        if: ${{ failure() && steps.grype-scan-debian.outcome == 'failure' }}
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: "🛑 Vulnerability Alert for the debian image"
+          body: |
+            **Security scan detected fixed vulnerabilities**
+
+            '''
+            $ cat scan-results.md
+            '''
+            _Scan executed at: ${{ steps.date.outputs.timestamp }}_
+          labels: security,automated-alert
