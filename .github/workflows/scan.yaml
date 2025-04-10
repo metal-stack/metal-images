@@ -39,7 +39,7 @@ jobs:
         uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
-          title: "🛑 Vulnerability Alert for the debian image"
+          title: "🛑 Alert for vulnerable packages in the debian image"
           body: |
             **Security scan detected fixed vulnerabilities**
 
@@ -47,4 +47,6 @@ jobs:
             $ cat scan-results.md
             '''
             _Scan executed at: ${{ steps.date.outputs.timestamp }}_
-          labels: security,automated-alert
+
+            Hint: This issue will be automatically closed once an image with no vulnerabilities is built.
+          labels: security,automated-alert,debian-vulnerability
