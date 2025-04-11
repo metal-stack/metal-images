@@ -169,12 +169,11 @@ jobs:
       with:
         image: ghcr.io/metal-stack/debian:latest
         fail-build: false
-        additional-args: "-c .grype.yaml"
         output-format: table
         output-file: scan-results.md
 
     - name: 📮 Create issue if vulnerabilities found in debian
-      if: ${{ failure() && steps.grype-scan-debian.outcome == 'failure' }}
+      if: ${{ steps.grype-scan-debian.outcome == 'success' }}
       uses: dacbd/create-issue-action@main
       with:
         token: ${{ github.token }}
