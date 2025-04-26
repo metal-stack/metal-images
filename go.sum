@@ -24,8 +24,8 @@ github.com/ajeddeloh/go-json v0.0.0-20160803184958-73d058cf8437/go.mod h1:otnto4
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3dyBCFEj5IhUbnKptjxatkF07cF2ak3yi77so=
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/aws/aws-sdk-go v1.8.39/go.mod h1:ZRmQr0FajVIyZ4ZzBYKG5P3ZqPz9IHG41ZoMu1ADI3k=
-github.com/aws/aws-sdk-go v1.55.6 h1:cSg4pvZ3m8dgYcgqB97MrcdjUmZ1BeMYKUxMMB89IPk=
-github.com/aws/aws-sdk-go v1.55.6/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=
+github.com/aws/aws-sdk-go v1.55.7 h1:UJrkFq7es5CShfBwlWAC8DA077vp8PyVbQd3lqLiztE=
+github.com/aws/aws-sdk-go v1.55.7/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
@@ -130,12 +130,12 @@ github.com/mailru/easyjson v0.9.0/go.mod h1:1+xMtQp2MRNVL/V1bOzuP3aP8VNwRW55fQUt
 github.com/mattn/go-runewidth v0.0.9/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
 github.com/mattn/go-runewidth v0.0.16 h1:E5ScNMtiwvlvB5paMFdw9p4kSQzbXFikJ5SQO6TULQc=
 github.com/mattn/go-runewidth v0.0.16/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
-github.com/metal-stack/metal-go v0.41.1 h1:f6sc0d5r1a30s1Nd/93C6zAj5j8GBBIUqC8fvNqDLNY=
-github.com/metal-stack/metal-go v0.41.1/go.mod h1:T0lbyrc+aHlI/GWAu2Og4Fmj4oaj5RD55736jBG0R8Y=
+github.com/metal-stack/metal-go v0.41.2 h1:q6Y6LA8hMWUg4R39hei1LVbtxifnRHbdP+bW9pYgAzM=
+github.com/metal-stack/metal-go v0.41.2/go.mod h1:T0lbyrc+aHlI/GWAu2Og4Fmj4oaj5RD55736jBG0R8Y=
 github.com/metal-stack/metal-hammer v0.13.11 h1:mZbJEtYN9lGs5O7gv+fa0H0wLXFA5cbOUiibfjRRaHE=
 github.com/metal-stack/metal-hammer v0.13.11/go.mod h1:78fKY5J8UsLdm0juEtAYxhgPOu4717QutqR5zM0QOMc=
-github.com/metal-stack/metal-lib v0.21.0 h1:oJSexA0czpS4aAUqCgymESWBsqG7BbjSceogsWowbPg=
-github.com/metal-stack/metal-lib v0.21.0/go.mod h1:9KdYMPBrTKJFlCmubMgcirUiJHP3MG4FyBny6b/BVII=
+github.com/metal-stack/metal-lib v0.22.1 h1:kAXOHZOSqBA0NQgYmtONxfY5khyQo8ofEL30QBE5DEY=
+github.com/metal-stack/metal-lib v0.22.1/go.mod h1:QiFb7TpSrvnLAHOlxLiUm1aG+1t5nPHsoDT/bw+F5r8=
 github.com/metal-stack/metal-networker v0.46.1 h1:X4UKEom7ZU9sY0ndrqWhtfUDR0jShGauCpBXVSzAocY=
 github.com/metal-stack/metal-networker v0.46.1/go.mod h1:FyG88QowtyZ7J2bBf36HRZsdm7JK1HCNVNrCMU7THQA=
 github.com/metal-stack/v v1.0.3 h1:Sh2oBlnxrCUD+mVpzfC8HiqL045YWkxs0gpTvkjppqs=
