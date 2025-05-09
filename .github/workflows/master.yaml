@@ -17,11 +17,22 @@ jobs:
 
     strategy:
       matrix:
-        os: [debian, ubuntu]
+        os:
+        - name: debian
+          version: 12
+        - name: ubuntu
+          version: 24.04
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: metal-stack
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: google-github-actions/auth@v2
       with:
@@ -30,56 +41,52 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Set up Go 1.23
+    - name: Set up Go 1.24
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23.x'
+        go-version: '1.24.x'
         cache: false
 
     - name: Lint
-      uses: golangci/golangci-lint-action@v6
+      uses: golangci/golangci-lint-action@v7
       with:
-        args: --build-tags integration -p bugs -p unused --timeout=3m
+        args: --build-tags integration --timeout=3m
 
     - name: build install
       run: make
 
     - name: Prepare build environment
       shell: bash
-      run: ./prepare.sh ${{ matrix.os }}
+      run: ./prepare.sh ${{ matrix.os.name }}
 
     - name: Build docker image for workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir debian \
-          --file docker-make.${{ matrix.os }}.yaml \
+          --file docker-make.${{ matrix.os.name }}.yaml \
           --no-cache \
           --summary \
           --no-lint \
-          --no-push
+          --build-arg SEMVER_PATCH=-stable
 
     - name: Build docker image for firewalls and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir firewall \
-          --build-only ${{ matrix.os }} \
+          --build-only ${{ matrix.os.name }} \
           --no-cache \
           --no-pull \
           --summary \
           --no-lint \
-          --no-push
-      if: ${{ matrix.os == 'ubuntu' }}
+          --build-arg SEMVER_PATCH=-stable
+      if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh debian-nvidia
-      if: ${{ matrix.os == 'debian' }}
+      if: ${{ matrix.os.name == 'debian' }}
 
     - name: Build docker image for debian-nvidia based workers and export tarball
       run: |
@@ -91,8 +98,8 @@ jobs:
           --no-pull \
           --summary \
           --no-lint \
-          --no-push
-      if: ${{ matrix.os == 'debian' }}
+          --build-arg SEMVER_PATCH=-stable
+      if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os
@@ -104,6 +111,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: metal-stack
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - uses: google-github-actions/auth@v2
       with:
         credentials_json: '${{ secrets.GCP_SA_KEY }}'
@@ -111,10 +125,10 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Set up Go 1.23
+    - name: Set up Go 1.24
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23.x'
+        go-version: '1.24.x'
         cache: false
 
     - name: build install
@@ -124,8 +138,6 @@ jobs:
       run: ./prepare.sh almalinux
     - name: Build docker image for almalinux based workers and export tarball
       run: |
-        DOCKER_MAKE_REGISTRY_LOGIN_USER="metalstack+ci" \
-        DOCKER_MAKE_REGISTRY_LOGIN_PASSWORD="${{ secrets.QUAY_IO_TOKEN }}" \
         TMPDIR=/var/tmp \
         docker-make \
           --work-dir almalinux \
@@ -133,6 +145,7 @@ jobs:
           --no-cache \
           --summary \
           --no-lint \
-          --no-push
+          --build-arg SEMVER_PATCH=-stable
+
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os

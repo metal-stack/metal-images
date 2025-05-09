@@ -19,16 +19,23 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: metal-stack
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Go 1.23
+      - name: Set up Go 1.24
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23.x'
+          go-version: '1.24.x'
           cache: false
 
       - run: |
@@ -39,7 +46,52 @@ jobs:
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
 
+          docker pull ghcr.io/metal-stack/debian:12-stable
+          docker tag ghcr.io/metal-stack/debian:12-stable ghcr.io/metal-stack/debian:12
+          docker tag ghcr.io/metal-stack/debian:12-stable ghcr.io/metal-stack/debian:latest
+          docker push ghcr.io/metal-stack/debian:12
+
+          docker pull ghcr.io/metal-stack/debian-nvidia:12-stable
+          docker tag ghcr.io/metal-stack/debian-nvidia:12-stable ghcr.io/metal-stack/debian-nvidia:12
+          docker tag ghcr.io/metal-stack/debian-nvidia:12-stable ghcr.io/metal-stack/debian-nvidia:latest
+          docker push ghcr.io/metal-stack/debian-nvidia:12
+
+          docker pull ghcr.io/metal-stack/ubuntu:24.04-stable
+          docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:24.04
+          docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:latest
+          docker push ghcr.io/metal-stack/ubuntu:24.04
+
+          docker pull ghcr.io/metal-stack/almalinux:9-stable
+          docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:9
+          docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:latest
+          docker push ghcr.io/metal-stack/almalinux:9
+
+          docker pull ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
+          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu-stable ghcr.io/metal-stack/firewall:3.0-ubuntu
+          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu-stable ghcr.io/metal-stack/firewall:latest
+          docker push ghcr.io/metal-stack/firewall:3.0-ubuntu
+
           PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
+
+      - name: Run Grype scan for debian
+        id: grype-scan-debian
+        uses: anchore/scan-action@v6
+        with:
+          image: ghcr.io/metal-stack/debian:latest
+          fail-build: false
+          additional-args: "-c .grype.yaml"
+          output-format: table
+
+      - name: Find issues for debian vulnerabilities
+        if: ${{ steps.grype-scan-debian.outcome == 'success' }}
+        id: debian-issues
+        uses: lee-dohm/select-matching-issues@v1
+        with:
+          query: 'label:debian-vulnerability'
+          token: ${{ github.token }}
+
+      - name: Close fixed vulnerability issues
+        run: cat ${{ steps.debian-issues.outputs.path }} | xargs gh issue close
 
       - name: Update release body
         id: update_release

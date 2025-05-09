@@ -1,0 +1,8 @@
+# We only want to check for updated OS packages
+only-fixed: true
+
+ignore:
+ - package:
+     type: "go-module"
+ - package:
+     type: "linux-kernel"

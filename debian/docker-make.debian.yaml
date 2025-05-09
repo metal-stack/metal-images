@@ -1,16 +1,16 @@
 ---
 version: '1'
 name: debian
-username: metalstack
-registry-host: quay.io
+username: metal-stack
+registry-host: ghcr.io
 default-build-args:
   - IGNITION_BRANCH=v0.36.2
-  - GOLLDPD_VERSION=v0.4.8
+  - GOLLDPD_VERSION=v0.4.9
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
   - OS_NAME=debian
   - DOCKER_APT_OS=debian
-  - CRI_VERSION=v1.32.0
+  - CRI_VERSION=v1.33.0
   - ICE_VERSION=1.14.13
   - ICE_PKG_VERSION=1.3.36.0
   - CIS_VERSION=v4.1-4
@@ -19,17 +19,16 @@ builds:
     name: "Debian 12"
     tags:
       - ${SEMVER}
-      - ${SEMVER_MAJOR_MINOR}
     build-args:
       - BASE_OS_VERSION=bookworm
       - DOCKER_APT_CHANNEL=bookworm
       - FRR_VERSION=frr-10.2
-      - FRR_VERSION_DETAIL=10.2.1-0~deb12u1
+      - FRR_VERSION_DETAIL=10.2.2-0~deb12u1
       - FRR_APT_CHANNEL=bookworm
       - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-      - KERNEL_VERSION=6.1.0-31
+      - KERNEL_VERSION=6.1.0-34
     after:
-      - cd ../ && OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} ./test.sh quay.io/metalstack/${OS_NAME}:${SEMVER}
+      - cd ../ && OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh

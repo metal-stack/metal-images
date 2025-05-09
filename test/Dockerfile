@@ -1,4 +1,4 @@
-FROM quay.io/metalstack/ubuntu:24.04 AS vmlinux-builder
+FROM ghcr.io/metal-stack/ubuntu:24.04 AS vmlinux-builder
 
 RUN apt-get update && apt-get install --yes binutils wget zstd
 RUN wget -O metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
