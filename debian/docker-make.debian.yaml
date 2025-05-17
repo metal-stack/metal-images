@@ -4,7 +4,7 @@ name: debian
 username: metal-stack
 registry-host: ghcr.io
 default-build-args:
-  - IGNITION_BRANCH=v0.36.2
+  - IGNITION_BRANCH=v0.36.2-go-1.24
   - GOLLDPD_VERSION=v0.4.9
   - SEMVER_PATCH=${SEMVER_PATCH}
   - BASE_OS_NAME=debian
