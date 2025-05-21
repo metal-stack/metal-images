@@ -66,6 +66,7 @@ RUN set -ex \
     iputils-ping \
     iproute2 \
     jq \
+    libpcre2-posix3 \
     lsb-release \
     locales \
     lvm2 \
