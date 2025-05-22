@@ -5,8 +5,7 @@ readonly SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
 readonly DOCKER_IMAGE="ghcr.io/metal-stack/${OS_NAME}:${SEMVER}"
 readonly IMAGE_BASENAME=img
 
-readonly SEMVER_PATCH_DIR=$(echo "${SEMVER_PATCH}" | tr -d ".")
-readonly TARGET_PATH="images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/${SEMVER_PATCH_DIR}"
+readonly TARGET_PATH="images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}"
 readonly EXPORT_DIRECTORY="../${TARGET_PATH}"
 
 readonly TAR="${IMAGE_BASENAME}.tar"
