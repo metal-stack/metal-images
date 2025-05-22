@@ -66,8 +66,6 @@ RUN set -ex \
     iputils-ping \
     iproute2 \
     jq \
-    libpcre2-posix3 \
-    libyang2 \
     lsb-release \
     locales \
     lvm2 \
@@ -110,7 +108,7 @@ RUN set -ex \
  && curl -s https://deb.frrouting.org/frr/keys.gpg | tee /usr/share/keyrings/frrouting.gpg > /dev/null \
  && echo "deb [signed-by=/usr/share/keyrings/frrouting.gpg] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
  && apt update \
- && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
+ && apt install --yes --no-install-recommends libyang2t64 frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # Install Intel Firmware for e800 based network cards
  && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
