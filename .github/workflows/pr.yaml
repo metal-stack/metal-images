@@ -85,6 +85,7 @@ jobs:
           --work-dir firewall \
           --build-only ${{ matrix.os.name }} \
           --no-cache \
+          --no-pull \
           --summary \
           --no-lint \
           --build-arg SEMVER_PATCH=-${{ github.head_ref }}
