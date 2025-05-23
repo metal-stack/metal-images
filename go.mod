@@ -9,7 +9,7 @@ require (
 	github.com/metal-stack/metal-go v0.41.2
 	github.com/metal-stack/metal-hammer v0.13.11
 	github.com/metal-stack/metal-lib v0.22.1
-	github.com/metal-stack/metal-networker v0.46.2-0.20250507175615-07cdce7f5b8b
+	github.com/metal-stack/metal-networker v0.46.2
 	github.com/metal-stack/v v1.0.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/afero v1.14.0
