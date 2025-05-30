@@ -169,7 +169,6 @@ jobs:
       with:
         image: ghcr.io/metal-stack/debian:latest
         fail-build: false
-        additional-args: "-c .grype.yaml"
         output-format: table
         output-file: scan-results.md
 
