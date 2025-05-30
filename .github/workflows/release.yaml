@@ -73,26 +73,6 @@ jobs:
 
           PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
 
-      - name: Run Grype scan for debian
-        id: grype-scan-debian
-        uses: anchore/scan-action@v6
-        with:
-          image: ghcr.io/metal-stack/debian:latest
-          fail-build: false
-          additional-args: "-c .grype.yaml"
-          output-format: table
-
-      - name: Find issues for debian vulnerabilities
-        if: ${{ steps.grype-scan-debian.outcome == 'success' }}
-        id: debian-issues
-        uses: lee-dohm/select-matching-issues@v1
-        with:
-          query: 'label:debian-vulnerability'
-          token: ${{ github.token }}
-
-      - name: Close fixed vulnerability issues
-        run: cat ${{ steps.debian-issues.outputs.path }} | xargs gh issue close
-
       - name: Update release body
         id: update_release
         uses: tubone24/update_release@v1.3.1
