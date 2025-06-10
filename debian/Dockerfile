@@ -48,7 +48,6 @@ RUN set -ex \
     apt-transport-https \
     apt-utils \
     ca-certificates \
-    cloud-init \
     cpufrequtils \
     curl \
     dbus \
@@ -117,10 +116,6 @@ RUN set -ex \
  && rm -rf ice* \
  # install kernel and stuff
  && /kernel-installation.sh \
- # remove dhclient which could lead to dangerous configurations, not present anymore on ubuntu 24.04
- && apt-get remove --yes isc-dhcp-client || true \
- # remove netplan from ubuntu 24.04
- && apt-get remove --yes netplan.io || true \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
  # Remove devel and orphaned packages
@@ -141,10 +136,6 @@ RUN chmod 600 /etc/ssh/sshd_config \
  && chmod -R 640 /var/log \
  && chown -R root:root /var/log
 
-# Copy the dependencies of `cloud-init-custom.service` into the image.
-COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
-COPY /cloud-init/cloud-init-custom.sh /etc/metal/
-
 # Enable all required systemd services
 RUN systemctl set-default multi-user.target \
  && systemctl enable lldpd.service \
@@ -153,7 +144,6 @@ RUN systemctl set-default multi-user.target \
                      systemd-networkd \
                      systemd-timesyncd \
                      watchdog.service \
-                     cloud-init-custom.service \
                      serial-getty@ttyS1.service \
  && systemctl disable console-getty.service \
  && systemctl mask console-getty.service \

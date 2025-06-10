@@ -32,7 +32,6 @@ RUN set -ex \
     audit \
     ca-certificates \
     chrony \
-    cloud-init \
     dbus \
     efibootmgr \
     gettext \
