@@ -61,7 +61,7 @@ echo "ssh is available"
 sleep 5
 
 cd test
-IP=${IP} MACHINE_TYPE=${MACHINE_TYPE} ./test.sh
+IP=${IP} MACHINE_TYPE=${MACHINE_TYPE} OS_NAME=${OS_NAME} ./test.sh
 cd -
 
 sudo ignite stop "${VM_NAME}"

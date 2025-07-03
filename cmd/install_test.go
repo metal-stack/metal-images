@@ -208,7 +208,7 @@ func Test_installer_detectFirmware(t *testing.T) {
 	}
 }
 
-func Test_installer_writeResolvConf(t *testing.T) {
+func Test_installer_writeDNSConf(t *testing.T) {
 	tests := []struct {
 		name    string
 		fsMocks func(fs afero.Fs)
@@ -217,27 +217,14 @@ func Test_installer_writeResolvConf(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "resolv.conf gets written",
+			name: "overwrite /etc/systemd/resolved.conf.d/dns.conf with custom DNS",
 			fsMocks: func(fs afero.Fs) {
-				require.NoError(t, afero.WriteFile(fs, "/etc/resolv.conf", []byte(""), 0755))
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/resolved.conf.d/dns.conf", []byte(""), 0755))
 			},
-			want: `nameserver 8.8.8.8
-nameserver 8.8.4.4
-`,
-			wantErr: nil,
-		},
-		{
-			name: "resolv.conf gets written, file is not present",
-			want: `nameserver 8.8.8.8
-nameserver 8.8.4.4
-`,
-			wantErr: nil,
-		},
-		{
-			name:   "overwrite resolv.conf with custom DNS",
 			config: &api.InstallerConfig{DNSServers: []*models.V1DNSServer{{IP: pointer.Pointer("1.2.3.4")}, {IP: pointer.Pointer("5.6.7.8")}}},
-			want: `nameserver 1.2.3.4
-nameserver 5.6.7.8
+			want: `[Resolve]
+DNS=1.2.3.4 5.6.7.8
+LLMNR=no
 `,
 			wantErr: nil,
 		},
@@ -255,16 +242,14 @@ nameserver 5.6.7.8
 				tt.fsMocks(i.fs)
 			}
 
-			if tt.config != nil {
-				i.config = tt.config
-			}
+			i.config = tt.config
 
-			err := i.writeResolvConf()
+			err := i.writeSystemdDNSConf()
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Errorf("error diff (+got -want):\n %s", diff)
 			}
 
-			content, err := afero.ReadFile(i.fs, "/etc/resolv.conf")
+			content, err := afero.ReadFile(i.fs, "/etc/systemd/resolved.conf.d/dns.conf")
 			require.NoError(t, err)
 
 			if diff := cmp.Diff(tt.want, string(content)); diff != "" {
@@ -486,6 +471,7 @@ func Test_installer_fixPermissions(t *testing.T) {
 			fsMocks: func(fs afero.Fs) {
 				require.NoError(t, fs.MkdirAll("/var/tmp", 0000))
 				require.NoError(t, afero.WriteFile(fs, "/etc/hosts", []byte("127.0.0.1"), 0000))
+				require.NoError(t, afero.WriteFile(fs, "/etc/systemd/resolved.conf.d/dns.conf", []byte("8.8.8.8"), 0000))
 			},
 			wantErr: nil,
 		},
@@ -512,6 +498,10 @@ func Test_installer_fixPermissions(t *testing.T) {
 			assert.Equal(t, fs.FileMode(01777).Perm(), info.Mode().Perm())
 
 			info, err = i.fs.Stat("/etc/hosts")
+			require.NoError(t, err)
+			assert.Equal(t, fs.FileMode(0644).Perm(), info.Mode().Perm())
+
+			info, err = i.fs.Stat("/etc/systemd/resolved.conf.d/dns.conf")
 			require.NoError(t, err)
 			assert.Equal(t, fs.FileMode(0644).Perm(), info.Mode().Perm())
 		})

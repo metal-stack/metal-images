@@ -65,9 +65,14 @@ func (i *installer) do() error {
 		}
 	}
 
-	err = i.writeResolvConf()
+	switch i.oss {
+	case osUbuntu:
+		err = i.writeSystemdDNSConf()
+	case osDebian:
+		err = i.writeResolvConf()
+	}
 	if err != nil {
-		i.log.Warn("writing resolv.conf failed", "error", err)
+		i.log.Warn("writing dns configuration failed", "error", err)
 		return err
 	}
 
@@ -162,14 +167,60 @@ func (i *installer) fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+func (i *installer) writeSystemdDNSConf() error {
+	// configuration file to apply custom dns configuration
+	const f = "/etc/systemd/resolved.conf.d/dns.conf"
+	// generated file by systemd-resolved
+	const target = "/run/systemd/resolve/stub-resolv.conf"
+	// reflects dns configuration for the system
+	const link = "/etc/resolv.conf"
+
+	// cleanup first
+	i.log.Info("delete", "file", link)
+	err := i.fs.Remove(link)
+	if err != nil {
+		i.log.Info("failed to delete", "file", f)
+	}
+
+	// create symlink for /etc/resolve.conf
+	if symlinkFs, ok := i.fs.(afero.Linker); ok {
+		err := symlinkFs.SymlinkIfPossible(target, link)
+		if err != nil {
+			i.log.Info("failed to create symlink", "file", link)
+		}
+		i.log.Info("successfully created symlink to", "file", target)
+	} else {
+		i.log.Info("filesystem does not support symlinks")
+	}
+
+	// configure dns for systemd-resolved
+	i.log.Info("write configuration", "file", f)
+	err = i.fs.Remove(f)
+	if err != nil {
+		i.log.Info("config file not present", "file", f)
+	}
+
+	addresses := []string{"8.8.8.8"}
+	var found bool
+	for _, dnsServer := range i.config.DNSServers {
+		if dnsServer.IP == nil {
+			continue
+		}
+		if !found {
+			addresses = []string{}
+			found = true
+		}
+		addresses = append(addresses, *dnsServer.IP)
+	}
+	s := fmt.Sprintf("[Resolve]\nDNS=%s\nLLMNR=no\n", strings.Join(addresses, " "))
+
+	content := []byte(s)
+	return afero.WriteFile(i.fs, f, content, 0644)
+}
+
 func (i *installer) writeResolvConf() error {
 	const f = "/etc/resolv.conf"
 	i.log.Info("write configuration", "file", f)
-	// Must be written here because during docker build this file is synthetic
-	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
-	// most probably because the resolved must be running in the internet facing vrf.
-	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove(f)
 	if err != nil {
 		i.log.Info("config file not present", "file", f)
@@ -451,8 +502,9 @@ func (i *installer) copySSHKeys() error {
 func (i *installer) fixPermissions() error {
 	i.log.Info("fix permissions")
 	for p, perm := range map[string]fs.FileMode{
-		"/var/tmp":   01777,
-		"/etc/hosts": 0644,
+		"/var/tmp":                              01777,
+		"/etc/hosts":                            0644,
+		"/etc/systemd/resolved.conf.d/dns.conf": 0644,
 	} {
 		err := i.fs.Chmod(p, perm)
 		if err != nil {
