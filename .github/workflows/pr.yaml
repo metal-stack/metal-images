@@ -173,7 +173,7 @@ jobs:
         output-file: scan-results.md
 
     - name: 📮 Create issue if vulnerabilities found in debian
-      if: ${{ failure() && steps.grype-scan-debian.outcome == 'failure' }}
+      if: ${{ steps.grype-scan-debian.outcome == 'success' }}
       uses: dacbd/create-issue-action@main
       with:
         token: ${{ github.token }}
