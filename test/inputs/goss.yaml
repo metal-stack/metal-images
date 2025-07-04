@@ -65,15 +65,11 @@ file:
     exists: true
     contents:
     - "NTP=1.pool.ntp.org"
-  "/etc/systemd/resolved.conf.d/dns.conf":
-    exists: true
-    contents:
-    - DNS=8.8.8.8
 {{ end }}
   "/etc/resolv.conf":
     exists: true
     contents:
-    - nameserver 8.8.8.8
+    - nameserver 8.8.4.4
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "/etc/hostname":
@@ -93,6 +89,10 @@ file:
     exists: true
     contents:
     - pool 1.pool.ntp.org iburst
+  "/etc/resolv.conf":
+    exists: true
+    contents:
+    - nameserver 8.8.4.4
 {{ end }}
 service:
 {{ if eq .Env.OS "almalinux" }}

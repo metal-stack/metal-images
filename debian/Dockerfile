@@ -76,6 +76,7 @@ RUN set -ex \
     socat \
     sudo \
     systemd \
+    systemd-resolved- \
     systemd-sysv \
     systemd-timesyncd \
     tcpdump \

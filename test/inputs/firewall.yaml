@@ -62,3 +62,5 @@ nics:
         neighbors: []
 ntp_servers:
   - address: 1.pool.ntp.org
+dns_servers:
+  - ip: 8.8.4.4
