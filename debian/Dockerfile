@@ -1,5 +1,5 @@
-ARG BASE_OS_NAME
-ARG BASE_OS_VERSION
+ARG BASE_OS_NAME=debian
+ARG BASE_OS_VERSION=12
 
 FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
@@ -19,8 +19,6 @@ FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 ARG FRR_VERSION
 ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
-ARG DOCKER_APT_OS
-ARG DOCKER_APT_CHANNEL
 ARG FRR_APT_CHANNEL
 ARG CRI_VERSION
 ARG SEMVER_MAJOR_MINOR
@@ -28,10 +26,11 @@ ARG KERNEL_VERSION
 ARG UBUNTU_MAINLINE_KERNEL_VERSION
 ARG ICE_VERSION
 ARG ICE_PKG_VERSION
+ARG CONTAINERD_VERSION
+ARG RUNC_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    DOCKER_URL=https://download.docker.com \
     SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} \
     UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
 
@@ -90,10 +89,14 @@ RUN set -ex \
  && userdel -f ubuntu || true \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
- && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
- && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
- && apt-get update \
- && apt-get install --yes --no-install-recommends containerd.io \
+ # install containerd
+ && curl -fLsS https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz -o /tmp/containerd.tar.gz \
+ && tar -xf /tmp/containerd.tar.gz -C /usr \
+ && mkdir -p /var/bin/containerruntimes /etc/containerd \
+ && ls -l /lib/systemd/system \
+ # install runc
+ && curl -fLsS https://github.com/opencontainers/runc/releases/download/v${RUNC_VERSION}/runc.amd64 -o /usr/bin/runc \
+ && chmod 755 /usr/bin/runc \
  # generate a default containerd config because the one coming with the package prevents GNA to create a proper config for cgroup v2
  && /usr/bin/containerd config default > /etc/containerd/config.toml \
  # Install crictl to be able to manipulate containers managed with containerd
