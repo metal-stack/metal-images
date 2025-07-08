@@ -3,12 +3,12 @@
 set -ex
 
 echo "copy input files and goss"
-scp -o StrictHostKeyChecking=no -i ./key ./inputs/* "root@${IP}":/
+scp -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ./key ./inputs/* "root@${IP}":/
 
 echo "do machine test"
 
 # somehow chrony@vrf104009 needs a double restart to work
-ssh -o StrictHostKeyChecking=no -i ./key "root@${IP}" <<EOF
+ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ./key "root@${IP}" <<EOF
     set -e
     MACHINE_TYPE=${MACHINE_TYPE} /prepare.sh
     # install go fails in a vm because grub-install will always fail.

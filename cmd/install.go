@@ -166,10 +166,6 @@ func (i *installer) writeResolvConf() error {
 	const f = "/etc/resolv.conf"
 	i.log.Info("write configuration", "file", f)
 	// Must be written here because during docker build this file is synthetic
-	// FIXME enable systemd-resolved based approach again once we figured out why it does not work on the firewall
-	// most probably because the resolved must be running in the internet facing vrf.
-	// ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-	// in ignite this file is a symlink to /proc/net/pnp, to pass integration test, remove this first
 	err := i.fs.Remove(f)
 	if err != nil {
 		i.log.Info("config file not present", "file", f)

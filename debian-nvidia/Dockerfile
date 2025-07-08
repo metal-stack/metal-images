@@ -1,7 +1,8 @@
 ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
+ARG SEMVER_PATCH
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
+FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}${SEMVER_PATCH}
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -36,4 +37,3 @@ RUN set -ex \
     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
  && apt-get update \
  && apt-get install --yes nvidia-container-toolkit
-
