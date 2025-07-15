@@ -19,7 +19,7 @@ import (
 	"github.com/metal-stack/metal-networker/pkg/netconf"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 	"github.com/metal-stack/metal-hammer/pkg/api"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 func main() {
