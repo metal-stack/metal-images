@@ -1,4 +1,4 @@
-ARG BASE_OS_VERSION
+ARG BASE_OS_VERSION=9
 
 FROM golang:1.22-bullseye AS ignition-builder
 ARG IGNITION_BRANCH
@@ -80,7 +80,7 @@ RUN curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLD
 
 # Install FRR see https://rpm.frrouting.org/ for available channels
 RUN set -ex \
- && curl -fLsS https://rpm.frrouting.org/repo/${FRR_VERSION}-repo-1-0.el9.noarch.rpm -o /tmp/frr-repo.rpm \
+ && curl -fLsS https://rpm.frrouting.org/repo/${FRR_VERSION}-repo.el9.noarch.rpm -o /tmp/frr-repo.rpm \
  && dnf install -y /tmp/frr-repo.rpm \
  && dnf install -y frr frr-pythontools
 
