@@ -16,19 +16,19 @@ default-build-args:
   - CIS_VERSION=v4.1-4
 builds:
   -
-    name: "Debian 12"
+    name: "Debian 13"
     tags:
       - ${SEMVER}
     build-args:
-      - BASE_OS_VERSION=bookworm
-      - DOCKER_APT_CHANNEL=bookworm
-      - FRR_VERSION=frr-stable
-      - FRR_VERSION_DETAIL=10.3.1-0~deb12u1
+      - BASE_OS_VERSION=trixie
+      - DOCKER_APT_CHANNEL=trixie
+      - FRR_VERSION=frr-10
+      - FRR_VERSION_DETAIL=10.4.0-0~deb12u1
       - FRR_APT_CHANNEL=bookworm
-      - SEMVER_MAJOR_MINOR=12
+      - SEMVER_MAJOR_MINOR=13
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-      - KERNEL_VERSION=6.1.0-37
+      - KERNEL_VERSION=6.12.31
     after:
       - cd ../ && OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
       - OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
