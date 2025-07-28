@@ -1,13 +1,13 @@
 ARG BASE_OS_NAME=debian
 ARG BASE_OS_VERSION=bookworm
 
-FROM golang:1.22-bookworm AS ignition-builder
+FROM golang:1.24-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
  && apt-get update \
  && apt-get install -y libblkid-dev \
- && git clone https://github.com/flatcar/ignition.git \
+ && git clone https://github.com/metal-stack/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
  && make \
