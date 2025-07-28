@@ -75,6 +75,12 @@ make nvidia
 make almalinux
 ```
 
+*IMPORTANT* if you prefer the old docker build output instead of the fancy buildx srolling behind output, do the following:
+
+```bash
+BUILDKIT_PROGRESS=plain make debian
+```
+
 For integration testing the images are started as [firecracker vm](https://firecracker-microvm.github.io/) with [weaveworks/ignite](https://github.com/weaveworks/ignite) and basic properties like interfaces to other metal-stack components, kernel parameters, internet reachability, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. The integration tests are also executed when you build an image locally with.
 
 ### Debugging Image Provisioning

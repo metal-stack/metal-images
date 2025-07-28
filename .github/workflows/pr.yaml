@@ -163,28 +163,3 @@ jobs:
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
 
-    - name: 🛡️ Run Grype scan for debian
-      id: grype-scan-debian
-      uses: anchore/scan-action@v6
-      with:
-        image: ghcr.io/metal-stack/debian:latest
-        fail-build: false
-        output-format: table
-        output-file: scan-results.md
-
-    - name: 📮 Create issue if vulnerabilities found in debian
-      if: ${{ failure() && steps.grype-scan-debian.outcome == 'failure' }}
-      uses: dacbd/create-issue-action@main
-      with:
-        token: ${{ github.token }}
-        title: "🛑 Alert for vulnerable packages in the debian image"
-        body: |
-          **Security scan detected fixed vulnerabilities**
-
-          '''
-          $ cat scan-results.md
-          '''
-          _Scan executed at: ${{ steps.date.outputs.timestamp }}_
-
-          Hint: This issue will be automatically closed once an image with no vulnerabilities is built.
-        labels: security,automated-alert,debian-vulnerability

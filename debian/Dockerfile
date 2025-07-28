@@ -1,5 +1,5 @@
-ARG BASE_OS_NAME
-ARG BASE_OS_VERSION
+ARG BASE_OS_NAME=debian
+ARG BASE_OS_VERSION=bookworm
 
 FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
@@ -118,7 +118,10 @@ RUN set -ex \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
  && rm -rf ice* \
  # install kernel and stuff
- && /kernel-installation.sh \
+ && /kernel-installation.sh
+
+ # Remove cruft which is not needed or dangerous
+ RUN set -ex \
  # remove dhclient which could lead to dangerous configurations, not present anymore on ubuntu 24.04
  && apt-get remove --yes isc-dhcp-client || true \
  # remove netplan from ubuntu 24.04
