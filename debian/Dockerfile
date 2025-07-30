@@ -51,7 +51,7 @@ RUN set -ex \
     cloud-init \
     cpufrequtils \
     curl \
-    cryptsetup \
+    cryptsetup-bin \
     dbus \
     efibootmgr \
     ethtool \
