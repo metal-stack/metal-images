@@ -23,7 +23,7 @@ builds:
       - BASE_OS_VERSION=bookworm
       - DOCKER_APT_CHANNEL=bookworm
       - FRR_VERSION=frr-10
-      - FRR_VERSION_DETAIL=10.4.0-0~deb12u1
+      - FRR_VERSION_DETAIL=10.4.1-0~deb12u1
       - FRR_APT_CHANNEL=bookworm
       - SEMVER_MAJOR_MINOR=12
       - SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
