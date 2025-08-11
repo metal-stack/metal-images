@@ -1,5 +1,5 @@
 ARG BASE_OS_NAME=debian
-ARG BASE_OS_VERSION=bookworm
+ARG BASE_OS_VERSION=trixie
 
 FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
@@ -49,7 +49,6 @@ RUN set -ex \
     apt-utils \
     ca-certificates \
     cloud-init \
-    # cpufrequtils \
     curl \
     cryptsetup \
     dbus \

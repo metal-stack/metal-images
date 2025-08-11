@@ -16,6 +16,7 @@ if [ "${ID}" = "ubuntu" ] ; then
     apt-get install --yes \
         /tmp/linux-image* \
         /tmp/linux-modules* \
+        cpufrequtils \
         intel-microcode
 else
     echo "Debian - Install kernel"
