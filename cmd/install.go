@@ -245,15 +245,20 @@ func (i *installer) buildCMDLine() string {
 	i.log.Info("build kernel cmdline")
 
 	rootUUID := i.config.RootUUID
+	var parts []string
 
-	parts := []string{
-		fmt.Sprintf("console=%s", i.config.Console),
+	for _, p := range strings.Fields(i.config.Console) {
+		parts = append(parts, "console="+p)
+	}
+
+	kParts := []string{
 		fmt.Sprintf("root=UUID=%s", rootUUID),
 		"init=/sbin/init",
 		"net.ifnames=0",
 		"biosdevname=0",
 		"nvme_core.io_timeout=300", // 300 sec should be enough for firewalls to be replaced
 	}
+	parts = append(parts, kParts...)
 
 	mdUUID, found := i.findMDUUID()
 	if found {
@@ -265,7 +270,9 @@ func (i *installer) buildCMDLine() string {
 		parts = append(parts, mdParts...)
 	}
 
-	return strings.Join(parts, " ")
+	kernelCMDLine := strings.Join(parts, " ")
+	i.log.Info("resulting kernel cmdline", "cmdline", kernelCMDLine)
+	return kernelCMDLine
 }
 
 func (i *installer) findMDUUID() (mdUUID string, found bool) {
