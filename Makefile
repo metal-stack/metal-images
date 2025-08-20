@@ -38,7 +38,7 @@ test:
 
 .PHONY: debian
 debian: binary
-	docker-make -nNL -w debian -f docker-make.debian.yaml
+	cd debian && docker buildx bake debian-12
 
 .PHONY: nvidia
 nvidia:
@@ -46,7 +46,7 @@ nvidia:
 
 .PHONY: ubuntu
 ubuntu: binary
-	docker-make -nNL -w debian -f docker-make.ubuntu.yaml
+	cd debian && docker buildx bake ubuntu-2404
 
 .PHONY: firewall
 firewall: ubuntu
