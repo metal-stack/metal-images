@@ -42,7 +42,8 @@ debian: binary
 
 .PHONY: nvidia
 nvidia:
-	docker-make -nNL -w debian-nvidia -f docker-make.yaml
+	cd debian-nvidia; SEMVER_PATCH=${SEMVER_PATCH} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} docker buildx bake --no-cache debian-nvidia
+	cd ..; OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
 
 .PHONY: ubuntu
 ubuntu: binary

@@ -98,15 +98,7 @@ jobs:
 
     - name: Build docker image for debian-nvidia based workers and export tarball
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian-nvidia \
-          --file docker-make.yaml \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        make OS_NAME="debian-nvidia" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" nvidia
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
