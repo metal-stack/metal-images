@@ -67,14 +67,7 @@ jobs:
 
     - name: Build docker image for workers and export tarball
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian \
-          --file docker-make.${{ matrix.os.name }}.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        make CIS_VERSION="v4.1-4" OS_NAME="${{ matrix.os.name }}" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" ${{ matrix.os.name }}
 
     # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
     # and then goss tests fail

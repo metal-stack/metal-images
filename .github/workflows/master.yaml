@@ -61,14 +61,7 @@ jobs:
 
     - name: Build docker image for workers and export tarball
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian \
-          --file docker-make.${{ matrix.os.name }}.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-stable
+        make CIS_VERSION="v4.1-4" OS_NAME="${{ matrix.os.name }}" SEMVER_PATCH="-stable" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" ${{ matrix.os.name }}
 
     - name: Build docker image for firewalls and export tarball
       run: |
