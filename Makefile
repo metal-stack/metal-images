@@ -39,19 +39,19 @@ test:
 .PHONY: debian
 debian: binary
 	cd debian; docker buildx bake --no-cache debian-12
-	cd ..; OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
+	OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ../test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
 
 .PHONY: nvidia
 nvidia:
 	cd debian-nvidia; SEMVER_PATCH=${SEMVER_PATCH} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} docker buildx bake --no-cache debian-nvidia
-	cd ..; OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
+	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
 
 .PHONY: ubuntu
 ubuntu: binary
 	cd debian; docker buildx bake --no-cache ubuntu-2404
-	cd ..; OS_NAME=${OS_NAME} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
+	OS_NAME=${OS_NAME} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ../test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
 
 .PHONY: firewall
 firewall: ubuntu
