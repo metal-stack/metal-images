@@ -159,7 +159,6 @@ RUN systemctl set-default multi-user.target \
                      systemd-timesyncd \
                      watchdog.service \
                      cloud-init-custom.service \
-                     serial-getty@ttyS1.service \
  && systemctl disable console-getty.service \
  && systemctl mask console-getty.service \
  && update-ca-certificates \
