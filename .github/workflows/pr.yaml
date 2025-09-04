@@ -16,6 +16,8 @@ jobs:
     strategy:
       matrix:
         os:
+        - name: debian
+          version: 12
         - name: ubuntu
           version: 24.04
 
@@ -109,3 +111,55 @@ jobs:
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+
+  almalinux:
+    name: Build Almalinux based OS image
+    runs-on: self-hosted
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: metal-stack
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Set up Go 1.24
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.x'
+        cache: false
+
+    - name: build install
+      run: make
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh almalinux
+    - name: Build docker image for almalinux based workers and export tarball
+      run: |
+        TMPDIR=/var/tmp \
+        docker-make \
+          --work-dir almalinux \
+          --file docker-make.yaml \
+          --no-cache \
+          --summary \
+          --no-lint \
+          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+
+    - uses: google-github-actions/setup-gcloud@v0
+      with:
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Upload image tarballs to GCS
+      run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+
