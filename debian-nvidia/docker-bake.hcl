@@ -1,4 +1,4 @@
-group "all" {
+group "default" {
     targets = ["debian-nvidia"]
 }
 

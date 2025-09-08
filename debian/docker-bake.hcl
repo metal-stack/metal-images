@@ -1,5 +1,5 @@
-group "all" {
-    targets = ["debian-12","ubuntu-2404"]
+group "default" {
+    targets = ["debian-12", "ubuntu-2404"]
 }
 
 target "_common" {
@@ -12,6 +12,10 @@ target "_common" {
     }
 }
 
+# declare empty var in order to be able to get value from shell
+variable "SEMVER_PATCH" {}
+variable "SEMVER_MAJOR_MINOR" {}
+
 target "debian-12" {
     inherits = ["_common"]
     args = {
@@ -22,7 +26,8 @@ target "debian-12" {
         FRR_VERSION ="frr-10"
         FRR_VERSION_DETAIL ="10.4.1-0~deb12u1"
         FRR_APT_CHANNEL ="bookworm"
-        SEMVER_MAJOR_MINOR = 12
+        SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
+        SEMVER_PATCH = "${SEMVER_PATCH}"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
         KERNEL_VERSION = "6.1.0-38"
     }
@@ -41,7 +46,8 @@ target "ubuntu-2404" {
         FRR_VERSION ="frr-10"
         FRR_VERSION_DETAIL ="10.4.1-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
-        SEMVER_MAJOR_MINOR = 24.04
+        SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
+        SEMVER_PATCH = "${SEMVER_PATCH}"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.42"
     }
