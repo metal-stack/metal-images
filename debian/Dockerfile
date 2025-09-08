@@ -1,5 +1,5 @@
 ARG BASE_OS_NAME=debian
-ARG BASE_OS_VERSION=bookworm
+ARG BASE_OS_VERSION=trixie
 
 FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
@@ -49,7 +49,6 @@ RUN set -ex \
     apt-utils \
     ca-certificates \
     cloud-init \
-    cpufrequtils \
     curl \
     cryptsetup \
     dbus \
@@ -91,8 +90,11 @@ RUN set -ex \
  && userdel -f ubuntu || true \
  && curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLDPD_VERSION}/go-lldpd.tgz -o /tmp/go-lldpd.tgz \
  && tar -xf /tmp/go-lldpd.tgz \
- && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
- && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
+ && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg -o /etc/apt/keyrings/docker.asc \
+ && chmod a+r /etc/apt/keyrings/docker.asc \
+ && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null \
  && apt-get update \
  && apt-get install --yes --no-install-recommends containerd.io \
  # generate a default containerd config because the one coming with the package prevents GNA to create a proper config for cgroup v2
