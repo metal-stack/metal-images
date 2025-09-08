@@ -49,13 +49,16 @@ nvidia:
 
 .PHONY: ubuntu
 ubuntu: binary
+	# FIXME: figure out how to override OS_NAME to "ubuntu" if being invoked as dependency of firewall
 	cd debian; docker buildx bake --no-cache ubuntu-2404
-	OS_NAME=${OS_NAME} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ../test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
+	OS_NAME="ubuntu" SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ../test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME="ubuntu" SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
 
 .PHONY: firewall
 firewall: ubuntu
-	docker-make -nNL -w firewall -f docker-make.yaml
+	cd firewall; SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} docker buildx bake --no-cache
+	SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} OS_NAME=${SEMVER}-${OS_NAME} ../test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ../export.sh
 
 .PHONY: almalinux
 almalinux: binary

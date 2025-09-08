@@ -73,15 +73,7 @@ jobs:
     # and then goss tests fail
     - name: Build docker image for firewalls and export tarball
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir firewall \
-          --build-only ${{ matrix.os.name }} \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        make OS_NAME="firewall" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" firewall
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
