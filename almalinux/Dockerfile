@@ -92,7 +92,6 @@ RUN systemctl set-default multi-user.target \
  && systemctl enable lldpd.service \
                      frr.service \
                      watchdog.service \
-                     serial-getty@ttyS1.service \
  && systemctl disable serial-getty@tty1.service \
  && systemctl mask serial-getty@tty1.service \
  && systemctl unmask getty.target \

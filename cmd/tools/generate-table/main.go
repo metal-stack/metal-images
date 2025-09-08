@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/metal-stack/metal-lib/pkg/genericcli/printers"
-	"github.com/olekukonko/tablewriter"
 )
 
 type artifact struct {
@@ -110,9 +109,7 @@ func print(artifacts []*artifact) error {
 	p := printers.NewTablePrinter(printerConfig)
 
 	printerConfig.ToHeaderAndRows = func(data any, wide bool) ([]string, [][]string, error) {
-		p.MutateTable(func(table *tablewriter.Table) {
-			table.SetAutoWrapText(false)
-		})
+		p.DisableAutoWrap(true)
 
 		switch data.(type) {
 		case []*artifact:
