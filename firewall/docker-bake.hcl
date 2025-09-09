@@ -2,28 +2,15 @@ group "default" {
     targets = ["debian", "ubuntu"]
 }
 
-target "_common" {
-    args = {
-        IGNITION_BRANCH = "v0.36.2"
-        GOLLDPD_VERSION = "v0.4.9"
-        CRI_VERSION = "v1.33.0"
-        ICE_VERSION = "1.14.13"
-        ICE_PKG_VERSION = "1.3.36.0"
-    }
-}
-
 # declare empty var in order to be able to get value from shell
 variable "SEMVER_PATCH" {}
 variable "SEMVER_MAJOR_MINOR" {}
 variable "SEMVER" {}
 
 target "debian" {
-    inherits = ["_common"]
     args = {
         BASE_OS_VERSION = 12
         BASE_OS_NAME = "ghcr.io/metal-stack/debian"
-      # see https://packages.debian.org/bookworm/kernel/ for available versions
-        KERNEL_VERSION = "6.1.0-38"
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
@@ -33,14 +20,11 @@ target "debian" {
 }
 
 target "ubuntu" {
-    inherits = ["_common"]
     args = {
         BASE_OS_VERSION = "24.04"
         BASE_OS_NAME = "ghcr.io/metal-stack/ubuntu"
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.42"
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
-        # see https://kernel.ubuntu.com/mainline for available versions
     }
     dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/firewall:${SEMVER}"]
