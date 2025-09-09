@@ -62,4 +62,6 @@ firewall: ubuntu
 
 .PHONY: almalinux
 almalinux: binary
-	docker-make -nNL -w almalinux -f docker-make.yaml
+	cd almalinux; docker buildx bake --no-cache
+	cd ..; OS_NAME=${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	cd almalinux; OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
