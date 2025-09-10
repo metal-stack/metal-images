@@ -38,30 +38,24 @@ test:
 
 .PHONY: debian
 debian: binary
-	cd debian; docker buildx bake --no-cache debian-12
-	cd ..; OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
 	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
 
 .PHONY: nvidia
 nvidia:
-	cd debian-nvidia; SEMVER_PATCH=${SEMVER_PATCH} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} docker buildx bake --no-cache debian-nvidia
-	cd ..; OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
+	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
 
 .PHONY: ubuntu
 ubuntu: binary
-	# FIXME: figure out how to override OS_NAME to "ubuntu" if being invoked as dependency of firewall
-	cd debian; docker buildx bake --no-cache ubuntu-2404
-	cd ..; OS_NAME="ubuntu" SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME="ubuntu" SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
+	OS_NAME=${OS_NAME} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
 
 .PHONY: firewall
-firewall: ubuntu
-	cd firewall; SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} docker buildx bake --no-cache
-	cd ..; SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} OS_NAME=${SEMVER}-${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+firewall:
+	SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} OS_NAME=${SEMVER}-${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
 	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
 
 .PHONY: almalinux
 almalinux: binary
-	cd almalinux; docker buildx bake --no-cache
-	cd ..; OS_NAME=${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+	OS_NAME=${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
 	cd almalinux; OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
