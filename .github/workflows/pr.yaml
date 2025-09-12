@@ -80,7 +80,14 @@ jobs:
 
     - name: Test and export docker image for workers
       run: |
-        make CIS_VERSION="v4.1-4" OS_NAME="${{ matrix.os.name }}" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" ${{ matrix.os.name }}
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        ./export.sh
+      env:
+        CIS_VERSION: v4.1-4
+        OS_NAME: ${{ matrix.os.name }}
+        SEMVER_PATCH: -${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER: ${{ matrix.os.version }}-${{ github.head_ref }}
 
     - name: Build docker image for firewalls
       uses: docker/bake-action@v6
@@ -96,8 +103,13 @@ jobs:
     # and then goss tests fail
     - name: Test and export docker image for firewalls
       run: |
-        make OS_NAME="ubuntu" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" firewall
-        make OS_NAME="firewall" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" firewall
+        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER}
+        ./export.sh
+      env:
+        OS_NAME: firewall
+        SEMVER: 3.0-ubuntu-${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+        SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
@@ -118,7 +130,11 @@ jobs:
 
     - name: Test and export docker image for debian-nvidia based workers
       run: |
-        make OS_NAME="debian-nvidia" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" nvidia
+        ./export.sh
+      env:
+        OS_NAME: debian-nvidia
+        SEMVER_PATCH: -${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -173,7 +189,13 @@ jobs:
 
     - name: Test and export docker image for almalinux based workers
       run: |
-        make OS_NAME="almalinux" SEMVER_PATCH="-${{ github.head_ref }}" SEMVER_MAJOR_MINOR="9" almalinux
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        cd almalinux; ./export.sh
+      env:
+        OS_NAME: almalinux
+        SEMVER_PATCH: -${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER: 9-${{ github.head_ref }}
 
     - uses: google-github-actions/setup-gcloud@v0
       with:

@@ -1,11 +1,11 @@
 target "_common" {
     attest = [
-      "type=provenance,mode=max",
-      "type=sbom",
+        "type=provenance,mode=max",
+        "type=sbom",
     ]
     no-cache = true
     output = [
-      "type=registry",
+        "type=registry",
     ]
 }
 
@@ -60,7 +60,7 @@ target "debian" {
 target "debian-firewall" {
     inherits = ["_common"]
     contexts = {
-      baseapp = "target:debian"
+        baseapp = "target:debian"
     }
     args = {
         BASE_OS_VERSION = 12
@@ -109,7 +109,7 @@ target "ubuntu" {
 target "ubuntu-firewall" {
     inherits = ["_common"]
     contexts = {
-      baseapp = "target:ubuntu"
+        baseapp = "target:ubuntu"
     }
     args = {
         BASE_OS_VERSION = "24.04"

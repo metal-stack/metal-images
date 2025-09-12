@@ -66,18 +66,42 @@ jobs:
       uses: docker/bake-action@v6
       with:
         files: ./docker-bake.hcl
-        set: |
-          ${{ matrix.os.name }}.args.SEMVER_MAJOR_MINOR=${{ matrix.os.version }}
-          ${{ matrix.os.name }}.args.SEMVER_PATCH=-stable
         targets: ${{ matrix.os.name }}
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: ""
+        SEMVER: ${{ matrix.os.version }}
 
     - name: Test and export docker image for workers
       run: |
-        make CIS_VERSION="v4.1-4" OS_NAME="${{ matrix.os.name }}" SEMVER_PATCH="-stable" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" ${{ matrix.os.name }}
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        ./export.sh
+      env:
+        CIS_VERSION: v4.1-4
+        OS_NAME: ${{ matrix.os.name }}
+        SEMVER_PATCH: ""
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER: ${{ matrix.os.version }}
 
-    - name: Build docker image for firewalls and export tarball
+    - name: Build docker image for firewalls
+      uses: docker/bake-action@v6
+      with:
+        files: ./docker-bake.hcl
+        targets: ubuntu-firewall
+      env:
+        SEMVER_PATCH: ""
+        SEMVER: ${{ matrix.os.version }}
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Test and export docker image for firewalls
       run: |
-        make OS_NAME="firewall" SEMVER_PATCH="-stable" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" firewall
+        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER}
+        ./export.sh
+      env:
+        OS_NAME: firewall
+        SEMVER: 3.0-ubuntu
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+        SEMVER_PATCH: ""
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
@@ -89,15 +113,20 @@ jobs:
       uses: docker/bake-action@v6
       with:
         files: ./docker-bake.hcl
-        set: |
-          debian-nvidia.args.SEMVER_MAJOR_MINOR=${{ matrix.os.version }}
-          debian-nvidia.args.SEMVER_PATCH=-stable
         targets: debian-nvidia
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: ""
+        SEMVER: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Test and export docker image for debian-nvidia based workers
       run: |
-        make OS_NAME="debian-nvidia" SEMVER_PATCH="-stable" SEMVER_MAJOR_MINOR="${{ matrix.os.version }}" nvidia
+        ./export.sh
+      env:
+        OS_NAME: debian-nvidia
+        SEMVER_PATCH: ""
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -144,13 +173,21 @@ jobs:
       with:
         files: ./docker-bake.hcl
         set: |
-          almalinux.args.SEMVER_MAJOR_MINOR=9
-          almalinux.args.SEMVER_PATCH="-stable"
         targets: almalinux
+      env:
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER_PATCH: ""
+        SEMVER: 9
 
-    - name: Test and export image for almalinux based workers
+    - name: Test and export docker image for almalinux based workers
       run: |
-        make OS_NAME="almalinux" SEMVER_PATCH="-stable" SEMVER_MAJOR_MINOR="9" almalinux
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        cd almalinux; ./export.sh
+      env:
+        OS_NAME: almalinux
+        SEMVER_PATCH: ""
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER: 9
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os

@@ -35,27 +35,3 @@ binary: test
 .PHONY: test
 test:
 	GO_ENV=testing go test -race -cover ./...
-
-.PHONY: debian
-debian: binary
-	OS_NAME=${OS_NAME} CIS_VERSION=${CIS_VERSION} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
-
-.PHONY: nvidia
-nvidia:
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
-
-.PHONY: ubuntu
-ubuntu: binary
-	OS_NAME=${OS_NAME} SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
-
-.PHONY: firewall
-firewall:
-	SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH} OS_NAME=${SEMVER}-${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
-
-.PHONY: almalinux
-almalinux: binary
-	OS_NAME=${OS_NAME} ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
-	cd almalinux; OS_NAME=${OS_NAME} SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} SEMVER_PATCH=${SEMVER_PATCH} ./export.sh
