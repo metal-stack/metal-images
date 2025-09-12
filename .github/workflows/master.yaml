@@ -47,6 +47,9 @@ jobs:
         go-version: '1.25.x'
         cache: false
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Lint
       uses: golangci/golangci-lint-action@v8
       with:
@@ -59,28 +62,46 @@ jobs:
       shell: bash
       run: ./prepare.sh ${{ matrix.os.name }}
 
-    - name: Build docker image for workers and export tarball
-      run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian \
-          --file docker-make.${{ matrix.os.name }}.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-stable
+    - name: Build docker image for workers
+      uses: docker/bake-action@v6
+      with:
+        files: ./docker-bake.hcl
+        targets: ${{ matrix.os.name }}
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: ""
+        SEMVER: ${{ matrix.os.version }}
 
-    - name: Build docker image for firewalls and export tarball
+    - name: Test and export docker image for workers
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir firewall \
-          --build-only ${{ matrix.os.name }} \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-stable
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        ./export.sh
+      env:
+        CIS_VERSION: v4.1-4
+        OS_NAME: ${{ matrix.os.name }}
+        SEMVER_PATCH: ""
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER: ${{ matrix.os.version }}
+
+    - name: Build docker image for firewalls
+      uses: docker/bake-action@v6
+      with:
+        files: ./docker-bake.hcl
+        targets: ubuntu-firewall
+      env:
+        SEMVER_PATCH: ""
+        SEMVER: ${{ matrix.os.version }}
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Test and export docker image for firewalls
+      run: |
+        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER}
+        ./export.sh
+      env:
+        OS_NAME: firewall
+        SEMVER: 3.0-ubuntu
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+        SEMVER_PATCH: ""
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
@@ -88,17 +109,24 @@ jobs:
       run: ./prepare.sh debian-nvidia
       if: ${{ matrix.os.name == 'debian' }}
 
-    - name: Build docker image for debian-nvidia based workers and export tarball
+    - name: Build docker image for debian-nvidia
+      uses: docker/bake-action@v6
+      with:
+        files: ./docker-bake.hcl
+        targets: debian-nvidia
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: ""
+        SEMVER: ${{ matrix.os.version }}
+      if: ${{ matrix.os.name == 'debian' }}
+
+    - name: Test and export docker image for debian-nvidia based workers
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian-nvidia \
-          --file docker-make.yaml \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-stable
+        ./export.sh
+      env:
+        OS_NAME: debian-nvidia
+        SEMVER_PATCH: ""
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -131,21 +159,35 @@ jobs:
         go-version: '1.25.x'
         cache: false
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: build install
       run: make
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh almalinux
-    - name: Build docker image for almalinux based workers and export tarball
+
+    - name: Build image
+      uses: docker/bake-action@v6
+      with:
+        files: ./docker-bake.hcl
+        set: |
+        targets: almalinux
+      env:
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER_PATCH: ""
+        SEMVER: 9
+
+    - name: Test and export docker image for almalinux based workers
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir almalinux \
-          --file docker-make.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-stable
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        cd almalinux; ./export.sh
+      env:
+        OS_NAME: almalinux
+        SEMVER_PATCH: ""
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER: 9
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os

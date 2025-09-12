@@ -35,23 +35,3 @@ binary: test
 .PHONY: test
 test:
 	GO_ENV=testing go test -race -cover ./...
-
-.PHONY: debian
-debian: binary
-	docker-make -nNL -w debian -f docker-make.debian.yaml
-
-.PHONY: nvidia
-nvidia:
-	docker-make -nNL -w debian-nvidia -f docker-make.yaml
-
-.PHONY: ubuntu
-ubuntu: binary
-	docker-make -nNL -w debian -f docker-make.ubuntu.yaml
-
-.PHONY: firewall
-firewall: ubuntu
-	docker-make -nNL -w firewall -f docker-make.yaml
-
-.PHONY: almalinux
-almalinux: binary
-	docker-make -nNL -w almalinux -f docker-make.yaml
