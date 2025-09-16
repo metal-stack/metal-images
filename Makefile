@@ -35,3 +35,27 @@ binary: test
 .PHONY: test
 test:
 	GO_ENV=testing go test -race -cover ./...
+
+.PHONY: debian
+debian: binary
+	SEMVER_MAJOR_MINOR=12 SEMVER=12 docker buildx bake --no-cache --load debian
+	OS_NAME=debian CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
+
+.PHONY: nvidia
+nvidia:
+	SEMVER_MAJOR_MINOR=12 SEMVER=12 docker buildx bake --no-cache --load debian-nvidia
+
+.PHONY: ubuntu
+ubuntu: binary
+	SEMVER_MAJOR_MINOR=24.04 SEMVER=24.04 docker buildx bake --no-cache --load ubuntu
+	OS_NAME=ubuntu SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
+
+.PHONY: firewall
+firewall: ubuntu
+	SEMVER_MAJOR_MINOR=3.0-ubuntu SEMVER=3.0-ubuntu docker buildx bake --no-cache --load firewall
+	OS_NAME=firewall SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
+
+.PHONY: almalinux
+almalinux: binary
+	SEMVER_MAJOR_MINOR=9 SEMVER=9 docker buildx bake --no-cache --load almalinux
+	OS_NAME=almalinux SEMVER_MAJOR_MINOR=9 ./test.sh ghcr.io/metal-stack/almalinux:9
