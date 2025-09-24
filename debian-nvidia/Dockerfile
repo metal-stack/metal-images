@@ -2,13 +2,13 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG SEMVER_PATCH
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}${SEMVER_PATCH}
+FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR}
 
-COPY context/ /
+COPY --from=ctx . /
 
 RUN set -ex \
  && rm -f /.dockerenv \

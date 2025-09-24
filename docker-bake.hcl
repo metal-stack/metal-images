@@ -3,7 +3,7 @@ target "_common" {
         "type=provenance,mode=max",
         "type=sbom",
     ]
-    no-cache = true
+    # no-cache = true
     output = [
         "type=registry",
     ]
@@ -12,8 +12,8 @@ target "_common" {
 target "_common_args" {
     args = {
         IGNITION_BRANCH = "v0.36.2"
-        GOLLDPD_VERSION = "v0.4.9"
-        CRI_VERSION = "v1.33.0"
+        GOLLDPD_VERSION = "v0.4.10"
+        CRI_VERSION = "v1.34.0"
         ICE_VERSION = "1.14.13"
         ICE_PKG_VERSION = "1.3.36.0"
     }
@@ -26,19 +26,26 @@ variable "SEMVER" {}
 
 target "almalinux" {
     inherits = ["_common", "_common_args"]
+    dockerfile = "./almalinux/Dockerfile"
+    contexts = {
+        ctx = "./almalinux/context"
+    }
     args = {
         BASE_OS_VERSION = 9
         FRR_VERSION="frr-stable"
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
-    dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/almalinux:${SEMVER}"]
-    context = "./almalinux/"
 }
 
 target "debian" {
     inherits = ["_common", "_common_args"]
+    dockerfile = "./debian/Dockerfile"
+    contexts = {
+        cloud-init = "./debian/cloud-init"
+        ctx = "./debian/context"
+    }
     args = {
         BASE_OS_NAME = "debian"
         BASE_OS_VERSION = "bookworm"
@@ -50,44 +57,50 @@ target "debian" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-        KERNEL_VERSION = "6.1.0-38"
+        KERNEL_VERSION = "6.1.0-39"
     }
-    dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/debian:${SEMVER}"]
-    context = "./debian/"
 }
 
 target "debian-firewall" {
     inherits = ["_common"]
+    dockerfile = "./firewall/Dockerfile"
     contexts = {
         baseapp = "target:debian"
+        ctx = "./firewall/context"
     }
     args = {
         BASE_OS_VERSION = 12
         BASE_OS_NAME = "ghcr.io/metal-stack/debian"
-        SEMVER_MAJOR_MINOR = 3.0
+        SEMVER_MAJOR_MINOR = "3.0"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
-    dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/firewall:3.0${SEMVER_PATCH}"]
-    context = "./firewall/"
 }
 
 target "debian-nvidia" {
     inherits = ["_common"]
+    dockerfile = "./debian-nvidia/Dockerfile"
+    contexts = {
+        baseapp = "target:debian"
+        ctx = "./debian-nvidia/context"
+    }
     args = {
         BASE_OS_VERSION = 12
         BASE_OS_NAME = "ghcr.io/metal-stack/debian"
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
-    dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER}"]
-    context = "./debian-nvidia/"
 }
 
 target "ubuntu" {
     inherits = ["_common", "_common_args"]
+    dockerfile = "./debian/Dockerfile"
+    contexts = {
+        cloud-init = "./debian/cloud-init"
+        ctx = "./debian/context"
+    }
     args = {
         BASE_OS_NAME = "ubuntu"
         BASE_OS_VERSION = "24.04"
@@ -99,17 +112,17 @@ target "ubuntu" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.42"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.44"
     }
-    dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER}"]
-    context = "./debian/"
 }
 
 target "ubuntu-firewall" {
     inherits = ["_common"]
+    dockerfile = "./firewall/Dockerfile"
     contexts = {
         baseapp = "target:ubuntu"
+        ctx = "./firewall/context"
     }
     args = {
         BASE_OS_VERSION = "24.04"
@@ -117,8 +130,6 @@ target "ubuntu-firewall" {
         SEMVER_MAJOR_MINOR = "3.0-ubuntu"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
-    dockerfile = "Dockerfile"
     tags = ["ghcr.io/metal-stack/firewall:3.0-ubuntu${SEMVER_PATCH}"]
-    context = "./firewall/"
 }
 

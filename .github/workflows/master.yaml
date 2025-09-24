@@ -13,7 +13,7 @@ env:
 jobs:
   debian_ubuntu:
     name: Build Debian and Ubuntu based OS images
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -67,6 +67,7 @@ jobs:
       with:
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
+        no-cache: true
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
@@ -88,6 +89,7 @@ jobs:
       with:
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
+        no-cache: true
       env:
         SEMVER_PATCH: ""
         SEMVER: ${{ matrix.os.version }}
@@ -114,6 +116,7 @@ jobs:
       with:
         files: ./docker-bake.hcl
         targets: debian-nvidia
+        no-cache: true
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
@@ -172,8 +175,8 @@ jobs:
       uses: docker/bake-action@v6
       with:
         files: ./docker-bake.hcl
-        set: |
         targets: almalinux
+        no-cache: true
       env:
         SEMVER_MAJOR_MINOR: 9
         SEMVER_PATCH: ""

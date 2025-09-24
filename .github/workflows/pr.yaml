@@ -21,7 +21,7 @@ jobs:
         - name: ubuntu
           version: 24.04
 
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
@@ -73,6 +73,7 @@ jobs:
       with:
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
+        no-cache: true
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
@@ -94,6 +95,7 @@ jobs:
       with:
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
+        no-cache: true
       env:
         SEMVER_PATCH: -${{ github.head_ref }}
         SEMVER: ${{ matrix.os.version }}-${{ github.head_ref }}
@@ -122,6 +124,7 @@ jobs:
       with:
         files: ./docker-bake.hcl
         targets: debian-nvidia
+        no-cache: true
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
@@ -180,8 +183,8 @@ jobs:
       uses: docker/bake-action@v6
       with:
         files: ./docker-bake.hcl
-        set: |
         targets: almalinux
+        no-cache: true
       env:
         SEMVER_MAJOR_MINOR: 9
         SEMVER_PATCH: -${{ github.head_ref }}
