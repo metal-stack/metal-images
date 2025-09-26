@@ -35,8 +35,9 @@ RUN apt-get update --quiet \
 # - nftables rules are copied in place; nftables.service will load them on startup.
 # - systemd.generator in `/etc/systemd/system-generators` is used to run applications in custom VRF
 # - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
-COPY --from=ctx ./context/etc/ /etc/
-COPY --from=ctx ./context/suricata-and-chrony-installation.sh /
+COPY --from=ctx . /
+# COPY --from=ctx etc/ /etc/
+# COPY --from=ctx suricata-and-chrony-installation.sh /
 
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh

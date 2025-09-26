@@ -8,7 +8,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR}
 
-COPY --from=ctx ./context/etc/ /etc/
+COPY --from=ctx . /
 
 RUN set -ex \
  && rm -f /.dockerenv \
