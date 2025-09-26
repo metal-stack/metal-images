@@ -3,7 +3,6 @@ target "_common" {
         "type=provenance,mode=max",
         "type=sbom",
     ]
-    # no-cache = true
     output = [
         "type=registry",
     ]
@@ -43,7 +42,7 @@ target "debian" {
     inherits = ["_common", "_common_args"]
     dockerfile = "./debian/Dockerfile"
     contexts = {
-        cloud-init = "./debian/cloud-init"
+        cloudinit = "./debian/cloud-init"
         ctx = "./debian/context"
     }
     args = {
@@ -98,7 +97,7 @@ target "ubuntu" {
     inherits = ["_common", "_common_args"]
     dockerfile = "./debian/Dockerfile"
     contexts = {
-        cloud-init = "./debian/cloud-init"
+        cloudinit = "./debian/cloud-init"
         ctx = "./debian/context"
     }
     args = {
