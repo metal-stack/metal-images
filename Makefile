@@ -51,8 +51,8 @@ ubuntu: binary
 	OS_NAME=ubuntu SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
 
 .PHONY: firewall
-firewall: ubuntu
-	SEMVER_MAJOR_MINOR=3.0-ubuntu SEMVER=3.0-ubuntu docker buildx bake --no-cache --load firewall
+firewall: binary
+	SEMVER_MAJOR_MINOR=3.0-ubuntu SEMVER=3.0-ubuntu docker buildx bake --no-cache --load ubuntu-firewall
 	OS_NAME=firewall SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
 
 .PHONY: almalinux
