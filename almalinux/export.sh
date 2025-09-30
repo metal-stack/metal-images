@@ -16,6 +16,7 @@ readonly PKG="packages.txt"
 # export tarball with checksum from docker image and package list
 mkdir -p "${EXPORT_DIRECTORY}"
 cd "${EXPORT_DIRECTORY}"
+docker rmi "${DOCKER_IMAGE}" || true
 docker export "$(docker create "${DOCKER_IMAGE}")" > ${TAR}
 # FIXME unify with global export
 docker run --rm "${DOCKER_IMAGE}" bash -c "rpm -qa" > ${PKG}

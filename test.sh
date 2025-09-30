@@ -16,6 +16,9 @@ if [[ "$OS_NAME" == *firewall ]]; then
   KERNEL_IMAGE="metal-kernel"
 fi
 
+echo "delete cached images"
+docker rmi "$IMAGE" || true
+
 if [ "${KERNEL_IMAGE}" == "metal-kernel" ]; then
   echo "build metal-kernel oci"
   cd test && docker build . -t metal-kernel:latest && cd -

@@ -16,7 +16,7 @@ readonly PKG="packages.txt"
 # export tarball with checksum from docker image and package list
 mkdir -p "${EXPORT_DIRECTORY}"
 cd "${EXPORT_DIRECTORY}"
-docker rmi "${DOCKER_IMAGE}"
+docker rmi "${DOCKER_IMAGE}" || true
 docker export "$(docker create "${DOCKER_IMAGE}")" > ${TAR}
 docker run --rm "${DOCKER_IMAGE}" bash -c "dpkg -l" > ${PKG}
 lz4 -f -9 ${TAR} ${LZ4}
