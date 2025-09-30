@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   GCS_BUCKET: images.metal-pod.io
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
