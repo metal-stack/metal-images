@@ -13,7 +13,7 @@ env:
 jobs:
   debian_ubuntu:
     name: Build Debian and Ubuntu based OS images
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       matrix:
@@ -65,6 +65,7 @@ jobs:
     - name: Build docker image for workers
       uses: docker/bake-action@v6
       with:
+        source: .
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
         no-cache: true
@@ -87,6 +88,7 @@ jobs:
     - name: Build docker image for firewalls
       uses: docker/bake-action@v6
       with:
+        source: .
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
         no-cache: true
@@ -114,6 +116,7 @@ jobs:
     - name: Build docker image for debian-nvidia
       uses: docker/bake-action@v6
       with:
+        source: .
         files: ./docker-bake.hcl
         targets: debian-nvidia
         no-cache: true
@@ -174,6 +177,7 @@ jobs:
     - name: Build image
       uses: docker/bake-action@v6
       with:
+        source: .
         files: ./docker-bake.hcl
         targets: almalinux
         no-cache: true
