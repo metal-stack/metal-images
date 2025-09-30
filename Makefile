@@ -50,6 +50,24 @@ ubuntu: binary
 	SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache --set=*.output=type=docker ubuntu
 	OS_NAME=ubuntu SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
 
+.PHONY: capms
+capms: ubuntu
+	BASE_OS_NAME=ghcr.io/metal-stack/ubuntu \
+	BASE_OS_VERSION=24.0 \
+	KUBE_VERSION=1.34.1 \
+	KUBE_APT_BRANCH=v1.34 \
+	SEMVER=1.34.1 \
+	docker buildx bake --no-cache --load capms
+
+	BASE_OS_NAME=ghcr.io/metal-stack/ubuntu \
+	BASE_OS_VERSION=24.0 \
+	KUBE_VERSION=1.33.5 \
+	KUBE_APT_BRANCH=v1.33 \
+	SEMVER=v1.33 \
+	docker buildx bake --no-cache --load capms
+	OS_NAME=capms SEMVER_MAJOR_MINOR=1.33.5 ./test.sh ghcr.io/metal-stack/capms:1.33.5-ubuntu.24.04
+	OS_NAME=capms SEMVER_MAJOR_MINOR=1.34.1 ./test.sh ghcr.io/metal-stack/capms:1.34.1-ubuntu.24.04
+
 .PHONY: firewall
 firewall: binary
 	SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache --set=*.output=type=docker ubuntu-firewall
