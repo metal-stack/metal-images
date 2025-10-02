@@ -146,7 +146,7 @@ process:
   zebra:
     running: true
 dns:
-  google.com:q
+  google.com:
     resolvable: true
 command:
 {{ if eq .Env.MACHINE_TYPE "machine" }}
