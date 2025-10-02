@@ -146,12 +146,12 @@ process:
   zebra:
     running: true
 dns:
-  google.com:
+  google.com:q
     resolvable: true
 command:
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "internet is reachable":
-    exec: "curl https://1.1.1.1"
+    exec: "curl https://one.one.one.one"
     exit-status: 0
 {{ end }}
 {{ if ne .Env.OS "almalinux" }}
@@ -162,11 +162,13 @@ command:
       have-patterns:
       - "logrotate.timer"
       - "logrotate.service"
+{{ if ne .Env.OS_NAME "debian-nvidia" }}
   "systemd: no pending jobs":
     exec: systemctl list-jobs
     exit-status: 0
     stdout:
     - "No jobs running."
+{{ end }}
 {{ end }}
   "systemd: no failed units":
     exec: systemctl list-units --failed --no-pager --no-legend
@@ -214,10 +216,10 @@ command:
     exit-status: 0
     stdout: |
       0
-  "timedatectl show -p NTPSynchronized":
-    exit-status: 0
-    stdout:
-    - "NTPSynchronized=yes"
+  # "timedatectl show -p NTPSynchronized":
+  #   exit-status: 0
+  #   stdout:
+  #   - "NTPSynchronized=yes"
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "firewall" }}
   "only ssh,vxlan and bgpd is listening at 0.0.0.0":

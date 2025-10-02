@@ -4,5 +4,7 @@
 bin
 install-go
 images
-footloose.*yaml
 .vscode
+*.sock
+metal-kernel
+disk.raw

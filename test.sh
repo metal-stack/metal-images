@@ -2,70 +2,32 @@
 
 set -e
 
-# example: sudo OS_NAME=ubuntu ./test.sh ghcr.io/metal-stack/ubuntu:22.04
-hash ignite 2>/dev/null || { echo >&2 "ignite not found please install from: https://github.com/weaveworks/ignite"; exit 1; }
+# runs goss-tests against a running metal-image
+# uses cloud-hypervisor to spin up a thin VM based on the docker image of a metal-image
+# examples:
+# - OS_NAME=ubuntu ./test.sh ghcr.io/metal-stack/ubuntu:24.04-stable
+# - OS_NAME=debian ./test.sh ghcr.io/metal-stack/debian:12-stable
+# - OS_NAME=debian-nvidia ./test.sh ghcr.io/metal-stack/debian-nvidia:12-stable
+# - OS_NAME=debian CIS_VERSION=v4.1-4 ./test.sh ghcr.io/metal-stack/debian:12-stable
+# - OS_NAME=almalinux ./test.sh ghcr.io/metal-stack/almalinux:9-stable
+# - OS_NAME=firewall ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
 
-IMAGE="${1}"
-VM_NAME="vm-${OS_NAME}"
-MACHINE_TYPE="machine"
-KERNEL_IMAGE="weaveworks/ignite-kernel:5.10.51"
+hash cloud-hypervisor 2>/dev/null || { echo >&2 "cloud-hypervisor not found please install from: https://github.com/cloud-hypervisor/cloud-hypervisor"; exit 1; }
 
-if [[ "$OS_NAME" == *firewall ]]; then
-  MACHINE_TYPE="firewall"
-  # for firewalls we take the metal-stack kernel for nftables support by the kernel
-  KERNEL_IMAGE="metal-kernel"
+export MACHINE_TYPE="machine"
+if [ "${OS_NAME}" == "firewall" ]; then
+    export MACHINE_TYPE="firewall"
 fi
 
+export DOCKER_IMAGE="${1}"
+echo "Testing ${MACHINE_TYPE} ${DOCKER_IMAGE}"
 echo "delete cached images"
-docker rmi "$IMAGE" || true
+docker rmi "$DOCKER_IMAGE" || true
+chmod 0600 ./test/files/key
+chmod 0644 ./test/files/key.pub
 
-if [ "${KERNEL_IMAGE}" == "metal-kernel" ]; then
-  echo "build metal-kernel oci"
-  cd test && docker build . -t metal-kernel:latest && cd -
+cd ./test
+./00_create_disk.sh
+./01_start_vm.sh
+./02_run_tests_in_vm.sh
 
-  echo "import metal-kernel image to ignite"
-  sudo ignite kernel rm -f metal-kernel:latest || true
-  sudo ignite kernel import --runtime=docker metal-kernel:latest
-fi
-
-echo "import image oci to ignite: ${IMAGE}"
-sudo ignite stop "${VM_NAME}" || true
-sudo ignite rm "${VM_NAME}" || true
-# cleaning up all prior images to prevent ambiguous image names
-for image in $(sudo ignite images -q); do
-  sudo ignite image rm -f "$image"
-done
-sudo ignite image import --runtime=docker --log-level debug "${IMAGE}"
-
-echo "create ignite / firecracker vm"
-chmod 0600 ./test/key
-chmod 0644 ./test/key.pub
-sudo ignite run "${IMAGE}" \
-  --name "${VM_NAME}" \
-  --kernel-image "${KERNEL_IMAGE}" \
-  --size 4G \
-  --ssh=./test/key.pub \
-  --copy-files=${PWD}/test/ssh-default:/etc/default/ssh \
-  --memory 1G --cpus 1 \
-  --log-level debug
-
-echo "determine ip address of vm"
-# this is for ignite < v0.9.0
-# IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.IPAddresses }}")
-# for version >= v0.9.0
-IP=$(sudo ignite inspect vm "${VM_NAME}" -t "{{ .Status.Network.IPAddresses }}")
-
-while ! nc -z "${IP}" 22; do
-  echo "ssh is not available yet"
-  sleep 2
-done
-
-echo "ssh is available"
-sleep 5
-
-cd test
-IP=${IP} MACHINE_TYPE=${MACHINE_TYPE} ./test.sh
-cd -
-
-sudo ignite stop "${VM_NAME}"
-sudo ignite rm "${VM_NAME}"
