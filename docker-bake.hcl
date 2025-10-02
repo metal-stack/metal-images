@@ -144,9 +144,7 @@ target "capms" {
         baseapp = "target:ubuntu"
         ctx = "./capms/context"
     }
-    
     args = {
-        BASE_OS         = "ubuntu"
         BASE_OS_NAME    = "ghcr.io/metal-stack/ubuntu"
         BASE_OS_VERSION = "24.04"
 
@@ -156,6 +154,5 @@ target "capms" {
         CRANE_CHECKSUM = "sha256:36c67a932f489b3f2724b64af90b599a8ef2aa7b004872597373c0ad694dc059"
         CRANE_RELEASE  = "https://github.com/google/go-containerregistry/releases/download/v0.20.3/go-containerregistry_Linux_x86_64.tar.gz"
     }
-
     tags = ["ghcr.io/metal-stack/capms:${SEMVER_MAJOR_MINOR}-ubuntu-24.04${SEMVER_PATCH}"]
 }
