@@ -38,24 +38,24 @@ test:
 
 .PHONY: debian
 debian: binary
-	SEMVER_MAJOR_MINOR=12 SEMVER=12 docker buildx bake --no-cache --load debian
+	SEMVER_MAJOR_MINOR=12 SEMVER=12 docker buildx bake --no-cache --set=*.output=type=docker debian
 	OS_NAME=debian CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
 
 .PHONY: nvidia
 nvidia:
-	SEMVER_MAJOR_MINOR=12 SEMVER=12 docker buildx bake --no-cache --load debian-nvidia
+	SEMVER_MAJOR_MINOR=12 SEMVER=12 docker buildx bake --no-cache --set=*.output=type=docker debian-nvidia
 
 .PHONY: ubuntu
 ubuntu: binary
-	SEMVER_MAJOR_MINOR=24.04 SEMVER=24.04 docker buildx bake --no-cache --load ubuntu
+	SEMVER_MAJOR_MINOR=24.04 SEMVER=24.04 docker buildx bake --no-cache --set=*.output=type=docker ubuntu
 	OS_NAME=ubuntu SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
 
 .PHONY: firewall
 firewall: binary
-	SEMVER_MAJOR_MINOR=3.0-ubuntu SEMVER=3.0-ubuntu docker buildx bake --no-cache --load ubuntu-firewall
+	SEMVER_MAJOR_MINOR=3.0-ubuntu SEMVER=3.0-ubuntu docker buildx bake --no-cache --set=*.output=type=docker ubuntu-firewall
 	OS_NAME=firewall SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
 
 .PHONY: almalinux
 almalinux: binary
-	SEMVER_MAJOR_MINOR=9 SEMVER=9 docker buildx bake --no-cache --load almalinux
+	SEMVER_MAJOR_MINOR=9 SEMVER=9 docker buildx bake --no-cache --set=*.output=type=docker almalinux
 	OS_NAME=almalinux SEMVER_MAJOR_MINOR=9 ./test.sh ghcr.io/metal-stack/almalinux:9
