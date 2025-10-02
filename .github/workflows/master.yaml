@@ -72,18 +72,16 @@ jobs:
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
-        SEMVER: ${{ matrix.os.version }}
 
     - name: Test and export docker image for workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
         ./export.sh
       env:
         CIS_VERSION: v4.1-4
         OS_NAME: ${{ matrix.os.name }}
-        SEMVER_PATCH: ""
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
-        SEMVER: ${{ matrix.os.version }}
+        SEMVER_PATCH: ""
 
     - name: Build docker image for firewalls
       uses: docker/bake-action@v6
@@ -93,17 +91,16 @@ jobs:
         targets: ubuntu-firewall
         no-cache: true
       env:
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
         SEMVER_PATCH: ""
-        SEMVER: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Test and export docker image for firewalls
       run: |
-        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER}
+        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
         ./export.sh
       env:
         OS_NAME: firewall
-        SEMVER: 3.0-ubuntu
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
         SEMVER_PATCH: ""
       if: ${{ matrix.os.name == 'ubuntu' }}
@@ -123,7 +120,6 @@ jobs:
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
-        SEMVER: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Test and export docker image for debian-nvidia based workers
@@ -131,8 +127,8 @@ jobs:
         ./export.sh
       env:
         OS_NAME: debian-nvidia
-        SEMVER_PATCH: ""
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: ""
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -184,17 +180,15 @@ jobs:
       env:
         SEMVER_MAJOR_MINOR: 9
         SEMVER_PATCH: ""
-        SEMVER: 9
 
     - name: Test and export docker image for almalinux based workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER}
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
         cd almalinux; ./export.sh
       env:
         OS_NAME: almalinux
         SEMVER_PATCH: ""
         SEMVER_MAJOR_MINOR: 9
-        SEMVER: 9
 
     - name: Upload image tarballs to GCS
       run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os

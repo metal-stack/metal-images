@@ -21,7 +21,6 @@ target "_common_args" {
 # declare empty var in order to be able to get value from shell
 variable "SEMVER_PATCH" {}
 variable "SEMVER_MAJOR_MINOR" {}
-variable "SEMVER" {}
 
 target "almalinux" {
     inherits = ["_common", "_common_args"]
@@ -35,7 +34,7 @@ target "almalinux" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
-    tags = ["ghcr.io/metal-stack/almalinux:${SEMVER}"]
+    tags = ["ghcr.io/metal-stack/almalinux:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
 target "debian" {
@@ -58,7 +57,7 @@ target "debian" {
       # see https://packages.debian.org/bookworm/kernel/ for available versions
         KERNEL_VERSION = "6.1.0-39"
     }
-    tags = ["ghcr.io/metal-stack/debian:${SEMVER}"]
+    tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
 target "debian-firewall" {
@@ -90,7 +89,7 @@ target "debian-nvidia" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
     }
-    tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER}"]
+    tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
 target "ubuntu" {
@@ -113,7 +112,7 @@ target "ubuntu" {
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.44"
     }
-    tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER}"]
+    tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
 target "ubuntu-firewall" {
