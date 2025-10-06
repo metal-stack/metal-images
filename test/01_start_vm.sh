@@ -35,7 +35,7 @@ fi
 echo "Running VM"
 sudo killall cloud-hypervisor || true
 sudo rm -f ./test/my.sock || true
-cloud-hypervisor ${INITRAMFS} \
+sudo cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
   --kernel "./${KERNEL}" \
   --disk path="./disk.raw" \
