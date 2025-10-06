@@ -66,6 +66,14 @@ jobs:
       shell: bash
       run: ./prepare.sh ${{ matrix.os.name }}
 
+    - name: Create tarball output directory
+      shell: bash
+      run: mkdir -p "images/${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}"
+      env:
+        OS_NAME: ${{ matrix.os.name }}
+        OUTPUT_FOLDER: ${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+
     - name: use our lz4 which is version 1.10 with multithread support
       shell: bash
       run: |
@@ -80,6 +88,8 @@ jobs:
         targets: ${{ matrix.os.name }}
         no-cache: true
       env:
+        OS_NAME: ${{ matrix.os.name }}
+        OUTPUT_FOLDER: ${{ github.head_ref }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
 
@@ -94,6 +104,15 @@ jobs:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
 
+    - name: Create tarball output directory for firewalls
+      shell: bash
+      run: mkdir -p "images/${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}"
+      env:
+        OS_NAME: firewall
+        OUTPUT_FOLDER: ${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
     - name: Build docker image for firewalls
       uses: docker/bake-action@v6
       with:
@@ -102,6 +121,8 @@ jobs:
         targets: ubuntu-firewall
         no-cache: true
       env:
+        OS_NAME: firewall
+        OUTPUT_FOLDER: ${{ github.head_ref }}
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
         SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
@@ -124,6 +145,15 @@ jobs:
       run: ./prepare.sh debian-nvidia
       if: ${{ matrix.os.name == 'debian' }}
 
+    - name: Create tarball output directory for debian-nvidia
+      shell: bash
+      run: mkdir -p "images/${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}"
+      env:
+        OS_NAME: debian-nvidia
+        OUTPUT_FOLDER: ${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+      if: ${{ matrix.os.name == 'debian' }}
+
     - name: Build docker image for debian-nvidia
       uses: docker/bake-action@v6
       with:
@@ -132,6 +162,8 @@ jobs:
         targets: debian-nvidia
         no-cache: true
       env:
+        OS_NAME: debian-nvidia
+        OUTPUT_FOLDER: ${{ github.head_ref }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'debian' }}
@@ -185,6 +217,14 @@ jobs:
       shell: bash
       run: ./prepare.sh almalinux
 
+    - name: Create tarball output directory
+      shell: bash
+      run: mkdir -p "images/${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}"
+      env:
+        OS_NAME: almalinux
+        OUTPUT_FOLDER: ${{ github.head_ref }}
+        SEMVER_MAJOR_MINOR: 9
+
     - name: Build image
       uses: docker/bake-action@v6
       with:
@@ -193,6 +233,8 @@ jobs:
         targets: almalinux
         no-cache: true
       env:
+        OS_NAME: almalinux
+        OUTPUT_FOLDER: ${{ github.head_ref }}
         SEMVER_MAJOR_MINOR: 9
         SEMVER_PATCH: -${{ github.head_ref }}
 

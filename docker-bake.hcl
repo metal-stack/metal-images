@@ -1,3 +1,9 @@
+# declare empty var in order to be able to get value from shell
+variable "OS_NAME" {}
+variable "OUTPUT_FOLDER" {}
+variable "SEMVER_PATCH" {}
+variable "SEMVER_MAJOR_MINOR" {}
+
 target "_common" {
     attest = [
         "type=provenance,mode=max",
@@ -5,6 +11,7 @@ target "_common" {
     ]
     output = [
         "type=registry",
+        "type=tar,dest=./images/${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar"
     ]
 }
 
@@ -17,10 +24,6 @@ target "_common_args" {
         ICE_PKG_VERSION = "1.3.36.0"
     }
 }
-
-# declare empty var in order to be able to get value from shell
-variable "SEMVER_PATCH" {}
-variable "SEMVER_MAJOR_MINOR" {}
 
 target "almalinux" {
     inherits = ["_common", "_common_args"]
