@@ -146,6 +146,7 @@ target "capms" {
         BASE_OS_VERSION = "24.04"
 
         KUBE_APT_BRANCH  = "${KUBE_APT_BRANCH}"
+        KUBE_VERSION = "${KUBE_VERSION}"
         KUBE_VIP_VERSION = "v0.8.10"
 
         CRANE_CHECKSUM = "sha256:36c67a932f489b3f2724b64af90b599a8ef2aa7b004872597373c0ad694dc059"
