@@ -14,6 +14,7 @@ sudo ip link set tap0 master vm-br0 || true
 
 echo "Running VM"
 docker build -t sandbox ./sandbox
+echo "Remote VM sandbox container"
 docker rm -f ch
 
 # kernels shipped with ubuntu based images allow for direct kernel boot without passing initrd to cloud-hypervisor
