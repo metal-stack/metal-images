@@ -134,7 +134,7 @@ target "ubuntu-firewall" {
 variable "KUBE_VERSION" {}
 variable "KUBE_APT_BRANCH" {}
 
-target "capms" {
+target "ubuntu-capms" {
     inherits = ["_common"]
     dockerfile = "./capms/Dockerfile"
     contexts = {
