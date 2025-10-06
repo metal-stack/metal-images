@@ -13,7 +13,7 @@ set -ex
 # BROKEN ALMA EMERGENCY CON OS_NAME=almalinux ./test.sh ghcr.io/metal-stack/almalinux:9-stable
 
 export MACHINE_TYPE="machine"
-if [ "${OS_NAME}" == *"firewall" ]; then
+if [[ "${OS_NAME}" == *"firewall" ]]; then
     export MACHINE_TYPE="firewall"
 fi
 
