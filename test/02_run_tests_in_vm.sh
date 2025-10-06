@@ -12,4 +12,5 @@ ssh -F ./ssh/config -t machine <<EOF
     echo "test completed"
 EOF
 
-docker rm -f ch
+echo "Terminating cloud-hypervisor processes"
+killall cloud-hypervisor

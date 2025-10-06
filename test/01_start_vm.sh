@@ -12,11 +12,6 @@ sudo ip tuntap add mode tap name tap0 || true
 sudo ip link set tap0 up || true
 sudo ip link set tap0 master vm-br0 || true
 
-echo "Running VM"
-docker build -t sandbox ./sandbox
-echo "Remove VM sandbox container"
-docker rm -f ch
-
 # kernels shipped with ubuntu based images allow for direct kernel boot without passing initrd to cloud-hypervisor
 if [[ "${OS_NAME}" == "ubuntu" ]]; then
   INITRAMFS=""
@@ -37,15 +32,16 @@ if [ "${KERNEL}" == "metal-kernel" ]; then
   wget -O metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
 fi
 
-docker run --name ch --network host -t --detach --privileged -v /dev:/dev -v $(pwd):/work builder /usr/local/bin/cloud-hypervisor ${INITRAMFS} \
+echo "Running VM"
+cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
   --kernel "./${KERNEL}" \
   --disk path="./disk.raw" \
   --cmdline "console=hvc0 root=/dev/vda rw init=/sbin/init ip=link-local" \
   --cpus boot=1 \
-  --serial tty \
-  --console tty \
+  --serial off \
+  --console off \
   --memory size=1G \
-  --net "tap=tap0,mac=00:03:00:11:11:01"
+  --net "tap=tap0,mac=00:03:00:11:11:01" &
 
 sleep 3
