@@ -61,6 +61,8 @@ jobs:
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh ${{ matrix.os.name }}
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
 
     - name: Build docker image for workers
       uses: docker/bake-action@v6
@@ -70,6 +72,7 @@ jobs:
         targets: ${{ matrix.os.name }}
         no-cache: true
       env:
+        OS_NAME: ${{ matrix.os.name }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
 
@@ -84,6 +87,13 @@ jobs:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
 
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh firewall
+      env:
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
     - name: Build docker image for firewalls
       uses: docker/bake-action@v6
       with:
@@ -92,6 +102,7 @@ jobs:
         targets: ubuntu-firewall
         no-cache: true
       env:
+        OS_NAME: firewall
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
         SEMVER_PATCH: ""
       if: ${{ matrix.os.name == 'ubuntu' }}
@@ -110,6 +121,8 @@ jobs:
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh debian-nvidia
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Build docker image for debian-nvidia
@@ -120,6 +133,7 @@ jobs:
         targets: debian-nvidia
         no-cache: true
       env:
+        OS_NAME: debian-nvidia
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: ""
       if: ${{ matrix.os.name == 'debian' }}
@@ -172,6 +186,8 @@ jobs:
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh almalinux
+      env:
+        SEMVER_MAJOR_MINOR: 9
 
     - name: Build image
       uses: docker/bake-action@v6
@@ -181,6 +197,7 @@ jobs:
         targets: almalinux
         no-cache: true
       env:
+        OS_NAME: almalinux
         SEMVER_MAJOR_MINOR: 9
         SEMVER_PATCH: ""
 
