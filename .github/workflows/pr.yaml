@@ -89,6 +89,7 @@ jobs:
         ./export.sh
       env:
         CIS_VERSION: v4.1-4
+        IMG_PKG_COMMAND: dpkg -l
         OS_NAME: ${{ matrix.os.name }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
@@ -112,6 +113,7 @@ jobs:
         ./test.sh ghcr.io/metal-stack/firewall:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
         ./export.sh
       env:
+        IMG_PKG_COMMAND: dpkg -l
         OS_NAME: firewall
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
         SEMVER_PATCH: -${{ github.head_ref }}
@@ -138,6 +140,7 @@ jobs:
       run: |
         ./export.sh
       env:
+        IMG_PKG_COMMAND: dpkg -l
         OS_NAME: debian-nvidia
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
         SEMVER_PATCH: -${{ github.head_ref }}
@@ -196,8 +199,9 @@ jobs:
     - name: Test and export docker image for almalinux based workers
       run: |
         ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
-        cd almalinux; ./export.sh
+        ./export.sh
       env:
+        IMG_PKG_COMMAND: rpm -qa
         OS_NAME: almalinux
         SEMVER_MAJOR_MINOR: 9
         SEMVER_PATCH: -${{ github.head_ref }}

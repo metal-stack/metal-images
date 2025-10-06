@@ -18,7 +18,7 @@ mkdir -p "${EXPORT_DIRECTORY}"
 cd "${EXPORT_DIRECTORY}"
 docker rmi "${DOCKER_IMAGE}" || true
 docker export "$(docker create "${DOCKER_IMAGE}")" > ${TAR}
-docker run --rm "${DOCKER_IMAGE}" bash -c "dpkg -l" > ${PKG}
+docker run --rm "${DOCKER_IMAGE}" bash -c "${IMG_PKG_COMMAND}" > ${PKG}
 lz4 -f -9 ${TAR} ${LZ4}
 rm -f ${TAR}
 md5sum ${LZ4} > ${MD5}
