@@ -11,7 +11,7 @@ target "_common" {
     ]
     output = [
         "type=registry",
-        "type=tar,dest=./images/${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar"
+        "type=tar,dest=./images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar"
     ]
 }
 
