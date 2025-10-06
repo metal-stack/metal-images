@@ -33,6 +33,8 @@ if [ "${KERNEL}" == "metal-kernel" ]; then
 fi
 
 echo "Running VM"
+sudo killall cloud-hypervisor || true
+sudo rm -f ./test/my.sock || true
 cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
   --kernel "./${KERNEL}" \
