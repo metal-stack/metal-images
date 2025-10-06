@@ -16,7 +16,7 @@ sudo ip link set tap0 master vm-br0 || true
 if [[ "${OS_NAME}" == "ubuntu" ]]; then
   INITRAMFS=""
   KERNEL="os-kernel"
-elif [[ "${OS_NAME}" == "firewall" ]]; then
+elif [[ "${OS_NAME}" == *"firewall" ]]; then
   INITRAMFS=""
   KERNEL="metal-kernel"
 elif [[ "${OS_NAME}" == "debian" || "${OS_NAME}" == "debian-nvidia" ]]; then
