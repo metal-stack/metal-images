@@ -135,7 +135,7 @@ jobs:
       with:
         source: .
         files: ./docker-bake.hcl
-        targets: ubuntu-firewall
+        targets: ubuntu-capms
         no-cache: true
       env:
         KUBE_VERSION: 1.34.1
@@ -147,11 +147,12 @@ jobs:
     - name: Test and export docker image for capms
       run: |
         ./test.sh ghcr.io/metal-stack/capms:${SEMVER_MAJOR_MINOR}-ubuntu-24.04${SEMVER_PATCH}
-        ./export.sh
+        cd capms; ./export.sh
       env:
         OS_NAME: capms
         SEMVER_MAJOR_MINOR: 1.34.1
         SEMVER_PATCH: -${{ github.head_ref }}
+        UBUNTU_VERSION: -ubuntu-24.04
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
