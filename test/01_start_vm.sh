@@ -14,7 +14,7 @@ sudo ip link set tap0 master vm-br0 || true
 
 echo "Running VM"
 docker build -t sandbox ./sandbox
-echo "Remote VM sandbox container"
+echo "Remove VM sandbox container"
 docker rm -f ch
 
 # kernels shipped with ubuntu based images allow for direct kernel boot without passing initrd to cloud-hypervisor
@@ -37,7 +37,6 @@ if [ "${KERNEL}" == "metal-kernel" ]; then
   wget -O metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
 fi
 
-OPTION=
 docker run --name ch --network host -t --detach --privileged -v /dev:/dev -v $(pwd):/work builder /usr/local/bin/cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
   --kernel "./${KERNEL}" \
