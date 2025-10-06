@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 echo "Setting up bridge for VMs"
 sudo ip link add name vm-br0 type bridge || true
@@ -12,16 +12,40 @@ sudo ip tuntap add mode tap name tap0 || true
 sudo ip link set tap0 up || true
 sudo ip link set tap0 master vm-br0 || true
 
-echo "Downloading kernel"
-wget -O metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
-
 echo "Running VM"
-sudo cloud-hypervisor \
+docker build -t sandbox ./sandbox
+docker rm -f ch
+
+# kernels shipped with ubuntu based images allow for direct kernel boot without passing initrd to cloud-hypervisor
+if [[ "${OS_NAME}" == "ubuntu" ]]; then
+  INITRAMFS=""
+  KERNEL="os-kernel"
+elif [[ "${OS_NAME}" == "firewall" ]]; then
+  INITRAMFS=""
+  KERNEL="metal-kernel"
+elif [[ "${OS_NAME}" == "debian" || "${OS_NAME}" == "debian-nvidia" ]]; then
+  INITRAMFS=""
+  KERNEL="metal-kernel"
+else
+  INITRAMFS="--initramfs ./initramfs"
+  KERNEL="os-kernel"
+fi
+
+if [ "${KERNEL}" == "metal-kernel" ]; then
+  echo "Downloading kernel"
+  wget -O metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
+fi
+
+OPTION=
+docker run --name ch --network host -t --detach --privileged -v /dev:/dev -v $(pwd):/work builder /usr/local/bin/cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
-  --kernel "./metal-kernel" \
+  --kernel "./${KERNEL}" \
   --disk path="./disk.raw" \
   --cmdline "console=hvc0 root=/dev/vda rw init=/sbin/init ip=link-local" \
-  --console off \
   --cpus boot=1 \
+  --serial tty \
+  --console tty \
   --memory size=1G \
-  --net "tap=tap0,mac=00:03:00:11:11:01" &
+  --net "tap=tap0,mac=00:03:00:11:11:01"
+
+sleep 3

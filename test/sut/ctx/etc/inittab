@@ -1,0 +1,6 @@
+::sysinit:/bin/mount -t proc proc /proc
+::sysinit:/bin/mount -t sysfs sysfs /sys
+::sysinit:/bin/mount -o remount,rw /
+::respawn:/sbin/getty -L hvc0 115200 vt100
+::ctrlaltdel:/bin/umount -a -r
+::shutdown:/bin/umount -a -r

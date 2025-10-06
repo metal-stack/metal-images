@@ -7,4 +7,7 @@ images
 .vscode
 *.sock
 metal-kernel
+os-kernel
 disk.raw
+rootfs
+initramfs
