@@ -13,4 +13,4 @@ ssh -F ./ssh/config -t machine <<EOF
 EOF
 
 echo "Terminating cloud-hypervisor processes"
-killall cloud-hypervisor
+sudo killall cloud-hypervisor
