@@ -19,8 +19,6 @@ fi
 
 export DOCKER_IMAGE="${1}"
 echo "Testing ${MACHINE_TYPE} ${DOCKER_IMAGE}"
-echo "delete cached images"
-docker rmi "$DOCKER_IMAGE" || true
 chmod 0600 ./test/files/key
 chmod 0644 ./test/files/key.pub
 
