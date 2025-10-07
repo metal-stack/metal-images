@@ -14,7 +14,7 @@ FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}${SEMVER_PATCH}
+FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -35,7 +35,9 @@ RUN apt-get update --quiet \
 # - nftables rules are copied in place; nftables.service will load them on startup.
 # - systemd.generator in `/etc/systemd/system-generators` is used to run applications in custom VRF
 # - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
-COPY context/ /
+COPY --from=ctx . /
+# COPY --from=ctx etc/ /etc/
+# COPY --from=ctx suricata-and-chrony-installation.sh /
 
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh

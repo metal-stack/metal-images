@@ -35,9 +35,9 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR} \
     UBUNTU_MAINLINE_KERNEL_VERSION=${UBUNTU_MAINLINE_KERNEL_VERSION}
 
-COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
+COPY --from=ctx etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
-COPY context/kernel-installation.sh /
+COPY --from=ctx kernel-installation.sh /
 
 RUN set -ex \
  && rm -f /.dockerenv \
@@ -134,7 +134,9 @@ RUN set -ex \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker
 
-COPY context/ /
+COPY --from=ctx . /
+# COPY --from=ctx etc/ /etc/
+# COPY --from=ctx install-go /
 
 # CIS 5.2.1 - permissions and ownership to root 600 for sshd_config
 RUN chmod 600 /etc/ssh/sshd_config \
@@ -147,8 +149,8 @@ RUN chmod 600 /etc/ssh/sshd_config \
  && chown -R root:root /var/log
 
 # Copy the dependencies of `cloud-init-custom.service` into the image.
-COPY /cloud-init/cloud-init-custom.service /etc/systemd/system/
-COPY /cloud-init/cloud-init-custom.sh /etc/metal/
+COPY --from=cloudinit cloud-init-custom.service /etc/systemd/system/
+COPY --from=cloudinit cloud-init-custom.sh /etc/metal/
 
 # Enable all required systemd services
 RUN systemctl set-default multi-user.target \

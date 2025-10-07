@@ -37,3 +37,6 @@ EOF
 
 echo "remove old firecracker images"
 sudo rm -rf /var/lib/firecracker/image/* /var/lib/firecracker/kernel/*
+
+echo "create tarball output directory"
+mkdir -p "images/${PULL_REQUEST_NUMBER}-${BRANCH}/${OS_FLAVOR}/${SEMVER_MAJOR_MINOR}"
