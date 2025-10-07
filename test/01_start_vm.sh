@@ -1,16 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -ex
 
 echo "Setting up bridge for VMs"
-sudo ip link add name vm-br0 type bridge || true
-sudo ip link set up dev vm-br0 || true
-sudo ip addr add 100.100.0.1/24 dev vm-br0 || true
+ip link add name vm-br0 type bridge || true
+ip link set up dev vm-br0 || true
+ip addr add 100.100.0.1/24 dev vm-br0 || true
 
 echo "Setting up tap device for VM"
-sudo ip tuntap add mode tap name tap0 || true
-sudo ip link set tap0 up || true
-sudo ip link set tap0 master vm-br0 || true
+ip tuntap add mode tap name tap0 || true
+ip link set tap0 up || true
+ip link set tap0 master vm-br0 || true
 
 # kernels shipped with ubuntu based images allow for direct kernel boot without passing initrd to cloud-hypervisor
 if [[ "${OS_NAME}" == "ubuntu" ]]; then
@@ -33,9 +33,9 @@ if [ "${KERNEL}" == "metal-kernel" ]; then
 fi
 
 echo "Running VM"
-sudo killall cloud-hypervisor || true
-sudo rm -f ./my.sock || true
-sudo cloud-hypervisor ${INITRAMFS} \
+killall cloud-hypervisor || true
+rm -f ./my.sock || true
+cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
   --kernel "./${KERNEL}" \
   --disk path="./disk.raw" \

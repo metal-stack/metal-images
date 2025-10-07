@@ -9,8 +9,8 @@ set -ex
 # WORKS 					OS_NAME=debian CIS_VERSION=v4.1-4 ./test.sh ghcr.io/metal-stack/debian:12-stable
 # WORKS_WITH_METAL_KERNEL   OS_NAME=debian-nvidia ./test.sh ghcr.io/metal-stack/debian-nvidia:12-stable
 # WORKS_WITH_METAL_KERNEL   OS_NAME=debian ./test.sh ghcr.io/metal-stack/debian:12-stable
-# BROKEN					OS_NAME=firewall ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
-# BROKEN ALMA EMERGENCY CON OS_NAME=almalinux ./test.sh ghcr.io/metal-stack/almalinux:9-stable
+# WORKS					    OS_NAME=firewall ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
+# WORKS                     OS_NAME=almalinux ./test.sh ghcr.io/metal-stack/almalinux:9-stable
 
 export MACHINE_TYPE="machine"
 if [[ "${OS_NAME}" == *"firewall" ]]; then
@@ -29,8 +29,6 @@ docker build --build-arg BASE_IMAGE=${DOCKER_IMAGE} --build-arg MACHINE_TYPE=${M
 export DOCKER_IMAGE=sut
 
 cd ./test
-./00_create_disk.sh
-./01_start_vm.sh
-./02_run_tests_in_vm.sh
-
-sudo unlink ./my.sock || true
+sudo DOCKER_IMAGE=${DOCKER_IMAGE} MACHINE_TYPE=${MACHINE_TYPE} ./00_create_disk.sh
+sudo OS_NAME=${OS_NAME} ./01_start_vm.sh
+sudo OS_NAME=${OS_NAME} MACHINE_TYPE=${MACHINE_TYPE} CIS_VERSION=${CIS_VERSION} ./02_run_tests_in_vm.sh

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -13,4 +13,5 @@ ssh -F ./ssh/config -t machine <<EOF
 EOF
 
 echo "Terminating cloud-hypervisor processes"
-sudo killall cloud-hypervisor
+killall cloud-hypervisor
+rm -f ./my.sock
