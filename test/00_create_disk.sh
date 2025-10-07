@@ -19,6 +19,7 @@ echo "Extract tar file for a disk image"
 truncate -s "$SIZE" "$DISK"
 mkfs.ext4 -F -L rootfs "$DISK"
 mkdir -p ${ROOTFS}
+tune2fs -O ^orphan_file $DISK
 sudo mount -o loop "$DISK" ${ROOTFS}
 sudo tar xf ${TAR} -C ${ROOTFS}/
 
