@@ -47,8 +47,8 @@ fi
 echo "Sync filesystem and umount"
 sync
 
-umount ${ROOTFS}/proc
 umount ${ROOTFS}/sys/firmware/efi/efivars
 umount ${ROOTFS}/sys
+umount ${ROOTFS}/proc
 umount ${ROOTFS}/dev
 umount ${ROOTFS}
