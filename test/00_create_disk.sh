@@ -27,7 +27,7 @@ mount -t efivarfs /sys/firmware/efi/efivars "${ROOTFS}/sys/firmware/efi/efivars"
 mount --bind /dev "${ROOTFS}/dev"
 
 echo "Run /install-go in the chroot environment"
-chroot ${ROOTFS} /bin/bash -lc 'PATH=/sbin:$PATH MACHINE_TYPE='"${MACHINE_TYPE}"' INSTALL_FROM_CI=true /install-go'
+chroot ${ROOTFS} /bin/bash -lc "PATH=/sbin:$PATH MACHINE_TYPE='${MACHINE_TYPE}' INSTALL_FROM_CI=true /install-go"
 
 echo "Extract kernel from os"
 ls -alh ${ROOTFS}/boot/
