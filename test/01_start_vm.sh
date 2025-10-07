@@ -39,7 +39,7 @@ sudo cloud-hypervisor ${INITRAMFS} \
   --api-socket my.sock \
   --kernel "./${KERNEL}" \
   --disk path="./disk.raw" \
-  --cmdline "console=hvc0 root=/dev/vda rw init=/sbin/init ip=link-local" \
+  --cmdline "console=hvc0 root=/dev/vda rw init=/sbin/init" \
   --cpus boot=1 \
   --serial off \
   --console off \
