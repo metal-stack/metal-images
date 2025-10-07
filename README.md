@@ -82,7 +82,7 @@ make almalinux
 BUILDKIT_PROGRESS=plain make debian
 ```
 
-For integration testing the images are started as cloud-hypervisor VMs and basic properties like interfaces to other metal-stack components, kernel parameters, internet accessibility, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. Integration tests are also executed if you build an image locally
+For integration testing the images are started as cloud-hypervisor VMs and basic properties like interfaces to other metal-stack components, kernel parameters, internet accessibility, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. Integration tests are also executed if you build an image locally.
 
 ### Debugging Image Provisioning
 
