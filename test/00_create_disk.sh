@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 #MACHINE_TYPE=machine
 #DOCKER_IMAGE=ghcr.io/metal-stack/ubuntu:24.04-stable
@@ -31,7 +31,7 @@ sudo mount -t efivarfs /sys/firmware/efi/efivars "${ROOTFS}/sys/firmware/efi/efi
 sudo mount --bind /dev "${ROOTFS}/dev"
 
 echo "Run /install-go in the chroot environment"
-sudo chroot ${ROOTFS} /bin/bash -lc 'PATH=/sbin:$PATH INSTALL_FROM_CI=true /install-go'
+sudo chroot ${ROOTFS} /bin/bash -lc 'PATH=/sbin:$PATH MACHINE_TYPE='"${MACHINE_TYPE}"' INSTALL_FROM_CI=true /install-go'
 
 echo "Extract kernel from os"
 sudo ls -alh ${ROOTFS}/boot/

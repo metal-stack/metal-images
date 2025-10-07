@@ -25,7 +25,7 @@ chmod 0600 ./test/files/key
 chmod 0644 ./test/files/key.pub
 
 docker rm -f sut
-docker build --build-arg BASE_IMAGE=${DOCKER_IMAGE} -t sut ./test/sut
+docker build --build-arg BASE_IMAGE=${DOCKER_IMAGE} --build-arg MACHINE_TYPE=${MACHINE_TYPE} -t sut ./test/sut
 export DOCKER_IMAGE=sut
 
 cd ./test

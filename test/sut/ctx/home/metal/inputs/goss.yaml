@@ -227,8 +227,8 @@ command:
     exit-status: 0
     stdout: |
       0
-  "only ssh,vxlan,nftables-exporter and bgpd is listening at [::]":
-    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|2623|4789|9630' | wc -l"
+  "only ssh,vxlan,nftables-exporter,node-exporter and bgpd is listening at [::]":
+    exec: "ss -6 -Hlntu src [::] | egrep -v '22|179|2623|4789|9630|9100' | wc -l"
     exit-status: 0
     stdout: |
       0
