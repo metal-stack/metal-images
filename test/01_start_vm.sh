@@ -17,7 +17,7 @@ if [[ "${OS_NAME}" == "ubuntu" ]]; then
   INITRAMFS=""
   KERNEL="os-kernel"
 elif [[ "${OS_NAME}" == *"firewall" ]]; then
-  INITRAMFS="--initramfs ./initramfs"
+  INITRAMFS=""
   KERNEL="os-kernel"
 elif [[ "${OS_NAME}" == "debian" || "${OS_NAME}" == "debian-nvidia" ]]; then
   INITRAMFS=""
