@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 echo "do machine test"
 ssh -F ./ssh/config -t machine <<EOF
