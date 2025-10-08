@@ -55,7 +55,7 @@ Before you can start developing changes for metal-images or even introduce new o
 - **kvm**: hypervisor used for integration tests
 - **lz4**: to compress tarballs
 - enable docker's [**containerd image store**](https://docs.docker.com/engine/storage/containerd/#enable-containerd-image-store-on-docker-engine)
-- **[cloud-hypervisor](https://github.com/cloud-hypervisor/cloud-hypervisor)**: is a tool to spin up thin VMs
+- **[cloud-hypervisor](https://github.com/cloud-hypervisor/cloud-hypervisor)**: virtual machine monitor running on top of KVM to spin up MicroVMs for integration tests
 
 You can build metal-images like that:
 
