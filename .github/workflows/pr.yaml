@@ -130,6 +130,13 @@ jobs:
         SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh capms-ubuntu
+      env:
+        SEMVER_MAJOR_MINOR: 1.34.1
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
     - name: Build docker image for capms
       uses: docker/bake-action@v6
       with:
