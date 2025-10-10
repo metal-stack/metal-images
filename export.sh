@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-readonly SEMVER=${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+readonly SEMVER=${SEMVER_MAJOR_MINOR}${UBUNTU_VERSION}${SEMVER_PATCH}
 readonly DOCKER_IMAGE="ghcr.io/metal-stack/${OS_NAME}:${SEMVER}"
 readonly IMAGE_BASENAME=img
 

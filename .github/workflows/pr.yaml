@@ -140,6 +140,7 @@ jobs:
       env:
         KUBE_VERSION: 1.34.1
         KUBE_APT_BRANCH: v1.34
+        OS_NAME: capms
         SEMVER_MAJOR_MINOR: 1.34.1
         SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
@@ -147,8 +148,9 @@ jobs:
     - name: Test and export docker image for capms
       run: |
         ./test.sh ghcr.io/metal-stack/capms:${SEMVER_MAJOR_MINOR}-ubuntu-24.04${SEMVER_PATCH}
-        cd capms; ./export.sh
+        ./export.sh
       env:
+        IMG_PKG_COMMAND: dpkg -l
         OS_NAME: capms
         SEMVER_MAJOR_MINOR: 1.34.1
         SEMVER_PATCH: -${{ github.head_ref }}
