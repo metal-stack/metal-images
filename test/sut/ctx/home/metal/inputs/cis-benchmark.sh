@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -ex
 
 # Somehow /etc/resolve.conf is created with read permissions granted only to root.
 # As apt drops privileges during download this won't work. Allow reading for all.

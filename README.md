@@ -55,7 +55,7 @@ Before you can start developing changes for metal-images or even introduce new o
 - **kvm**: hypervisor used for integration tests
 - **lz4**: to compress tarballs
 - enable docker's [**containerd image store**](https://docs.docker.com/engine/storage/containerd/#enable-containerd-image-store-on-docker-engine)
-- **[weaveworks/ignite](https://github.com/weaveworks/ignite)**: handles [firecracker vms](https://firecracker-microvm.github.io/) to spin up a metal-image virtually as VM
+- **[cloud-hypervisor](https://github.com/cloud-hypervisor/cloud-hypervisor)**: virtual machine monitor running on top of KVM to spin up MicroVMs for integration tests
 
 You can build metal-images like that:
 
@@ -82,7 +82,7 @@ make almalinux
 BUILDKIT_PROGRESS=plain make debian
 ```
 
-For integration testing the images are started as [firecracker vm](https://firecracker-microvm.github.io/) with [weaveworks/ignite](https://github.com/weaveworks/ignite) and basic properties like interfaces to other metal-stack components, kernel parameters, internet accessibility, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. Integration tests are also executed if you build an image locally.
+For integration testing the images are started as [cloud-hypervisor](https://www.cloudhypervisor.org) VMs and basic properties like interfaces to other metal-stack components, kernel parameters, internet accessibility, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. Integration tests are also executed if you build an image locally.
 
 ### Debugging Image Provisioning
 
