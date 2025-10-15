@@ -18,6 +18,18 @@ all: clean binary
 clean:
 	rm -f debian/context/install-go
 	rm -f almalinux/context/install-go
+	sudo umount test/rootfs/sys/firmware/efi/efivars
+	sudo umount test/rootfs/sys
+	sudo umount test/rootfs/proc
+	sudo umount test/rootfs/dev
+	sudo umount test/rootfs
+	rm -f test/rootfs/*
+	rm -f test/disk.raw
+	rm -f test/initramfs
+	rm -f test/metal-kernel
+	rm -f test/os-kernel
+	rm -rf images
+	rm -rf bin
 
 .PHONY: binary
 binary: test
@@ -38,17 +50,20 @@ test:
 
 .PHONY: debian
 debian: binary
-	SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache --set=*.output=type=docker debian
-	OS_NAME=debian CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
+	mkdir -p "images/debian/12"
+	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian
+	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
 
 .PHONY: nvidia
 nvidia:
-	SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache --set=*.output=type=docker debian-nvidia
+	mkdir -p "images/nvidia/12"
+	OS_NAME=nvidia OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian-nvidia
 
 .PHONY: ubuntu
 ubuntu: binary
-	SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache --set=*.output=type=docker ubuntu
-	OS_NAME=ubuntu SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
+	mkdir -p "images/ubuntu/24.04"
+	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache ubuntu
+	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
 
 .PHONY: capms
 capms: ubuntu
@@ -60,10 +75,12 @@ capms: ubuntu
 
 .PHONY: firewall
 firewall: binary
-	SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache --set=*.output=type=docker ubuntu-firewall
-	OS_NAME=firewall SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
+	mkdir -p "images/firewall/3.0-ubuntu"
+	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache ubuntu-firewall
+	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
 
 .PHONY: almalinux
 almalinux: binary
-	SEMVER_MAJOR_MINOR=9 docker buildx bake --no-cache --set=*.output=type=docker almalinux
-	OS_NAME=almalinux SEMVER_MAJOR_MINOR=9 ./test.sh ghcr.io/metal-stack/almalinux:9
+	mkdir -p "images/almalinux/9"
+	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 docker buildx bake --no-cache almalinux
+	OS_NAME=almalinux SOUTPUT_FOLDER="" EMVER_MAJOR_MINOR=9 ./test.sh ghcr.io/metal-stack/almalinux:9
