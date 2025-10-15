@@ -22,11 +22,12 @@ echo "Testing ${MACHINE_TYPE} ${DOCKER_IMAGE}"
 chmod 0600 ./test/files/key
 chmod 0644 ./test/files/key.pub
 
-docker rm -f sut
-docker build --build-arg BASE_IMAGE="${DOCKER_IMAGE}" --build-arg MACHINE_TYPE="${MACHINE_TYPE}" -t sut ./test/sut
-export DOCKER_IMAGE=sut
-
 cd ./test
-sudo DOCKER_IMAGE="${DOCKER_IMAGE}" MACHINE_TYPE="${MACHINE_TYPE}" ./00_create_disk.sh
+sudo DOCKER_IMAGE="${DOCKER_IMAGE}" \
+  MACHINE_TYPE="${MACHINE_TYPE}" \
+  OS_NAME="${OS_NAME}" \
+  OUTPUT_FOLDER="${OUTPUT_FOLDER}" \
+  SEMVER_MAJOR_MINOR="${SEMVER_MAJOR_MINOR}" \
+  ./00_create_disk.sh
 sudo OS_NAME="${OS_NAME}" ./01_start_vm.sh
 sudo OS_NAME="${OS_NAME}" MACHINE_TYPE="${MACHINE_TYPE}" CIS_VERSION="${CIS_VERSION}" ./02_run_tests_in_vm.sh

@@ -81,6 +81,8 @@ jobs:
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
         no-cache: true
+        set: |
+          *.outputs+=type=registry
       env:
         OS_NAME: ${{ matrix.os.name }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -111,6 +113,8 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
         no-cache: true
+        set: |
+          *.outputs+=type=registry
       env:
         OS_NAME: firewall
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
@@ -177,6 +181,8 @@ jobs:
         files: ./docker-bake.hcl
         targets: debian-nvidia
         no-cache: true
+        set: |
+          *.outputs+=type=registry
       env:
         OS_NAME: debian-nvidia
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -241,6 +247,8 @@ jobs:
         files: ./docker-bake.hcl
         targets: almalinux
         no-cache: true
+        set: |
+          *.outputs+=type=registry
       env:
         OS_NAME: almalinux
         SEMVER_MAJOR_MINOR: 9

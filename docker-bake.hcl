@@ -9,8 +9,7 @@ target "_common" {
         "type=provenance,mode=max",
         "type=sbom",
     ]
-    output = [
-        "type=registry",
+    outputs = [
         "type=tar,dest=./images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar"
     ]
 }
