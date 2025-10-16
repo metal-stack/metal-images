@@ -29,7 +29,7 @@ fi
 
 if [ "${KERNEL}" == "metal-kernel" ]; then
   echo "Downloading kernel"
-  wget -O metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
+  wget -qO metal-kernel https://github.com/metal-stack/kernel/releases/latest/download/metal-kernel
 fi
 
 echo "Running VM"

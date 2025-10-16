@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
-set -ex
+set -x
+
+unmount () {
+  umount ${ROOTFS}/sys/firmware/efi/efivars
+  umount ${ROOTFS}/sys
+  umount ${ROOTFS}/proc
+  umount ${ROOTFS}/dev
+  umount ${ROOTFS}
+}
+
+trap "ERR_CODE=$?; unmount; exit ${ERR_CODE}" ERR
 
 GOSS_VERSION=v0.4.7
 GOSS_URL=https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64
@@ -52,8 +62,4 @@ fi
 echo "Sync filesystem and umount"
 sync
 
-umount ${ROOTFS}/sys/firmware/efi/efivars
-umount ${ROOTFS}/sys
-umount ${ROOTFS}/proc
-umount ${ROOTFS}/dev
-umount ${ROOTFS}
+unmount
