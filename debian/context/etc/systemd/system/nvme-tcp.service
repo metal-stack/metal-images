@@ -1,0 +1,15 @@
+[Unit]
+Description=Configure nvme-tcp after installation
+After=multi-user.target
+Wants=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'mkdir -p /etc/nvme && [ ! -s /etc/nvme/hostnqn ] && nvme gen-hostnqn > /etc/nvme/hostnqn || true'
+ExecStart=/bin/bash -c '[ ! -s /etc/nvme/hostid ] && uuidgen > /etc/nvme/hostid || true'
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
