@@ -10,7 +10,7 @@ unmount () {
   umount ${ROOTFS}
 }
 
-trap "ERR_CODE=$?; unmount; exit ${ERR_CODE}" ERR
+trap 'rc=$?; unmount; exit $rc' ERR
 
 GOSS_VERSION=v0.4.7
 GOSS_URL=https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64

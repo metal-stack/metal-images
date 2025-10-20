@@ -44,7 +44,5 @@ mkdir -p "images${OUTPUT_FOLDER}/${OS_FLAVOR}/${SEMVER_MAJOR_MINOR}"
 
 echo "download cloud-hypervisor"
 CLOUD_HYPERVISOR_PATH="/usr/local/bin/cloud-hypervisor"
-sudo wget -qO- https://api.github.com/repos/cloud-hypervisor/cloud-hypervisor/releases/latest \
-  | jq -r '.assets[] | select(.name=="cloud-hypervisor") .browser_download_url' \
-  | xargs -r -n1 sudo wget -c -O ${CLOUD_HYPERVISOR_PATH}
+sudo wget -qO ${CLOUD_HYPERVISOR_PATH} https://github.com/cloud-hypervisor/cloud-hypervisor/releases/latest/download/cloud-hypervisor
 sudo chmod +x ${CLOUD_HYPERVISOR_PATH}
