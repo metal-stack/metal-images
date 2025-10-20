@@ -130,7 +130,9 @@ RUN set -ex \
  && apt autoremove --yes \
  && rm -rf /tmp/* /var/log/apt/* \
  # create directory to store metal-networker tmp files
- && mkdir -p /etc/metal/networker
+ && mkdir -p /etc/metal/networker \
+ # remove /etc/nvme/hostnqn and /etc/nvme/hostid as these should be unique per system
+ && rm -f /etc/nvme/hostnqn /etc/nvme/hostid
 
 COPY --from=ctx . /
 # COPY --from=ctx etc/ /etc/
