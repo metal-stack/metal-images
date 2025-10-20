@@ -52,7 +52,7 @@ test:
 debian: binary
 	mkdir -p "images/debian/12"
 	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian
-	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
+	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh
 
 .PHONY: nvidia
 nvidia:
@@ -63,7 +63,7 @@ nvidia:
 ubuntu: binary
 	mkdir -p "images/ubuntu/24.04"
 	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache ubuntu
-	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
+	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 ./test.sh
 
 .PHONY: capms
 capms: ubuntu
@@ -77,10 +77,10 @@ capms: ubuntu
 firewall: binary
 	mkdir -p "images/firewall/3.0-ubuntu"
 	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache ubuntu-firewall
-	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
+	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh
 
 .PHONY: almalinux
 almalinux: binary
 	mkdir -p "images/almalinux/9"
 	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 docker buildx bake --no-cache almalinux
-	OS_NAME=almalinux SOUTPUT_FOLDER="" EMVER_MAJOR_MINOR=9 ./test.sh ghcr.io/metal-stack/almalinux:9
+	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 ./test.sh

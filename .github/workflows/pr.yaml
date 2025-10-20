@@ -89,7 +89,7 @@ jobs:
 
     - name: Test and export docker image for workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         CIS_VERSION: v4.1-4
@@ -123,7 +123,7 @@ jobs:
     # and then goss tests fail
     - name: Test and export docker image for firewalls
       run: |
-        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: dpkg -l
@@ -252,7 +252,7 @@ jobs:
 
     - name: Test and export docker image for almalinux based workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: rpm -qa

@@ -17,14 +17,12 @@ if [[ "${OS_NAME}" == *"firewall" ]]; then
     export MACHINE_TYPE="firewall"
 fi
 
-export DOCKER_IMAGE="${1}"
 echo "Testing ${MACHINE_TYPE} ${DOCKER_IMAGE}"
 chmod 0600 ./test/files/key
 chmod 0644 ./test/files/key.pub
 
 cd ./test
-sudo DOCKER_IMAGE="${DOCKER_IMAGE}" \
-  MACHINE_TYPE="${MACHINE_TYPE}" \
+sudo MACHINE_TYPE="${MACHINE_TYPE}" \
   OS_NAME="${OS_NAME}" \
   OUTPUT_FOLDER="${OUTPUT_FOLDER}" \
   SEMVER_MAJOR_MINOR="${SEMVER_MAJOR_MINOR}" \
