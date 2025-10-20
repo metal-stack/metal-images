@@ -66,10 +66,6 @@ target "debian-firewall" {
         baseapp = "target:debian"
         ctx = "./firewall/context"
     }
-    args = {
-        BASE_OS_VERSION = 12
-        BASE_OS_NAME = "ghcr.io/metal-stack/debian"
-    }
     tags = ["ghcr.io/metal-stack/firewall:3.0${SEMVER_PATCH}"]
 }
 
@@ -79,10 +75,6 @@ target "debian-nvidia" {
     contexts = {
         baseapp = "target:debian"
         ctx = "./debian-nvidia/context"
-    }
-    args = {
-        BASE_OS_VERSION = 12
-        BASE_OS_NAME = "ghcr.io/metal-stack/debian"
     }
     tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -103,7 +95,7 @@ target "ubuntu" {
         FRR_VERSION_DETAIL ="10.4.1-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.52"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.54"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -114,10 +106,6 @@ target "ubuntu-firewall" {
     contexts = {
         baseapp = "target:ubuntu"
         ctx = "./firewall/context"
-    }
-    args = {
-        BASE_OS_VERSION = "24.04"
-        BASE_OS_NAME = "ghcr.io/metal-stack/ubuntu"
     }
     tags = ["ghcr.io/metal-stack/firewall:3.0-ubuntu${SEMVER_PATCH}"]
 }
