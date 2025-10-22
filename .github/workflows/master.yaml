@@ -71,6 +71,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: ${{ matrix.os.name }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -78,7 +79,7 @@ jobs:
 
     - name: Test and export docker image for workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         CIS_VERSION: v4.1-4
@@ -101,6 +102,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: firewall
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
@@ -109,7 +111,7 @@ jobs:
 
     - name: Test and export docker image for firewalls
       run: |
-        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: dpkg -l
@@ -165,6 +167,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: debian-nvidia
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: debian-nvidia
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -229,6 +232,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: almalinux
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: almalinux
         SEMVER_MAJOR_MINOR: 9
@@ -236,7 +240,7 @@ jobs:
 
     - name: Test and export docker image for almalinux based workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: rpm -qa
