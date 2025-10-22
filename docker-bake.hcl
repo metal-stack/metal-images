@@ -58,7 +58,7 @@ target "debian" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-        KERNEL_VERSION = "6.1.0-39"
+        KERNEL_VERSION = "6.1.0-40"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -113,7 +113,7 @@ target "ubuntu" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.44"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.54"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
