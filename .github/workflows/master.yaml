@@ -134,6 +134,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-capms
         no-cache: true
+        set: _common.output+=type=registry
       env:
         KUBE_VERSION: 1.32.9
         KUBE_APT_BRANCH: v1.32
@@ -144,7 +145,7 @@ jobs:
 
     - name: Test and export docker image for capms
       run: |
-        ./test.sh ghcr.io/metal-stack/capms-ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: dpkg -l

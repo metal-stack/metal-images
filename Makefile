@@ -70,8 +70,8 @@ capms: ubuntu
 	KUBE_VERSION=1.32.9 \
 	KUBE_APT_BRANCH=v1.32 \
 	SEMVER_MAJOR_MINOR=1.32.9 \
-	docker buildx bake --no-cache --set=*.output=type=docker ubuntu-capms
-	OS_NAME=capms-ubuntu SEMVER_MAJOR_MINOR=1.32.9 ./test.sh ghcr.io/metal-stack/capms-ubuntu:1.32.9
+	docker buildx bake --no-cache ubuntu-capms
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
 
 .PHONY: firewall
 firewall: binary
