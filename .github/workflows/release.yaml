@@ -45,7 +45,7 @@ jobs:
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian-nvidia/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian-nvidia/12
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/capms-ubuntu/1.32.9 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/capms-ubuntu/1.32.9
+          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/capms-ubuntu/ gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/capms-ubuntu/
 
           docker pull ghcr.io/metal-stack/debian:12-stable
           docker tag ghcr.io/metal-stack/debian:12-stable ghcr.io/metal-stack/debian:12
@@ -62,10 +62,11 @@ jobs:
           docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:latest
           docker push ghcr.io/metal-stack/ubuntu:24.04
 
-          docker pull ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable
-          docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:1.32.9
-          docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:latest
-          docker push ghcr.io/metal-stack/capms-ubuntu:1.32.9
+          # TODO: needs to be solved for capi images in order not to have to enter every release here
+          # docker pull ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable
+          # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:1.32.9
+          # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:latest
+          # docker push ghcr.io/metal-stack/capms-ubuntu:1.32.9
 
           docker pull ghcr.io/metal-stack/almalinux:9-stable
           docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:9
