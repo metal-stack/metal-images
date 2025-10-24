@@ -1,6 +1,3 @@
-ARG BASE_OS_NAME=ghcr.io/metal-stack/ubuntu
-ARG BASE_OS_VERSION=24.04
-
 FROM baseapp AS kubeadm-base
 
 ARG KUBE_APT_BRANCH
