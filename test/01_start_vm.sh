@@ -13,7 +13,7 @@ ip link set tap0 up || true
 ip link set tap0 master vm-br0 || true
 
 # kernels shipped with ubuntu based images allow for direct kernel boot without passing initrd to cloud-hypervisor
-if [[ "${OS_NAME}" == "ubuntu" ]]; then
+if [[ "${OS_NAME}" == "ubuntu" || "${OS_NAME}" == "capms-ubuntu" ]]; then
   INITRAMFS=""
   KERNEL="os-kernel"
 elif [[ "${OS_NAME}" == *"firewall" ]]; then
