@@ -23,7 +23,7 @@ clean:
 	sudo umount test/rootfs/proc
 	sudo umount test/rootfs/dev
 	sudo umount test/rootfs
-	rm -f test/rootfs/*
+	rm -rf test/rootfs
 	rm -f test/disk.raw
 	rm -f test/initramfs
 	rm -f test/metal-kernel
