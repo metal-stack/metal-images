@@ -145,9 +145,6 @@ target "ubuntu-capms" {
         ctx = "./capms/context"
     }
     args = {
-        BASE_OS_NAME    = "ghcr.io/metal-stack/ubuntu"
-        BASE_OS_VERSION = "24.04"
-
         KUBE_APT_BRANCH  = "${KUBE_APT_BRANCH}"
         KUBE_VERSION = "${KUBE_VERSION}"
         KUBE_VIP_VERSION = "v0.8.10"
