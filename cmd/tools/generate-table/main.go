@@ -1,11 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strings"
+
+	"github.com/docker/docker/api/types/image"
+	docker "github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/jsonmessage"
+	"github.com/moby/term"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -16,11 +23,18 @@ import (
 )
 
 type artifact struct {
+	os          string
+	version     string
 	image       string
+	dockerImage string
 	url         string
 	checksumURL string
 	packagesURL string
 }
+
+const (
+	ghcrPrefix = "ghcr.io/metal-stack"
+)
 
 func main() {
 	err := generate()
@@ -34,7 +48,15 @@ func generate() error {
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
-		prefix      = os.Getenv("PREFIX") // "metal-os/20230710"
+		prefix      = os.Getenv("PREFIX") // "metal-os/20230710" or "metal-os/stable"
+		whitelist   = []string{
+			"ubuntu/24.04",
+			"debian/12",
+			"almalinux/9",
+			// TODO: handle "capms-ubuntu" without having to enter every release version manually
+			"firewall/3.0-ubuntu",
+			"debian-nvidia/12",
+		}
 	)
 
 	ss, err := session.NewSession(&aws.Config{
@@ -71,6 +93,21 @@ func generate() error {
 			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, prefix, after)
 			a.image = fmt.Sprintf("%s%s", prefix, path.Dir(after))
 
+			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
+			if len(parts) > 2 {
+				os := parts[0]
+				version := parts[1]
+
+				osVersion := strings.Join([]string{os, version}, "/")
+				if !slices.Contains(whitelist, osVersion) {
+					continue
+				}
+
+				a.dockerImage = fmt.Sprintf("%s/%s:%s-stable", ghcrPrefix, os, version)
+				a.os = os
+				a.version = version
+			}
+
 			switch {
 			case strings.HasSuffix(key, ".tar.lz4"):
 				a.url = url
@@ -82,6 +119,7 @@ func generate() error {
 
 			res[base] = a
 		}
+
 		return true
 	})
 	if err != nil {
@@ -90,11 +128,67 @@ func generate() error {
 
 	var artifacts []*artifact
 	for _, a := range res {
-		a := a
 		artifacts = append(artifacts, &a)
 	}
 
+	err = release(artifacts)
+	if err != nil {
+		return err
+	}
+
 	return print(artifacts)
+}
+
+func release(artifacts []*artifact) error {
+	ctx := context.Background()
+	cli, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithAPIVersionNegotiation())
+	if err != nil {
+		return fmt.Errorf("failed to create docker client: %v", err)
+	}
+	err = cli.Close()
+	if err != nil {
+		return fmt.Errorf("failed to create docker client: %v", err)
+	}
+
+	for _, a := range artifacts {
+		fmt.Println(a.dockerImage)
+		fmt.Println(a.image)
+
+		sourceImage := a.dockerImage
+
+		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{})
+		if err != nil {
+			return fmt.Errorf("image pull failed: %v", err)
+		}
+		defer pullReader.Close() // nolint:errcheck
+		id, isTerm := term.GetFdInfo(os.Stdout)
+		_ = jsonmessage.DisplayJSONMessagesStream(pullReader, os.Stdout, id, isTerm, nil)
+
+		additionalTags := []string{
+			strings.TrimSuffix(sourceImage, "-stable"),
+			fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
+		}
+		for _, t := range additionalTags {
+			err = cli.ImageTag(ctx, sourceImage, t)
+			if err != nil {
+				return fmt.Errorf("image tag failed: %v", err)
+			}
+
+			pushReader, err := cli.ImagePush(ctx, t, image.PushOptions{})
+			if err != nil {
+				return fmt.Errorf("image push failed: %v", err)
+			}
+			defer pushReader.Close() // nolint:errcheck
+			id, isTerm := term.GetFdInfo(os.Stdout)
+			_ = jsonmessage.DisplayJSONMessagesStream(pushReader, os.Stdout, id, isTerm, nil)
+		}
+
+		// TODO: copy from bucket to release version folder
+
+		fmt.Println()
+	}
+
+	return nil
 }
 
 func print(artifacts []*artifact) error {
@@ -119,8 +213,6 @@ func print(artifacts []*artifact) error {
 			)
 
 			for _, a := range artifacts {
-				a := a
-
 				url := fmt.Sprintf("[%s](%s)", path.Base(a.url), a.url)
 				checksum := fmt.Sprintf("[%s](%s)", path.Base(a.checksumURL), a.checksumURL)
 				packages := fmt.Sprintf("[%s](%s)", path.Base(a.packagesURL), a.packagesURL)
@@ -135,6 +227,7 @@ func print(artifacts []*artifact) error {
 	}
 
 	fmt.Println("## Downloads")
+	return nil
 
-	return p.Print(artifacts)
+	// return p.Print(artifacts)
 }
