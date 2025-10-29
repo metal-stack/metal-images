@@ -47,7 +47,7 @@ jobs:
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
           gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/capms-ubuntu/ gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/capms-ubuntu
 
-          PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
+          FILENAME=downloads.md TOKEN=${{ secrets.GITHUB_TOKEN }} PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/handle-release
 
       - name: Update release body
         id: update_release
