@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/registry"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/moby/term"
@@ -145,10 +148,22 @@ func release(artifacts []*artifact) error {
 	if err != nil {
 		return fmt.Errorf("failed to create docker client: %v", err)
 	}
-	err = cli.Close()
-	if err != nil {
-		return fmt.Errorf("failed to create docker client: %v", err)
+	defer cli.Close() // nolint:errcheck
+
+	token := os.Getenv("TOKEN")
+	if token == "" {
+		return fmt.Errorf("registry token is missing. Please provide TOKEN env variable")
 	}
+	authConfig := registry.AuthConfig{
+		Username:      "metal-stack",
+		Password:      token,
+		ServerAddress: "ghcr.io",
+	}
+	authConfigBytes, err := json.Marshal(authConfig)
+	if err != nil {
+		return fmt.Errorf("error encoding authConfig: %v", err)
+	}
+	authConfigBase64 := base64.URLEncoding.EncodeToString(authConfigBytes)
 
 	for _, a := range artifacts {
 		fmt.Println(a.dockerImage)
@@ -156,7 +171,7 @@ func release(artifacts []*artifact) error {
 
 		sourceImage := a.dockerImage
 
-		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{})
+		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
 		if err != nil {
 			return fmt.Errorf("image pull failed: %v", err)
 		}
@@ -174,7 +189,7 @@ func release(artifacts []*artifact) error {
 				return fmt.Errorf("image tag failed: %v", err)
 			}
 
-			pushReader, err := cli.ImagePush(ctx, t, image.PushOptions{})
+			pushReader, err := cli.ImagePush(ctx, t, image.PushOptions{RegistryAuth: authConfigBase64})
 			if err != nil {
 				return fmt.Errorf("image push failed: %v", err)
 			}
@@ -196,8 +211,21 @@ func print(artifacts []*artifact) error {
 		return artifacts[i].url < artifacts[j].url
 	})
 
+	filename := os.Getenv("FILENAME")
+	f, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("error creating file %s: %v", filename, err)
+	}
+	defer f.Close() // nolint:errcheck
+
+	_, err = f.WriteString("## Downloads\n\n")
+	if err != nil {
+		return fmt.Errorf("error writing heading to file %s: %v", filename, err)
+	}
+
 	printerConfig := &printers.TablePrinterConfig{
 		Markdown: true,
+		Out:      f,
 	}
 
 	p := printers.NewTablePrinter(printerConfig)
@@ -226,8 +254,10 @@ func print(artifacts []*artifact) error {
 		return nil, nil, fmt.Errorf("unsupported type for printing: %T", data)
 	}
 
-	fmt.Println("## Downloads")
-	return nil
+	err = p.Print(artifacts)
+	if err != nil {
+		return fmt.Errorf("error printing table: %v", err)
+	}
 
-	// return p.Print(artifacts)
+	return nil
 }
