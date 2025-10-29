@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"slices"
@@ -176,8 +177,7 @@ func release(artifacts []*artifact) error {
 			return fmt.Errorf("image pull failed: %v", err)
 		}
 		defer pullReader.Close() // nolint:errcheck
-		id, isTerm := term.GetFdInfo(os.Stdout)
-		_ = jsonmessage.DisplayJSONMessagesStream(pullReader, os.Stdout, id, isTerm, nil)
+		renderDockerOutput(pullReader)
 
 		additionalTags := []string{
 			strings.TrimSuffix(sourceImage, "-stable"),
@@ -194,8 +194,7 @@ func release(artifacts []*artifact) error {
 				return fmt.Errorf("image push failed: %v", err)
 			}
 			defer pushReader.Close() // nolint:errcheck
-			id, isTerm := term.GetFdInfo(os.Stdout)
-			_ = jsonmessage.DisplayJSONMessagesStream(pushReader, os.Stdout, id, isTerm, nil)
+			renderDockerOutput(pushReader)
 		}
 
 		// TODO: copy from bucket to release version folder
@@ -260,4 +259,9 @@ func print(artifacts []*artifact) error {
 	}
 
 	return nil
+}
+
+func renderDockerOutput(reader io.ReadCloser) {
+	id, isTerm := term.GetFdInfo(os.Stdout)
+	_ = jsonmessage.DisplayJSONMessagesStream(reader, os.Stdout, id, isTerm, nil)
 }
