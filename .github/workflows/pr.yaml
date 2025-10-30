@@ -134,7 +134,7 @@ jobs:
       shell: bash
       run: ./prepare.sh capms-ubuntu
       env:
-        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_MAJOR_MINOR: 1.31.13
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Build docker image for capms
@@ -145,10 +145,10 @@ jobs:
         targets: ubuntu-capms
         no-cache: true
       env:
-        KUBE_VERSION: 1.32.9
-        KUBE_APT_BRANCH: v1.32
+        KUBE_VERSION: 1.31.13
+        KUBE_APT_BRANCH: v1.31
         OS_NAME: capms-ubuntu
-        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_MAJOR_MINOR: 1.31.13
         SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
@@ -159,7 +159,7 @@ jobs:
       env:
         IMG_PKG_COMMAND: dpkg -l
         OS_NAME: capms-ubuntu
-        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_MAJOR_MINOR: 1.31.13
         SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
