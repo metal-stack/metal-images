@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -40,7 +41,12 @@ const (
 	ghcrPrefix = "ghcr.io/metal-stack"
 )
 
+var (
+	dryRun = flag.Bool("dry-run", false, "print info what would happen if run with --dry-run")
+)
+
 func main() {
+	flag.Parse()
 	err := generate()
 	if err != nil {
 		panic(err)
@@ -99,16 +105,16 @@ func generate() error {
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
 			if len(parts) > 2 {
-				os := parts[0]
+				operatingSystem := parts[0]
 				version := parts[1]
 
-				osVersion := strings.Join([]string{os, version}, "/")
+				osVersion := strings.Join([]string{operatingSystem, version}, "/")
 				if !slices.Contains(whitelist, osVersion) {
 					continue
 				}
 
-				a.dockerImage = fmt.Sprintf("%s/%s:%s-stable", ghcrPrefix, os, version)
-				a.os = os
+				a.dockerImage = fmt.Sprintf("%s/%s:%s-stable", ghcrPrefix, operatingSystem, version)
+				a.os = operatingSystem
 				a.version = version
 			}
 
@@ -152,25 +158,34 @@ func release(artifacts []*artifact) error {
 	defer cli.Close() // nolint:errcheck
 
 	token := os.Getenv("TOKEN")
-	if token == "" {
+	if token == "" && !*dryRun {
 		return fmt.Errorf("registry token is missing. Please provide TOKEN env variable")
 	}
-	authConfig := registry.AuthConfig{
-		Username:      "metal-stack",
-		Password:      token,
-		ServerAddress: "ghcr.io",
+
+	var authConfigBase64 string
+	if !*dryRun {
+		authConfig := registry.AuthConfig{
+			Username:      "metal-stack",
+			Password:      token,
+			ServerAddress: "ghcr.io",
+		}
+		authConfigBytes, err := json.Marshal(authConfig)
+		if err != nil {
+			return fmt.Errorf("error encoding authConfig: %v", err)
+		}
+		authConfigBase64 = base64.URLEncoding.EncodeToString(authConfigBytes)
 	}
-	authConfigBytes, err := json.Marshal(authConfig)
-	if err != nil {
-		return fmt.Errorf("error encoding authConfig: %v", err)
-	}
-	authConfigBase64 := base64.URLEncoding.EncodeToString(authConfigBytes)
 
 	for _, a := range artifacts {
-		fmt.Println(a.dockerImage)
-		fmt.Println(a.image)
+		fmt.Printf("tagging docker image: %s", a.dockerImage)
+		fmt.Println()
+		fmt.Println()
 
 		sourceImage := a.dockerImage
+
+		if *dryRun {
+			continue
+		}
 
 		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
 		if err != nil {
