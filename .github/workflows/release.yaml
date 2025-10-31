@@ -63,10 +63,20 @@ jobs:
           docker push ghcr.io/metal-stack/ubuntu:24.04
 
           # TODO: needs to be solved for capi images in order not to have to enter every release here
-          # docker pull ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable
-          # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:1.32.9
-          # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:latest
-          # docker push ghcr.io/metal-stack/capms-ubuntu:1.32.9
+          docker pull ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable
+          docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:1.32.9
+          docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:latest
+          docker push ghcr.io/metal-stack/capms-ubuntu:1.32.9
+
+          docker pull ghcr.io/metal-stack/capms-ubuntu:1.33.5-stable
+          docker tag ghcr.io/metal-stack/capms-ubuntu:1.33.5-stable ghcr.io/metal-stack/capms-ubuntu:1.33.5
+          docker tag ghcr.io/metal-stack/capms-ubuntu:1.33.5-stable ghcr.io/metal-stack/capms-ubuntu:latest
+          docker push ghcr.io/metal-stack/capms-ubuntu:1.33.5
+
+          docker pull ghcr.io/metal-stack/capms-ubuntu:1.34.1-stable
+          docker tag ghcr.io/metal-stack/capms-ubuntu:1.34.1-stable ghcr.io/metal-stack/capms-ubuntu:1.34.1
+          docker tag ghcr.io/metal-stack/capms-ubuntu:1.34.1-stable ghcr.io/metal-stack/capms-ubuntu:latest
+          docker push ghcr.io/metal-stack/capms-ubuntu:1.34.1
 
           docker pull ghcr.io/metal-stack/almalinux:9-stable
           docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:9
