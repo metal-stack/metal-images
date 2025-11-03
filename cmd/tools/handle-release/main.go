@@ -32,6 +32,7 @@ type artifact struct {
 	version     string
 	image       string
 	dockerImage string
+	dockerTags  []string
 	url         string
 	checksumURL string
 	packagesURL string
@@ -116,6 +117,11 @@ func generate() error {
 				a.dockerImage = fmt.Sprintf("%s/%s:%s-stable", ghcrPrefix, operatingSystem, version)
 				a.os = operatingSystem
 				a.version = version
+
+				a.dockerTags = []string{
+					strings.TrimSuffix(a.dockerImage, "-stable"),
+					fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
+				}
 			}
 
 			switch {
@@ -150,6 +156,14 @@ func generate() error {
 }
 
 func release(artifacts []*artifact) error {
+	if *dryRun {
+		for _, a := range artifacts {
+			logRunOutput(a)
+		}
+
+		return nil
+	}
+
 	ctx := context.Background()
 	cli, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithAPIVersionNegotiation())
 	if err != nil {
@@ -158,34 +172,25 @@ func release(artifacts []*artifact) error {
 	defer cli.Close() // nolint:errcheck
 
 	token := os.Getenv("TOKEN")
-	if token == "" && !*dryRun {
+	if token == "" {
 		return fmt.Errorf("registry token is missing. Please provide TOKEN env variable")
 	}
 
 	var authConfigBase64 string
-	if !*dryRun {
-		authConfig := registry.AuthConfig{
-			Username:      "metal-stack",
-			Password:      token,
-			ServerAddress: "ghcr.io",
-		}
-		authConfigBytes, err := json.Marshal(authConfig)
-		if err != nil {
-			return fmt.Errorf("error encoding authConfig: %v", err)
-		}
-		authConfigBase64 = base64.URLEncoding.EncodeToString(authConfigBytes)
+	authConfig := registry.AuthConfig{
+		Username:      "metal-stack",
+		Password:      token,
+		ServerAddress: "ghcr.io",
 	}
+	authConfigBytes, err := json.Marshal(authConfig)
+	if err != nil {
+		return fmt.Errorf("error encoding authConfig: %v", err)
+	}
+	authConfigBase64 = base64.URLEncoding.EncodeToString(authConfigBytes)
 
 	for _, a := range artifacts {
-		fmt.Printf("tagging docker image: %s", a.dockerImage)
-		fmt.Println()
-		fmt.Println()
-
+		logRunOutput(a)
 		sourceImage := a.dockerImage
-
-		if *dryRun {
-			continue
-		}
 
 		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
 		if err != nil {
@@ -194,11 +199,7 @@ func release(artifacts []*artifact) error {
 		defer pullReader.Close() // nolint:errcheck
 		renderDockerOutput(pullReader)
 
-		additionalTags := []string{
-			strings.TrimSuffix(sourceImage, "-stable"),
-			fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
-		}
-		for _, t := range additionalTags {
+		for _, t := range a.dockerTags {
 			err = cli.ImageTag(ctx, sourceImage, t)
 			if err != nil {
 				return fmt.Errorf("image tag failed: %v", err)
@@ -274,6 +275,22 @@ func print(artifacts []*artifact) error {
 	}
 
 	return nil
+}
+
+func logRunOutput(a *artifact) {
+	fmt.Printf("tagging docker image: %s", a.dockerImage)
+	fmt.Println()
+	for _, t := range a.dockerTags {
+		fmt.Printf("with %s", t)
+		fmt.Println()
+	}
+	fmt.Println()
+	fmt.Printf("copying gcs data from: %s", a.gcsSrcSuffix)
+	fmt.Println()
+	fmt.Printf("copying gcs data to: %s", a.gcsDestSuffix)
+	fmt.Println()
+	fmt.Println()
+	fmt.Println()
 }
 
 func renderDockerOutput(reader io.ReadCloser) {
