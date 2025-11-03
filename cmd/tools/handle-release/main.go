@@ -12,6 +12,9 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"time"
+
+	"cloud.google.com/go/storage"
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
@@ -36,6 +39,9 @@ type artifact struct {
 	url         string
 	checksumURL string
 	packagesURL string
+
+	gcsSrcSuffix  string
+	gcsDestSuffix string
 }
 
 const (
@@ -122,6 +128,9 @@ func generate() error {
 					strings.TrimSuffix(a.dockerImage, "-stable"),
 					fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
 				}
+
+				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
+				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", os.Getenv("REF"), operatingSystem, version)
 			}
 
 			switch {
@@ -213,7 +222,26 @@ func release(artifacts []*artifact) error {
 			renderDockerOutput(pushReader)
 		}
 
-		// TODO: copy from bucket to release version folder
+		fmt.Println()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+
+		client, err := storage.NewClient(ctx)
+		if err != nil {
+			return fmt.Errorf("creating a new gcs client failed: %v", err)
+		}
+		defer client.Close() // nolint:errcheck
+
+		bucket := client.Bucket(os.Getenv("GCS_BUCKET"))
+		src := bucket.Object(a.gcsSrcSuffix)
+		dest := bucket.Object(a.gcsDestSuffix)
+
+		copier := dest.CopierFrom(src)
+		_, err = copier.Run(ctx)
+		if err != nil {
+			return fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err)
+		}
 
 		fmt.Println()
 	}

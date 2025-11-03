@@ -37,18 +37,11 @@ jobs:
         with:
           go-version: '1.25.x'
           cache: false
-      - run: |
-          # copy supported images (entire stable folder cannot be copied as a whole because it contains obsolete images as well)
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/almalinux/9 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/almalinux/9
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian/12
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian-nvidia/12 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian-nvidia/12
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/capms-ubuntu/ gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/capms-ubuntu
 
-          go run ./cmd/tools/handle-release
+      - run: go run ./cmd/tools/handle-release
         env:
           FILENAME: downloads.md
+          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PREFIX: ${{ format('metal-os/{0}', github.ref_name) }}
           REF: ${{ github.ref_name }}
