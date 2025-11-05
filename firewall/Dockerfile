@@ -73,7 +73,6 @@ COPY --from=node_exporter-artifacts /bin/node_exporter /usr/local/bin/node_expor
 # Install nftables-exporter
 WORKDIR /tmp/
 RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter-linux-amd64.tgz -o nftables-exporter.tgz \
-               https://github.com/metal-stack/nftables-exporter/releases/download/v0.4.3/nftables-exporter-linux-amd64.tgz
  && tar xvf nftables-exporter.tgz -C / \
  && systemctl enable nftables-exporter \
  && rm -rf /tmp/*
