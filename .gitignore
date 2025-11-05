@@ -11,3 +11,5 @@ os-kernel
 disk.raw
 rootfs
 initramfs
+
+!capms/**/bin

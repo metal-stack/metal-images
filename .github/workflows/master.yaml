@@ -120,6 +120,39 @@ jobs:
 
     - name: Prepare build environment
       shell: bash
+      run: ./prepare.sh capms-ubuntu
+      env:
+        SEMVER_MAJOR_MINOR: 1.32.9
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Build docker image for capms
+      uses: docker/bake-action@v6
+      with:
+        source: .
+        files: ./docker-bake.hcl
+        targets: ubuntu-capms
+        no-cache: true
+      env:
+        KUBE_VERSION: 1.32.9
+        KUBE_APT_BRANCH: v1.32
+        OS_NAME: capms-ubuntu
+        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_PATCH: ""
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Test and export docker image for capms
+      run: |
+        ./test.sh ghcr.io/metal-stack/capms-ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./export.sh
+      env:
+        IMG_PKG_COMMAND: dpkg -l
+        OS_NAME: capms-ubuntu
+        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_PATCH: ""
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Prepare build environment
+      shell: bash
       run: ./prepare.sh debian-nvidia
       env:
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
