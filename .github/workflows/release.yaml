@@ -45,6 +45,15 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PREFIX: ${{ format('metal-os/{0}', github.ref_name) }}
           REF: ${{ github.ref_name }}
+          DISTRO_VERSIONS: |
+            [
+              "ubuntu/24.04",
+              "capms-ubuntu/1.32.9",
+              "firewall/3.0-ubuntu",
+              "debian/12",
+              "debian-nvidia/12",
+              "almalinux/9",
+            ]
 
       - name: Update release body
         id: update_release

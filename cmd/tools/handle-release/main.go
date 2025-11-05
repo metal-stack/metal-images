@@ -66,15 +66,13 @@ func generate() error {
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
 		prefix      = os.Getenv("PREFIX") // "metal-os/20230710" or "metal-os/stable"
-		whitelist   = []string{
-			"ubuntu/24.04",
-			"debian/12",
-			"almalinux/9",
-			// TODO: handle "capms-ubuntu" without having to enter every release version manually
-			"firewall/3.0-ubuntu",
-			"debian-nvidia/12",
-		}
+		whitelist   []string
 	)
+
+	err := json.Unmarshal([]byte(os.Getenv("DISTRO_VERSIONS")), &whitelist)
+	if err != nil {
+		return fmt.Errorf("unable to unmarshal DISTRO_VERSIONS: %v", err)
+	}
 
 	ss, err := session.NewSession(&aws.Config{
 		Endpoint:    &endpoint,
