@@ -113,7 +113,7 @@ target "ubuntu" {
         SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
         SEMVER_PATCH = "${SEMVER_PATCH}"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.54"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.56"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
