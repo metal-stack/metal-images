@@ -204,7 +204,10 @@ func release(artifacts []*artifact) error {
 			return fmt.Errorf("image pull failed: %v", err)
 		}
 		defer pullReader.Close() // nolint:errcheck
-		renderDockerOutput(pullReader)
+		err = renderDockerOutput(pullReader)
+		if err != nil {
+			return err
+		}
 
 		for _, t := range a.dockerTags {
 			err = cli.ImageTag(ctx, sourceImage, t)
@@ -217,7 +220,10 @@ func release(artifacts []*artifact) error {
 				return fmt.Errorf("image push failed: %v", err)
 			}
 			defer pushReader.Close() // nolint:errcheck
-			renderDockerOutput(pushReader)
+			err = renderDockerOutput(pushReader)
+			if err != nil {
+				return err
+			}
 		}
 
 		fmt.Println()
@@ -319,7 +325,9 @@ func logRunOutput(a *artifact) {
 	fmt.Println()
 }
 
-func renderDockerOutput(reader io.ReadCloser) {
+func renderDockerOutput(reader io.ReadCloser) error {
 	id, isTerm := term.GetFdInfo(os.Stdout)
-	_ = jsonmessage.DisplayJSONMessagesStream(reader, os.Stdout, id, isTerm, nil)
+	err := jsonmessage.DisplayJSONMessagesStream(reader, os.Stdout, id, isTerm, nil)
+
+	return err
 }
