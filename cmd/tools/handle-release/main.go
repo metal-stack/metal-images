@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -171,12 +172,18 @@ func release(artifacts []*artifact) error {
 		return nil
 	}
 
+	var errs []error
+
 	ctx := context.Background()
 	cli, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithAPIVersionNegotiation())
 	if err != nil {
 		return fmt.Errorf("failed to create docker client: %v", err)
 	}
-	defer cli.Close() // nolint:errcheck
+	defer func() {
+		if err = cli.Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}()
 
 	token := os.Getenv("TOKEN")
 	if token == "" {
@@ -203,7 +210,11 @@ func release(artifacts []*artifact) error {
 		if err != nil {
 			return fmt.Errorf("image pull failed: %v", err)
 		}
-		defer pullReader.Close() // nolint:errcheck
+		defer func() {
+			if err = pullReader.Close(); err != nil {
+				errs = append(errs, err)
+			}
+		}()
 		err = renderDockerOutput(pullReader)
 		if err != nil {
 			return err
@@ -219,7 +230,11 @@ func release(artifacts []*artifact) error {
 			if err != nil {
 				return fmt.Errorf("image push failed: %v", err)
 			}
-			defer pushReader.Close() // nolint:errcheck
+			defer func() {
+				if err = pushReader.Close(); err != nil {
+					errs = append(errs, err)
+				}
+			}()
 			err = renderDockerOutput(pushReader)
 			if err != nil {
 				return err
@@ -235,7 +250,11 @@ func release(artifacts []*artifact) error {
 		if err != nil {
 			return fmt.Errorf("creating a new gcs client failed: %v", err)
 		}
-		defer client.Close() // nolint:errcheck
+		defer func() {
+			if err = client.Close(); err != nil {
+				errs = append(errs, err)
+			}
+		}()
 
 		bucket := client.Bucket(os.Getenv("GCS_BUCKET"))
 		src := bucket.Object(a.gcsSrcSuffix)
@@ -250,7 +269,7 @@ func release(artifacts []*artifact) error {
 		fmt.Println()
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func print(artifacts []*artifact) error {
