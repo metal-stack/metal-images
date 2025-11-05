@@ -329,17 +329,13 @@ func print(artifacts []*artifact) error {
 }
 
 func logRunOutput(a *artifact) {
-	fmt.Printf("tagging docker image: %s", a.dockerImage)
-	fmt.Println()
+	fmt.Printf("tagging docker image: %s\n", a.dockerImage)
 	for _, t := range a.dockerTags {
-		fmt.Printf("with %s", t)
-		fmt.Println()
+		fmt.Printf("with %s\n", t)
 	}
 	fmt.Println()
-	fmt.Printf("copying gcs data from: %s", a.gcsSrcSuffix)
-	fmt.Println()
-	fmt.Printf("copying gcs data to: %s", a.gcsDestSuffix)
-	fmt.Println()
+	fmt.Printf("copying gcs data from: %s\n", a.gcsSrcSuffix)
+	fmt.Printf("copying gcs data to: %s\n", a.gcsDestSuffix)
 	fmt.Println()
 	fmt.Println()
 }
