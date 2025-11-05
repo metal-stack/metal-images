@@ -18,7 +18,7 @@ FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NFTABLES_EXPORTER_VERSION=v0.4.0
+    NFTABLES_EXPORTER_VERSION=v0.4.3
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
