@@ -47,6 +47,13 @@ type artifact struct {
 
 const (
 	ghcrPrefix = "ghcr.io/metal-stack"
+
+	distroVersions = "DISTRO_VERSIONS"
+	filename       = "FILENAME"
+	gcsBucket      = "GCS_BUCKET"
+	gitRef         = "REF"
+	prefix         = "PREFIX"
+	token          = "TOKEN"
 )
 
 var (
@@ -66,13 +73,13 @@ func generate() error {
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
-		prefix      = os.Getenv("PREFIX") // "metal-os/20230710" or "metal-os/stable"
+		pref        = os.Getenv(prefix) // "metal-os/20230710" or "metal-os/stable"
 		whitelist   []string
 	)
 
-	err := json.Unmarshal([]byte(os.Getenv("DISTRO_VERSIONS")), &whitelist)
+	err := json.Unmarshal([]byte(os.Getenv(distroVersions)), &whitelist)
 	if err != nil {
-		return fmt.Errorf("unable to unmarshal DISTRO_VERSIONS: %v", err)
+		return fmt.Errorf("unable to unmarshal %s: %v", distroVersions, err)
 	}
 
 	ss, err := session.NewSession(&aws.Config{
@@ -94,20 +101,20 @@ func generate() error {
 
 	err = client.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket: &bucket,
-		Prefix: &prefix,
+		Prefix: &pref,
 	}, func(objects *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range objects.Contents {
 			key := *o.Key
 
-			after, found := strings.CutPrefix(key, prefix)
+			after, found := strings.CutPrefix(key, pref)
 			if !found {
 				continue
 			}
 
 			base := path.Dir(key)
 			a := res[base]
-			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, prefix, after)
-			a.image = fmt.Sprintf("%s%s", prefix, path.Dir(after))
+			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, pref, after)
+			a.image = fmt.Sprintf("%s%s", pref, path.Dir(after))
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
 			if len(parts) > 2 {
@@ -129,7 +136,7 @@ func generate() error {
 				}
 
 				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", os.Getenv("REF"), operatingSystem, version)
+				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", os.Getenv(gitRef), operatingSystem, version)
 			}
 
 			switch {
@@ -185,15 +192,15 @@ func release(artifacts []*artifact) error {
 		}
 	}()
 
-	token := os.Getenv("TOKEN")
-	if token == "" {
+	tok := os.Getenv(token)
+	if tok == "" {
 		return fmt.Errorf("registry token is missing. Please provide TOKEN env variable")
 	}
 
 	var authConfigBase64 string
 	authConfig := registry.AuthConfig{
 		Username:      "metal-stack",
-		Password:      token,
+		Password:      tok,
 		ServerAddress: "ghcr.io",
 	}
 	authConfigBytes, err := json.Marshal(authConfig)
@@ -256,7 +263,7 @@ func release(artifacts []*artifact) error {
 			}
 		}()
 
-		bucket := client.Bucket(os.Getenv("GCS_BUCKET"))
+		bucket := client.Bucket(os.Getenv(gcsBucket))
 		src := bucket.Object(a.gcsSrcSuffix)
 		dest := bucket.Object(a.gcsDestSuffix)
 
@@ -277,16 +284,16 @@ func print(artifacts []*artifact) error {
 		return artifacts[i].url < artifacts[j].url
 	})
 
-	filename := os.Getenv("FILENAME")
-	f, err := os.Create(filename)
+	fn := os.Getenv(filename)
+	f, err := os.Create(fn)
 	if err != nil {
-		return fmt.Errorf("error creating file %s: %v", filename, err)
+		return fmt.Errorf("error creating file %s: %v", fn, err)
 	}
 	defer f.Close() // nolint:errcheck
 
 	_, err = f.WriteString("## Downloads\n\n")
 	if err != nil {
-		return fmt.Errorf("error writing heading to file %s: %v", filename, err)
+		return fmt.Errorf("error writing heading to file %s: %v", fn, err)
 	}
 
 	printerConfig := &printers.TablePrinterConfig{
