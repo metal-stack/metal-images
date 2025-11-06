@@ -179,7 +179,9 @@ func release(artifacts []*artifact) error {
 		return nil
 	}
 
-	var errs []error
+	var (
+		errs []error
+	)
 
 	ctx := context.Background()
 	cli, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithAPIVersionNegotiation())
@@ -205,7 +207,8 @@ func release(artifacts []*artifact) error {
 	}
 	authConfigBytes, err := json.Marshal(authConfig)
 	if err != nil {
-		return fmt.Errorf("error encoding authConfig: %v", err)
+		errs = append(errs, fmt.Errorf("error encoding authConfig: %v", err))
+		return errors.Join(errs...)
 	}
 	authConfigBase64 = base64.URLEncoding.EncodeToString(authConfigBytes)
 
@@ -215,7 +218,8 @@ func release(artifacts []*artifact) error {
 
 		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
 		if err != nil {
-			return fmt.Errorf("image pull failed: %v", err)
+			errs = append(errs, fmt.Errorf("image pull failed: %v", err))
+			return errors.Join(errs...)
 		}
 		defer func() {
 			if err = pullReader.Close(); err != nil {
@@ -224,18 +228,21 @@ func release(artifacts []*artifact) error {
 		}()
 		err = renderDockerOutput(pullReader)
 		if err != nil {
-			return err
+			errs = append(errs, err)
+			return errors.Join(errs...)
 		}
 
 		for _, t := range a.dockerTags {
 			err = cli.ImageTag(ctx, sourceImage, t)
 			if err != nil {
-				return fmt.Errorf("image tag failed: %v", err)
+				errs = append(errs, fmt.Errorf("image tag failed: %v", err))
+				return errors.Join(errs...)
 			}
 
 			pushReader, err := cli.ImagePush(ctx, t, image.PushOptions{RegistryAuth: authConfigBase64})
 			if err != nil {
-				return fmt.Errorf("image push failed: %v", err)
+				errs = append(errs, fmt.Errorf("image push failed: %v", err))
+				return errors.Join(errs...)
 			}
 			defer func() {
 				if err = pushReader.Close(); err != nil {
@@ -244,7 +251,8 @@ func release(artifacts []*artifact) error {
 			}()
 			err = renderDockerOutput(pushReader)
 			if err != nil {
-				return err
+				errs = append(errs, err)
+				return errors.Join(errs...)
 			}
 		}
 
@@ -255,7 +263,8 @@ func release(artifacts []*artifact) error {
 
 		client, err := storage.NewClient(ctx)
 		if err != nil {
-			return fmt.Errorf("creating a new gcs client failed: %v", err)
+			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
+			return errors.Join(errs...)
 		}
 		defer func() {
 			if err = client.Close(); err != nil {
@@ -270,7 +279,8 @@ func release(artifacts []*artifact) error {
 		copier := dest.CopierFrom(src)
 		_, err = copier.Run(ctx)
 		if err != nil {
-			return fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err)
+			errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err))
+			return errors.Join(errs...)
 		}
 
 		fmt.Println()
@@ -280,6 +290,10 @@ func release(artifacts []*artifact) error {
 }
 
 func print(artifacts []*artifact) error {
+	var (
+		errs []error
+	)
+
 	sort.Slice(artifacts, func(i, j int) bool {
 		return artifacts[i].url < artifacts[j].url
 	})
@@ -287,13 +301,19 @@ func print(artifacts []*artifact) error {
 	fn := os.Getenv(filename)
 	f, err := os.Create(fn)
 	if err != nil {
-		return fmt.Errorf("error creating file %s: %v", fn, err)
+		errs = append(errs, fmt.Errorf("error creating file %s: %v", fn, err))
+		return errors.Join(errs...)
 	}
-	defer f.Close() // nolint:errcheck
+	defer func() {
+		if err = f.Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}()
 
 	_, err = f.WriteString("## Downloads\n\n")
 	if err != nil {
-		return fmt.Errorf("error writing heading to file %s: %v", fn, err)
+		errs = append(errs, fmt.Errorf("error writing heading to file %s: %v", fn, err))
+		return errors.Join(errs...)
 	}
 
 	printerConfig := &printers.TablePrinterConfig{
@@ -324,15 +344,17 @@ func print(artifacts []*artifact) error {
 			return header, rows, nil
 		}
 
-		return nil, nil, fmt.Errorf("unsupported type for printing: %T", data)
+		errs = append(errs, fmt.Errorf("unsupported type for printing: %T", data))
+		return nil, nil, errors.Join(errs...)
 	}
 
 	err = p.Print(artifacts)
 	if err != nil {
-		return fmt.Errorf("error printing table: %v", err)
+		errs = append(errs, fmt.Errorf("error printing table: %v", err))
+		return errors.Join(errs...)
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func logRunOutput(a *artifact) {
