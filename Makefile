@@ -38,8 +38,8 @@ test:
 
 .PHONY: debian
 debian: binary
-	SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache --set=*.output=type=docker debian
-	OS_NAME=debian CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
+	SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache --set=*.output=type=docker debian
+	OS_NAME=debian CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=13 ./test.sh ghcr.io/metal-stack/debian:13
 
 .PHONY: nvidia
 nvidia:

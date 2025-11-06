@@ -1,10 +1,10 @@
 
 
-ARG BASE_IMAGE
+ARG BASE_IMAGE=ghcr.io/metal-stack/debian:13
 FROM ${BASE_IMAGE} AS base
 
 ARG MACHINE_TYPE=machine
-ARG GOSS_VERSION=v0.4.7
+ARG GOSS_VERSION=v0.4.9
 ARG GOSS_URL=https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64
 
 COPY ./ctx /
