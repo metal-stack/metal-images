@@ -21,12 +21,6 @@ if [ "${ID}" = "ubuntu" ] ; then
 else
     echo "Debian - Install kernel"
 
-    cat <<EOF > /etc/apt/sources.list
-deb http://deb.debian.org/debian bookworm main contrib non-free-firmware
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free-firmware
-deb http://security.debian.org/debian-security bookworm-security main contrib non-free-firmware
-EOF
-
     apt update && apt install -y intel-microcode linux-image-${KERNEL_VERSION}-amd64 linux-cpupower
 fi
 
