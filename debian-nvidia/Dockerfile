@@ -8,12 +8,11 @@ COPY --from=ctx . /
 RUN set -ex \
  && rm -f /.dockerenv \
  && apt-get update \
- && apt-get install \
+ && apt-get install --yes \
     dkms \
     software-properties-common \
  && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb -o cuda-keyring_1.1-1_all.deb \
  && dpkg -i cuda-keyring_1.1-1_all.deb \
- && add-apt-repository contrib \
  && apt-get update \
  && apt-get install --yes \
     cuda-drivers
