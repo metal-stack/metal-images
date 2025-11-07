@@ -1,10 +1,7 @@
-ARG BASE_OS_NAME
-ARG BASE_OS_VERSION
-ARG SEMVER_PATCH
-ARG DROPTAILER_VERSION=v0.2.18
-ARG FIREWALL_CONTROLLER_VERSION=v2.3.8
-ARG TAILSCALE_VERSION=v1.82.0
-ARG NODE_EXPORTER_VERSION=v1.9.1
+ARG DROPTAILER_VERSION=v0.2.19
+ARG FIREWALL_CONTROLLER_VERSION=v2.4.0
+ARG TAILSCALE_VERSION=v1.90.6
+ARG NODE_EXPORTER_VERSION=v1.10.2
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -14,11 +11,11 @@ FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}${SEMVER_PATCH}
+FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NFTABLES_EXPORTER_VERSION=v0.4.0
+    NFTABLES_EXPORTER_VERSION=v0.4.3
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
@@ -35,7 +32,9 @@ RUN apt-get update --quiet \
 # - nftables rules are copied in place; nftables.service will load them on startup.
 # - systemd.generator in `/etc/systemd/system-generators` is used to run applications in custom VRF
 # - systemd.network configuration in `/etc/systemd/network` is used to apply network interface renaming in a bullet-proofed way
-COPY context/ /
+COPY --from=ctx . /
+# COPY --from=ctx etc/ /etc/
+# COPY --from=ctx suricata-and-chrony-installation.sh /
 
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh

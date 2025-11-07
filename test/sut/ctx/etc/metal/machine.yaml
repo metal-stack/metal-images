@@ -1,0 +1,39 @@
+---
+hostname: machine
+password: test
+console: ttyS1,115200n8
+sshpublickey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIhLhxQwOgAaJmqZ9njCdfNw2+LTm24CwUTay6ZYlJBQ metal-images
+role: machine
+raidenabled: false
+root_uuid: "543eb7f8-98d4-d986-e669-824dbebe69e5"
+networks:
+  - asn: 4200003073
+    destinationprefixes: []
+    ips:
+      - 10.1.0.1
+    nat: false
+    networkid: bc830818-2df1-4904-8c40-4322296d393d
+    prefixes:
+      - 10.0.16.0/22
+    private: true
+    networktype: privateprimaryunshared
+    underlay: false
+    vrf: 3981
+timestamp: "2019-07-01T09:41:43Z"
+nics:
+  - mac: "00:03:00:11:11:01"
+    name: lan0
+    neighbors:
+      - mac: 44:38:39:00:00:1a
+        name: null
+        neighbors: []
+  - mac: "00:03:00:11:12:01"
+    name: lan1
+    neighbors:
+      - mac: "44:38:39:00:00:04"
+        name: null
+        neighbors: []
+ntp_servers:
+  - address: 1.pool.ntp.org
+dns_servers:
+  - ip: 8.8.4.4

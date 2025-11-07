@@ -51,10 +51,11 @@ Please also refer to our documentation on docs.metal-stack.io on [Build Your Own
 Before you can start developing changes for metal-images or even introduce new operating systems, you should install the following tools:
 
 - **docker**: for sure
+- **golang**
 - **kvm**: hypervisor used for integration tests
 - **lz4**: to compress tarballs
-- **[docker-make](https://github.com/fi-ts/docker-make)**: this is a helper tool to define docker builds declaratively with YAML
-- **[weaveworks/ignite](https://github.com/weaveworks/ignite)**: handles [firecracker vms](https://firecracker-microvm.github.io/) to spin up a metal-image virtually as VM
+- enable docker's [**containerd image store**](https://docs.docker.com/engine/storage/containerd/#enable-containerd-image-store-on-docker-engine)
+- **[cloud-hypervisor](https://github.com/cloud-hypervisor/cloud-hypervisor)**: virtual machine monitor running on top of KVM to spin up MicroVMs for integration tests
 
 You can build metal-images like that:
 
@@ -81,13 +82,13 @@ make almalinux
 BUILDKIT_PROGRESS=plain make debian
 ```
 
-For integration testing the images are started as [firecracker vm](https://firecracker-microvm.github.io/) with [weaveworks/ignite](https://github.com/weaveworks/ignite) and basic properties like interfaces to other metal-stack components, kernel parameters, internet reachability, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. The integration tests are also executed when you build an image locally with.
+For integration testing the images are started as [cloud-hypervisor](https://www.cloudhypervisor.org) VMs and basic properties like interfaces to other metal-stack components, kernel parameters, internet accessibility, DNS resolution etc. are checked with [goss](https://github.com/aelsabbahy/goss) in a GitHub action workflow. Integration tests are also executed if you build an image locally.
 
 ### Debugging Image Provisioning
 
 In some cases it may be necessary to manually figure out the commands for provisioning a machine image. To do this in a real server environment, it is possible to hook into the metal-hammer through the machine's serial console.
 
-You can interrupt the metal-hammer at any time by sending a keyboard interrupt. The metal-hammer takes a short pause before booting into the operating system kernel, which is a good time to send the interrupt.
+You can interrupt the metal-hammer at any time by sending a keyboard interrupt. The metal-hammer takes a short break before booting into the operating system kernel, which is a good time to send the interrupt.
 
 To prevent the machine from rebooting, you should immediately issue the following command:
 

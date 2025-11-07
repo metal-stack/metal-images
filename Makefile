@@ -38,20 +38,32 @@ test:
 
 .PHONY: debian
 debian: binary
-	docker-make -nNL -w debian -f docker-make.debian.yaml
+	SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache --set=*.output=type=docker debian
+	OS_NAME=debian CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh ghcr.io/metal-stack/debian:12
 
 .PHONY: nvidia
 nvidia:
-	docker-make -nNL -w debian-nvidia -f docker-make.yaml
+	SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache --set=*.output=type=docker debian-nvidia
 
 .PHONY: ubuntu
 ubuntu: binary
-	docker-make -nNL -w debian -f docker-make.ubuntu.yaml
+	SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache --set=*.output=type=docker ubuntu
+	OS_NAME=ubuntu SEMVER_MAJOR_MINOR=24.04 ./test.sh ghcr.io/metal-stack/ubuntu:24.04
+
+.PHONY: capms
+capms: ubuntu
+	KUBE_VERSION=1.32.9 \
+	KUBE_APT_BRANCH=v1.32 \
+	SEMVER_MAJOR_MINOR=1.32.9 \
+	docker buildx bake --no-cache --set=*.output=type=docker ubuntu-capms
+	OS_NAME=capms-ubuntu SEMVER_MAJOR_MINOR=1.32.9 ./test.sh ghcr.io/metal-stack/capms-ubuntu:1.32.9
 
 .PHONY: firewall
-firewall: ubuntu
-	docker-make -nNL -w firewall -f docker-make.yaml
+firewall: binary
+	SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache --set=*.output=type=docker ubuntu-firewall
+	OS_NAME=firewall SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu
 
 .PHONY: almalinux
 almalinux: binary
-	docker-make -nNL -w almalinux -f docker-make.yaml
+	SEMVER_MAJOR_MINOR=9 docker buildx bake --no-cache --set=*.output=type=docker almalinux
+	OS_NAME=almalinux SEMVER_MAJOR_MINOR=9 ./test.sh ghcr.io/metal-stack/almalinux:9

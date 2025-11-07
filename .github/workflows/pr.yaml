@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   GCS_BUCKET: images.metal-pod.io
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -41,11 +45,14 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Set up Go 1.24
+    - name: Set up Go 1.25
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24.x'
+        go-version: '1.25.x'
         cache: false
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: Lint
       uses: golangci/golangci-lint-action@v8
@@ -58,6 +65,8 @@ jobs:
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh ${{ matrix.os.name }}
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
 
     - name: use our lz4 which is version 1.10 with multithread support
       shell: bash
@@ -65,48 +74,123 @@ jobs:
         chmod +x test/lz4
         sudo cp test/lz4 /usr/bin/lz4
 
-    - name: Build docker image for workers and export tarball
+    - name: Build docker image for workers
+      uses: docker/bake-action@v6
+      with:
+        source: .
+        files: ./docker-bake.hcl
+        targets: ${{ matrix.os.name }}
+        no-cache: true
+      env:
+        OS_NAME: ${{ matrix.os.name }}
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: -${{ github.head_ref }}
+
+    - name: Test and export docker image for workers
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian \
-          --file docker-make.${{ matrix.os.name }}.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./export.sh
+      env:
+        CIS_VERSION: v4.1-4
+        IMG_PKG_COMMAND: dpkg -l
+        OS_NAME: ${{ matrix.os.name }}
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: -${{ github.head_ref }}
+
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh firewall
+      env:
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Build docker image for firewalls
+      uses: docker/bake-action@v6
+      with:
+        source: .
+        files: ./docker-bake.hcl
+        targets: ubuntu-firewall
+        no-cache: true
+      env:
+        OS_NAME: firewall
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+        SEMVER_PATCH: -${{ github.head_ref }}
+      if: ${{ matrix.os.name == 'ubuntu' }}
 
     # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
     # and then goss tests fail
-    - name: Build docker image for firewalls and export tarball
+    - name: Test and export docker image for firewalls
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir firewall \
-          --build-only ${{ matrix.os.name }} \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./export.sh
+      env:
+        IMG_PKG_COMMAND: dpkg -l
+        OS_NAME: firewall
+        SEMVER_MAJOR_MINOR: 3.0-ubuntu
+        SEMVER_PATCH: -${{ github.head_ref }}
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Prepare build environment
+      shell: bash
+      run: ./prepare.sh capms-ubuntu
+      env:
+        SEMVER_MAJOR_MINOR: 1.32.9
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Build docker image for capms
+      uses: docker/bake-action@v6
+      with:
+        source: .
+        files: ./docker-bake.hcl
+        targets: ubuntu-capms
+        no-cache: true
+      env:
+        KUBE_VERSION: 1.32.9
+        KUBE_APT_BRANCH: v1.32
+        OS_NAME: capms-ubuntu
+        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_PATCH: -${{ github.head_ref }}
+      if: ${{ matrix.os.name == 'ubuntu' }}
+
+    - name: Test and export docker image for capms
+      run: |
+        ./test.sh ghcr.io/metal-stack/capms-ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./export.sh
+      env:
+        IMG_PKG_COMMAND: dpkg -l
+        OS_NAME: capms-ubuntu
+        SEMVER_MAJOR_MINOR: 1.32.9
+        SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'ubuntu' }}
 
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh debian-nvidia
+      env:
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
       if: ${{ matrix.os.name == 'debian' }}
 
-    - name: Build docker image for debian-nvidia based workers and export tarball
+    - name: Build docker image for debian-nvidia
+      uses: docker/bake-action@v6
+      with:
+        source: .
+        files: ./docker-bake.hcl
+        targets: debian-nvidia
+        no-cache: true
+      env:
+        OS_NAME: debian-nvidia
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: -${{ github.head_ref }}
+      if: ${{ matrix.os.name == 'debian' }}
+
+    - name: Test and export docker image for debian-nvidia based workers
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir debian-nvidia \
-          --file docker-make.yaml \
-          --no-cache \
-          --no-pull \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        ./export.sh
+      env:
+        IMG_PKG_COMMAND: dpkg -l
+        OS_NAME: debian-nvidia
+        SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        SEMVER_PATCH: -${{ github.head_ref }}
       if: ${{ matrix.os.name == 'debian' }}
 
     - name: Upload image tarballs to GCS
@@ -133,27 +217,44 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Set up Go 1.24
+    - name: Set up Go 1.25
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24.x'
+        go-version: '1.25.x'
         cache: false
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: build install
       run: make
     - name: Prepare build environment
       shell: bash
       run: ./prepare.sh almalinux
-    - name: Build docker image for almalinux based workers and export tarball
+      env:
+        SEMVER_MAJOR_MINOR: 9
+
+    - name: Build image
+      uses: docker/bake-action@v6
+      with:
+        source: .
+        files: ./docker-bake.hcl
+        targets: almalinux
+        no-cache: true
+      env:
+        OS_NAME: almalinux
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER_PATCH: -${{ github.head_ref }}
+
+    - name: Test and export docker image for almalinux based workers
       run: |
-        TMPDIR=/var/tmp \
-        docker-make \
-          --work-dir almalinux \
-          --file docker-make.yaml \
-          --no-cache \
-          --summary \
-          --no-lint \
-          --build-arg SEMVER_PATCH=-${{ github.head_ref }}
+        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./export.sh
+      env:
+        IMG_PKG_COMMAND: rpm -qa
+        OS_NAME: almalinux
+        SEMVER_MAJOR_MINOR: 9
+        SEMVER_PATCH: -${{ github.head_ref }}
 
     - uses: google-github-actions/setup-gcloud@v0
       with:
