@@ -398,6 +398,7 @@ func (i *installer) configureNetwork() error {
 		return fmt.Errorf("unknown role:%s", i.config.Role)
 	}
 
+	// TODO
 	err = kb.Validate(kind)
 	if err != nil {
 		return err
