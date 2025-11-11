@@ -81,6 +81,14 @@ jobs:
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
         no-cache: true
+
+        # target: _common
+        # field: output
+        # modifier: += (append)
+        # value = type=registry
+        # take a look at the docs for further info on how to append targets etc.
+        # append to target: https://docs.docker.com/reference/cli/docker/buildx/bake/#set
+        # GitHub Actions syntax: https://github.com/marketplace/actions/docker-buildx-bake
         set: _common.output+=type=registry
       env:
         OS_NAME: ${{ matrix.os.name }}
