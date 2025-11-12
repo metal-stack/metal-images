@@ -71,6 +71,15 @@ jobs:
         files: ./docker-bake.hcl
         targets: ${{ matrix.os.name }}
         no-cache: true
+
+        # target: _common
+        # field: output
+        # modifier: += (append)
+        # value = type=registry
+        # take a look at the docs for further info on how to append targets etc.
+        # append to target: https://docs.docker.com/reference/cli/docker/buildx/bake/#set
+        # GitHub Actions syntax: https://github.com/marketplace/actions/docker-buildx-bake
+        set: _common.output+=type=registry
       env:
         OS_NAME: ${{ matrix.os.name }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -78,7 +87,7 @@ jobs:
 
     - name: Test and export docker image for workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         CIS_VERSION: v4.1-4
@@ -101,6 +110,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: firewall
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
@@ -109,7 +119,7 @@ jobs:
 
     - name: Test and export docker image for firewalls
       run: |
-        ./test.sh ghcr.io/metal-stack/firewall:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: dpkg -l
@@ -132,6 +142,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-capms
         no-cache: true
+        set: _common.output+=type=registry
       env:
         KUBE_VERSION: 1.32.9
         KUBE_APT_BRANCH: v1.32
@@ -142,7 +153,7 @@ jobs:
 
     - name: Test and export docker image for capms
       run: |
-        ./test.sh ghcr.io/metal-stack/capms-ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: dpkg -l
@@ -165,6 +176,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: debian-nvidia
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: debian-nvidia
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -229,6 +241,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: almalinux
         no-cache: true
+        set: _common.output+=type=registry
       env:
         OS_NAME: almalinux
         SEMVER_MAJOR_MINOR: 9
@@ -236,7 +249,7 @@ jobs:
 
     - name: Test and export docker image for almalinux based workers
       run: |
-        ./test.sh ghcr.io/metal-stack/${OS_NAME}:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}
+        ./test.sh
         ./export.sh
       env:
         IMG_PKG_COMMAND: rpm -qa
