@@ -62,13 +62,13 @@ var (
 
 func main() {
 	flag.Parse()
-	err := generate()
+	err := run()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func generate() error {
+func run() error {
 	var (
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
