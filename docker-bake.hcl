@@ -53,7 +53,9 @@ target "debian" {
         FRR_VERSION_DETAIL ="10.4.1-0~deb12u1"
         FRR_APT_CHANNEL ="bookworm"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-        KERNEL_VERSION = "6.1.0-41"
+      # upgrade to > 6.1.0-40 actually not possible because it breaks calico: 
+      # see https://github.com/projectcalico/calico/issues/11302#issuecomment-3526431095
+        KERNEL_VERSION = "6.1.0-40"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
