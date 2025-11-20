@@ -54,7 +54,6 @@ target "debian" {
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
         KERNEL_VERSION = "6.12.48+deb13"
-
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
