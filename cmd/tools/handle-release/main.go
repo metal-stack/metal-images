@@ -13,7 +13,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-	"time"
 
 	"cloud.google.com/go/storage"
 
@@ -257,9 +256,6 @@ func release(artifacts []*artifact) error {
 		}
 
 		fmt.Println()
-
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		defer cancel()
 
 		client, err := storage.NewClient(ctx)
 		if err != nil {
