@@ -72,11 +72,20 @@ func run() error {
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
-		pref        = os.Getenv(prefix) // "metal-os/20230710" or "metal-os/stable"
+		pref        string // "metal-os/20230710" or "metal-os/stable"
 		whitelist   []string
 	)
 
-	err := json.Unmarshal([]byte(os.Getenv(distroVersions)), &whitelist)
+	pref, err := getEnvVar(prefix)
+	if err != nil {
+		return err
+	}
+
+	whitelistString, err := getEnvVar(distroVersions)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal([]byte(whitelistString), &whitelist)
 	if err != nil {
 		return fmt.Errorf("unable to unmarshal %s: %v", distroVersions, err)
 	}
@@ -97,6 +106,11 @@ func run() error {
 		client = s3.New(ss)
 		res    = map[string]artifact{}
 	)
+
+	ref, err := getEnvVar(gitRef)
+	if err != nil {
+		return err
+	}
 
 	err = client.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket: &bucket,
@@ -135,7 +149,7 @@ func run() error {
 				}
 
 				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", os.Getenv(gitRef), operatingSystem, version)
+				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", ref, operatingSystem, version)
 			}
 
 			switch {
@@ -193,9 +207,9 @@ func release(artifacts []*artifact) error {
 		}
 	}()
 
-	tok := os.Getenv(token)
-	if tok == "" {
-		return fmt.Errorf("registry token is missing. Please provide TOKEN env variable")
+	tok, err := getEnvVar(token)
+	if err != nil {
+		return err
 	}
 
 	var authConfigBase64 string
@@ -268,7 +282,11 @@ func release(artifacts []*artifact) error {
 			}
 		}()
 
-		bucket := client.Bucket(os.Getenv(gcsBucket))
+		gcsBuck, err := getEnvVar(gcsBucket)
+		if err != nil {
+			return err
+		}
+		bucket := client.Bucket(gcsBuck)
 		src := bucket.Object(a.gcsSrcSuffix)
 		dest := bucket.Object(a.gcsDestSuffix)
 
@@ -294,7 +312,10 @@ func print(artifacts []*artifact) error {
 		return artifacts[i].url < artifacts[j].url
 	})
 
-	fn := os.Getenv(filename)
+	fn, err := getEnvVar(filename)
+	if err != nil {
+		return err
+	}
 	f, err := os.Create(fn)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("error creating file %s: %v", fn, err))
@@ -351,6 +372,15 @@ func print(artifacts []*artifact) error {
 	}
 
 	return errors.Join(errs...)
+}
+
+func getEnvVar(envVarName string) (string, error) {
+	envVar := os.Getenv(envVarName)
+	if envVar == "" {
+		return "", fmt.Errorf("environment variable not set: %s", envVarName)
+	}
+
+	return envVar, nil
 }
 
 func logRunOutput(a *artifact) {
