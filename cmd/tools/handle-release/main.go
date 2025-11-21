@@ -209,7 +209,8 @@ func release(artifacts []*artifact) error {
 
 	tokenVal, err := getEnvVar(token)
 	if err != nil {
-		return err
+		errs = append(errs, err)
+		return errors.Join(errs...)
 	}
 	var authConfigBase64 string
 	authConfig := registry.AuthConfig{
@@ -283,7 +284,8 @@ func release(artifacts []*artifact) error {
 
 		gcsBucketVal, err := getEnvVar(gcsBucket)
 		if err != nil {
-			return err
+			errs = append(errs, err)
+			return errors.Join(errs...)
 		}
 		bucket := client.Bucket(gcsBucketVal)
 		src := bucket.Object(a.gcsSrcSuffix)
