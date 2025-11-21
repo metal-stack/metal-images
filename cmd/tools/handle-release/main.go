@@ -72,11 +72,11 @@ func run() error {
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
-		pref        string // "metal-os/20230710" or "metal-os/stable"
+		prefixVal   string // "metal-os/20230710" or "metal-os/stable"
 		whitelist   []string
 	)
 
-	pref, err := getEnvVar(prefix)
+	prefixVal, err := getEnvVar(prefix)
 	if err != nil {
 		return err
 	}
@@ -107,27 +107,27 @@ func run() error {
 		res    = map[string]artifact{}
 	)
 
-	ref, err := getEnvVar(gitRef)
+	gitRefVal, err := getEnvVar(gitRef)
 	if err != nil {
 		return err
 	}
 
 	err = client.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket: &bucket,
-		Prefix: &pref,
+		Prefix: &prefixVal,
 	}, func(objects *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range objects.Contents {
 			key := *o.Key
 
-			after, found := strings.CutPrefix(key, pref)
+			after, found := strings.CutPrefix(key, prefixVal)
 			if !found {
 				continue
 			}
 
 			base := path.Dir(key)
 			a := res[base]
-			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, pref, after)
-			a.image = fmt.Sprintf("%s%s", pref, path.Dir(after))
+			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, prefixVal, after)
+			a.image = fmt.Sprintf("%s%s", prefixVal, path.Dir(after))
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
 			if len(parts) > 2 {
@@ -149,7 +149,7 @@ func run() error {
 				}
 
 				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", ref, operatingSystem, version)
+				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefVal, operatingSystem, version)
 			}
 
 			switch {
@@ -207,15 +207,14 @@ func release(artifacts []*artifact) error {
 		}
 	}()
 
-	tok, err := getEnvVar(token)
+	tokenVal, err := getEnvVar(token)
 	if err != nil {
 		return err
 	}
-
 	var authConfigBase64 string
 	authConfig := registry.AuthConfig{
 		Username:      "metal-stack",
-		Password:      tok,
+		Password:      tokenVal,
 		ServerAddress: "ghcr.io",
 	}
 	authConfigBytes, err := json.Marshal(authConfig)
@@ -282,11 +281,11 @@ func release(artifacts []*artifact) error {
 			}
 		}()
 
-		gcsBuck, err := getEnvVar(gcsBucket)
+		gcsBucketVal, err := getEnvVar(gcsBucket)
 		if err != nil {
 			return err
 		}
-		bucket := client.Bucket(gcsBuck)
+		bucket := client.Bucket(gcsBucketVal)
 		src := bucket.Object(a.gcsSrcSuffix)
 		dest := bucket.Object(a.gcsDestSuffix)
 
