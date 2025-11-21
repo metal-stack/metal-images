@@ -16,6 +16,7 @@ import (
 
 	"cloud.google.com/go/storage"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	docker "github.com/docker/docker/client"
@@ -72,7 +73,6 @@ func run() error {
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
-		prefixVal   string // "metal-os/20230710" or "metal-os/stable"
 		whitelist   []string
 	)
 
@@ -185,8 +185,11 @@ func run() error {
 
 func release(artifacts []*artifact) error {
 	if *dryRun {
-		for _, a := range artifacts {
-			logRunOutput(a)
+		for i, a := range artifacts {
+			err := logRunOutput(a, i == 0)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -225,8 +228,11 @@ func release(artifacts []*artifact) error {
 	}
 	authConfigBase64 = base64.URLEncoding.EncodeToString(authConfigBytes)
 
-	for _, a := range artifacts {
-		logRunOutput(a)
+	for i, a := range artifacts {
+		err = logRunOutput(a, i == 0)
+		if err != nil {
+			return err
+		}
 		sourceImage := a.dockerImage
 
 		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
@@ -384,16 +390,30 @@ func getEnvVar(envVarName string) (string, error) {
 	return envVar, nil
 }
 
-func logRunOutput(a *artifact) {
-	fmt.Printf("tagging docker image: %s\n", a.dockerImage)
-	for _, t := range a.dockerTags {
-		fmt.Printf("with %s\n", t)
+func logRunOutput(a *artifact, isFirst bool) error {
+	physicalWidth, err := term.GetWinsize(os.Stdout.Fd())
+	if err != nil {
+		return err
 	}
-	fmt.Println()
-	fmt.Printf("copying gcs data from: %s\n", a.gcsSrcSuffix)
-	fmt.Printf("copying gcs data to: %s\n", a.gcsDestSuffix)
-	fmt.Println()
-	fmt.Println()
+	globalBorder := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#9B59FF")).
+		Render(strings.Repeat("─", int(physicalWidth.Width)-1))
+	dockerGcsBorder := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#0B6623")).
+		Render(strings.Repeat("─ ", int(physicalWidth.Width)/2))
+
+	if !isFirst {
+		fmt.Println(globalBorder)
+	}
+	fmt.Printf("tag docker image: %s\n", a.dockerImage)
+	for _, t := range a.dockerTags {
+		fmt.Printf("also as %s\n", t)
+	}
+	fmt.Println(dockerGcsBorder)
+	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcSuffix)
+	fmt.Printf("copy gcs data to: %s\n", a.gcsDestSuffix)
+
+	return nil
 }
 
 func renderDockerOutput(reader io.ReadCloser) error {
