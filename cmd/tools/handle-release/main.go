@@ -175,18 +175,9 @@ func run() error {
 		artifacts = append(artifacts, &a)
 	}
 
-	err = release(artifacts)
-	if err != nil {
-		return err
-	}
-
-	return print(artifacts)
-}
-
-func release(artifacts []*artifact) error {
 	if *dryRun {
 		for i, a := range artifacts {
-			err := logRunOutput(a, i == 0)
+			err = logRunOutput(a, i == 0)
 			if err != nil {
 				return err
 			}
@@ -195,6 +186,25 @@ func release(artifacts []*artifact) error {
 		return nil
 	}
 
+	err = tagImages(artifacts)
+	if err != nil {
+		return err
+	}
+	fmt.Println()
+
+	gcsBucketVal, err := getEnvVar(gcsBucket)
+	if err != nil {
+		return err
+	}
+	err = copyGcsObjects(artifacts, gcsBucketVal, nil)
+	if err != nil {
+		return err
+	}
+
+	return printDownloadsMarkdown(artifacts)
+}
+
+func tagImages(artifacts []*artifact) error {
 	var (
 		errs []error
 	)
@@ -228,11 +238,7 @@ func release(artifacts []*artifact) error {
 	}
 	authConfigBase64 = base64.URLEncoding.EncodeToString(authConfigBytes)
 
-	for i, a := range artifacts {
-		err = logRunOutput(a, i == 0)
-		if err != nil {
-			return err
-		}
+	for _, a := range artifacts {
 		sourceImage := a.dockerImage
 
 		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
@@ -274,9 +280,18 @@ func release(artifacts []*artifact) error {
 				return errors.Join(errs...)
 			}
 		}
+	}
 
-		fmt.Println()
+	return errors.Join(errs...)
+}
 
+func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.Client) error {
+	var (
+		ctx  = context.Background()
+		errs []error
+	)
+
+	if client == nil {
 		client, err := storage.NewClient(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
@@ -287,18 +302,15 @@ func release(artifacts []*artifact) error {
 				errs = append(errs, err)
 			}
 		}()
+	}
 
-		gcsBucketVal, err := getEnvVar(gcsBucket)
-		if err != nil {
-			errs = append(errs, err)
-			return errors.Join(errs...)
-		}
+	for _, a := range artifacts {
 		bucket := client.Bucket(gcsBucketVal)
 		src := bucket.Object(a.gcsSrcSuffix)
 		dest := bucket.Object(a.gcsDestSuffix)
 
 		copier := dest.CopierFrom(src)
-		_, err = copier.Run(ctx)
+		_, err := copier.Run(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err))
 			return errors.Join(errs...)
@@ -310,7 +322,7 @@ func release(artifacts []*artifact) error {
 	return errors.Join(errs...)
 }
 
-func print(artifacts []*artifact) error {
+func printDownloadsMarkdown(artifacts []*artifact) error {
 	var (
 		errs []error
 	)
