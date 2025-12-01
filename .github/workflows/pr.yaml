@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  DOCKER_BAKE_REGISTRY_PUSH: _common.output+=type=registry,oci-artifact=true
   GCS_BUCKET: images.metal-pod.io
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
@@ -89,7 +90,7 @@ jobs:
         # take a look at the docs for further info on how to append targets etc.
         # append to target: https://docs.docker.com/reference/cli/docker/buildx/bake/#set
         # GitHub Actions syntax: https://github.com/marketplace/actions/docker-buildx-bake
-        set: _common.output+=type=registry
+        set: ${{ env.DOCKER_BAKE_REGISTRY_PUSH }}
       env:
         OS_NAME: ${{ matrix.os.name }}
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -120,7 +121,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-firewall
         no-cache: true
-        set: _common.output+=type=registry
+        set: ${{ env.DOCKER_BAKE_REGISTRY_PUSH }}
       env:
         OS_NAME: firewall
         SEMVER_MAJOR_MINOR: 3.0-ubuntu
@@ -154,7 +155,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: ubuntu-capms
         no-cache: true
-        set: _common.output+=type=registry
+        set: ${{ env.DOCKER_BAKE_REGISTRY_PUSH }}
       env:
         KUBE_VERSION: 1.32.9
         KUBE_APT_BRANCH: v1.32
@@ -188,7 +189,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: debian-nvidia
         no-cache: true
-        set: _common.output+=type=registry
+        set: ${{ env.DOCKER_BAKE_REGISTRY_PUSH }}
       env:
         OS_NAME: debian-nvidia
         SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -253,7 +254,7 @@ jobs:
         files: ./docker-bake.hcl
         targets: almalinux
         no-cache: true
-        set: _common.output+=type=registry
+        set: ${{ env.DOCKER_BAKE_REGISTRY_PUSH }}
       env:
         OS_NAME: almalinux
         SEMVER_MAJOR_MINOR: 9
