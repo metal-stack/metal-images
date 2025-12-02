@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOCKER_BAKE_REGISTRY_PUSH: _common.output+=type=registry,oci-artifact=true
+  DOCKER_BAKE_REGISTRY_PUSH: _common.output+=type=registry,oci-artifact=true,oci-mediatypes=true
   GCS_BUCKET: images.metal-pod.io
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
