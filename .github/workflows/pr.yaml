@@ -16,7 +16,6 @@ env:
 jobs:
   test-go:
     name: Run go test on GitHub runner
-
     runs-on: ubuntu-latest
 
     steps:
@@ -38,8 +37,8 @@ jobs:
 
   debian-ubuntu:
     name: Build Debian and Ubuntu based OS images
-
     needs: test-go
+    runs-on: self-hosted
 
     strategy:
       matrix:
@@ -48,8 +47,6 @@ jobs:
           version: 12
         - name: ubuntu
           version: 24.04
-
-    runs-on: self-hosted
 
     steps:
     - name: Checkout
@@ -236,9 +233,7 @@ jobs:
 
   almalinux:
     name: Build Almalinux based OS image
-
     needs: test-go
-
     runs-on: self-hosted
 
     steps:
