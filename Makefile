@@ -67,11 +67,11 @@ ubuntu: binary
 
 .PHONY: capms
 capms: ubuntu
-	KUBE_VERSION=1.32.9 \
+	KUBE_VERSION=1.32.11 \
 	KUBE_APT_BRANCH=v1.32 \
-	SEMVER_MAJOR_MINOR=1.32.9 \
+	SEMVER_MAJOR_MINOR=1.32.11 \
 	docker buildx bake --no-cache ubuntu-capms
-	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.11 ./test.sh
 
 .PHONY: firewall
 firewall: binary
