@@ -67,6 +67,8 @@ jobs:
           # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:1.32.9
           # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:latest
           # docker push ghcr.io/metal-stack/capms-ubuntu:1.32.9
+          #
+          # same for 1.33.5 and 1.34.1
 
           docker pull ghcr.io/metal-stack/almalinux:9-stable
           docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:9
