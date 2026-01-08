@@ -10,7 +10,6 @@ target "_common" {
         "type=sbom",
     ]
     output = [
-        "type=registry",
         "type=tar,dest=./images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar"
     ]
 }
@@ -34,8 +33,6 @@ target "almalinux" {
     args = {
         BASE_OS_VERSION = 9
         FRR_VERSION="frr-stable"
-        SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
-        SEMVER_PATCH = "${SEMVER_PATCH}"
     }
     tags = ["ghcr.io/metal-stack/almalinux:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -52,12 +49,12 @@ target "debian" {
         BASE_OS_VERSION = "bookworm"
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="bookworm"
-        FRR_VERSION ="frr-10"
+        FRR_VERSION ="frr-10.4"
         FRR_VERSION_DETAIL ="10.4.1-0~deb12u1"
         FRR_APT_CHANNEL ="bookworm"
-        SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
-        SEMVER_PATCH = "${SEMVER_PATCH}"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
+      # upgrade to > 6.1.0-40 actually not possible because it breaks calico: 
+      # see https://github.com/projectcalico/calico/issues/11302#issuecomment-3526431095
         KERNEL_VERSION = "6.1.0-40"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
@@ -70,12 +67,6 @@ target "debian-firewall" {
         baseapp = "target:debian"
         ctx = "./firewall/context"
     }
-    args = {
-        BASE_OS_VERSION = 12
-        BASE_OS_NAME = "ghcr.io/metal-stack/debian"
-        SEMVER_MAJOR_MINOR = "3.0"
-        SEMVER_PATCH = "${SEMVER_PATCH}"
-    }
     tags = ["ghcr.io/metal-stack/firewall:3.0${SEMVER_PATCH}"]
 }
 
@@ -85,12 +76,6 @@ target "debian-nvidia" {
     contexts = {
         baseapp = "target:debian"
         ctx = "./debian-nvidia/context"
-    }
-    args = {
-        BASE_OS_VERSION = 12
-        BASE_OS_NAME = "ghcr.io/metal-stack/debian"
-        SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
-        SEMVER_PATCH = "${SEMVER_PATCH}"
     }
     tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -107,11 +92,9 @@ target "ubuntu" {
         BASE_OS_VERSION = "24.04"
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="noble"
-        FRR_VERSION ="frr-10"
+        FRR_VERSION ="frr-10.4"
         FRR_VERSION_DETAIL ="10.4.1-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
-        SEMVER_MAJOR_MINOR = "${SEMVER_MAJOR_MINOR}"
-        SEMVER_PATCH = "${SEMVER_PATCH}"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.56"
     }
@@ -124,12 +107,6 @@ target "ubuntu-firewall" {
     contexts = {
         baseapp = "target:ubuntu"
         ctx = "./firewall/context"
-    }
-    args = {
-        BASE_OS_VERSION = "24.04"
-        BASE_OS_NAME = "ghcr.io/metal-stack/ubuntu"
-        SEMVER_MAJOR_MINOR = "3.0-ubuntu"
-        SEMVER_PATCH = "${SEMVER_PATCH}"
     }
     tags = ["ghcr.io/metal-stack/firewall:3.0-ubuntu${SEMVER_PATCH}"]
 }
