@@ -16,8 +16,30 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
-  debian-ubuntu:
+  test-go:
+    name: Run go test on GitHub runner
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go 1.25
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+          cache: false
+
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+
+      - name: Run tests
+        run: make test
+
+
+  debian_ubuntu:
     name: Build Debian and Ubuntu based OS images
+    needs: test-go
     runs-on: self-hosted
 
     strategy:
@@ -66,7 +88,9 @@ jobs:
           args: --build-tags integration --timeout=3m
 
       - name: build install
-        run: make
+        run: |
+          make clean
+          make binary
 
       - name: Prepare build environment
         shell: bash
@@ -216,7 +240,9 @@ jobs:
 
   almalinux:
     name: Build Almalinux based OS image
+    needs: test-go
     runs-on: self-hosted
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -250,7 +276,9 @@ jobs:
           [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=" >> $GITHUB_ENV || true
 
       - name: build install
-        run: make
+        run: |
+          make clean
+          make binary
 
       - name: Prepare build environment
         shell: bash
