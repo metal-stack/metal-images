@@ -11,5 +11,6 @@ os-kernel
 disk.raw
 rootfs
 initramfs
+downloads.md
 
 !capms/**/bin

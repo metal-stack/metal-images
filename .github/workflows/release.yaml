@@ -38,47 +38,21 @@ jobs:
           go-version: '1.25.x'
           cache: false
 
-      - run: |
-          # copy supported images (entire stable folder cannot be copied as a whole because it contains obsolete images as well)
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/almalinux/9 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/almalinux/9
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian/13 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian/13
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/debian-nvidia/13 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/debian-nvidia/13
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/firewall/3.0-ubuntu gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/firewall/3.0-ubuntu
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/ubuntu/24.04 gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/ubuntu/24.04
-          gsutil -m cp -r gs://$GCS_BUCKET/metal-os/stable/capms-ubuntu/ gs://$GCS_BUCKET/metal-os/${GITHUB_REF##*/}/capms-ubuntu
-
-          docker pull ghcr.io/metal-stack/debian:13-stable
-          docker tag ghcr.io/metal-stack/debian:13-stable ghcr.io/metal-stack/debian:13
-          docker tag ghcr.io/metal-stack/debian:13-stable ghcr.io/metal-stack/debian:latest
-          docker push ghcr.io/metal-stack/debian:13
-
-          docker pull ghcr.io/metal-stack/debian-nvidia:13-stable
-          docker tag ghcr.io/metal-stack/debian-nvidia:13-stable ghcr.io/metal-stack/debian-nvidia:13
-          docker tag ghcr.io/metal-stack/debian-nvidia:13-stable ghcr.io/metal-stack/debian-nvidia:latest
-          docker push ghcr.io/metal-stack/debian-nvidia:13
-
-          docker pull ghcr.io/metal-stack/ubuntu:24.04-stable
-          docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:24.04
-          docker tag ghcr.io/metal-stack/ubuntu:24.04-stable ghcr.io/metal-stack/ubuntu:latest
-          docker push ghcr.io/metal-stack/ubuntu:24.04
-
-          # TODO: needs to be solved for capi images in order not to have to enter every release here
-          # docker pull ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable
-          # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:1.32.9
-          # docker tag ghcr.io/metal-stack/capms-ubuntu:1.32.9-stable ghcr.io/metal-stack/capms-ubuntu:latest
-          # docker push ghcr.io/metal-stack/capms-ubuntu:1.32.9
-
-          docker pull ghcr.io/metal-stack/almalinux:9-stable
-          docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:9
-          docker tag ghcr.io/metal-stack/almalinux:9-stable ghcr.io/metal-stack/almalinux:latest
-          docker push ghcr.io/metal-stack/almalinux:9
-
-          docker pull ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
-          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu-stable ghcr.io/metal-stack/firewall:3.0-ubuntu
-          docker tag ghcr.io/metal-stack/firewall:3.0-ubuntu-stable ghcr.io/metal-stack/firewall:latest
-          docker push ghcr.io/metal-stack/firewall:3.0-ubuntu
-
-          PREFIX=metal-os/${GITHUB_REF##*/} go run ./cmd/tools/generate-table > downloads.md
+      - run: go run ./cmd/tools/handle-release
+        env:
+          FILENAME: downloads.md
+          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ github.ref_name }}
+          DISTRO_VERSIONS: |
+            [
+              "ubuntu/24.04",
+              "capms-ubuntu/1.32.9",
+              "firewall/3.0-ubuntu",
+              "debian/13",
+              "debian-nvidia/13",
+              "almalinux/9",
+            ]
 
       - name: Update release body
         id: update_release
