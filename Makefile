@@ -12,7 +12,7 @@ LINKMODE := -extldflags=-static \
 		 -X 'github.com/metal-stack/v.BuildDate=$(BUILDDATE)'
 
 
-all: clean binary
+all: clean test binary
 
 .PHONY: clean
 clean:
@@ -32,7 +32,7 @@ clean:
 	rm -rf bin
 
 .PHONY: binary
-binary: test
+binary:
 	GGO_ENABLED=0 \
 		go build \
 			-trimpath \
@@ -49,7 +49,7 @@ test:
 	GO_ENV=testing go test -race -cover ./...
 
 .PHONY: debian
-debian: binary
+debian: test binary
 	mkdir -p "images/debian/12"
 	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian
 	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh
@@ -60,13 +60,13 @@ nvidia:
 	OS_NAME=nvidia OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian-nvidia
 
 .PHONY: ubuntu
-ubuntu: binary
+ubuntu: test binary
 	mkdir -p "images/ubuntu/24.04"
 	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache ubuntu
 	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 ./test.sh
 
 .PHONY: capms
-capms: ubuntu
+capms: test ubuntu
 	KUBE_VERSION=1.32.9 \
 	KUBE_APT_BRANCH=v1.32 \
 	SEMVER_MAJOR_MINOR=1.32.9 \
@@ -74,13 +74,13 @@ capms: ubuntu
 	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
 
 .PHONY: firewall
-firewall: binary
+firewall: test binary
 	mkdir -p "images/firewall/3.0-ubuntu"
 	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache ubuntu-firewall
 	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh
 
 .PHONY: almalinux
-almalinux: binary
+almalinux: test binary
 	mkdir -p "images/almalinux/9"
 	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 docker buildx bake --no-cache almalinux
 	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 ./test.sh
