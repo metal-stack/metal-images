@@ -283,11 +283,12 @@ func tagImages(artifacts []*artifact) error {
 func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.Client) error {
 	var (
 		ctx  = context.Background()
+		err  error
 		errs []error
 	)
 
 	if client == nil {
-		client, err := storage.NewClient(ctx)
+		client, err = storage.NewClient(ctx)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
 			return errors.Join(errs...)
@@ -402,23 +403,30 @@ func logRunOutput(a *artifact, isFirst bool) error {
 	if err != nil {
 		return err
 	}
-	globalBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#9B59FF")).
-		Render(strings.Repeat("─", int(physicalWidth.Width)-1))
+
+	contentFormat := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575"))
 	dockerGcsBorder := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#0B6623")).
 		Render(strings.Repeat("─ ", int(physicalWidth.Width)/2))
+	globalBorder := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#9B59FF")).
+		Render(strings.Repeat("─", int(physicalWidth.Width)-1))
 
 	if !isFirst {
 		fmt.Println(globalBorder)
 	}
 	fmt.Printf("tag docker image: %s\n", a.dockerImage)
-	for _, t := range a.dockerTags {
-		fmt.Printf("also as %s\n", t)
+	for i, t := range a.dockerTags {
+		if i == 0 {
+			fmt.Printf("also as %s\n", contentFormat.Render(t))
+			continue
+		}
+
+		fmt.Printf("and %s\n", contentFormat.Render(t))
 	}
 	fmt.Println(dockerGcsBorder)
 	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcSuffix)
-	fmt.Printf("copy gcs data to: %s\n", a.gcsDestSuffix)
+	fmt.Printf("to: %s\n", contentFormat.Render(a.gcsDestSuffix))
 
 	return nil
 }
