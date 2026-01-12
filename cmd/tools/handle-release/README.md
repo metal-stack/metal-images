@@ -4,8 +4,7 @@
 
 ```bash
 FILENAME=downloads.md \
-PREFIX=metal-os/stable \
-REF=$(git rev-parse --abbrev-ref HEAD) \
+REF_NAME=$(git rev-parse --abbrev-ref HEAD) \
 DISTRO_VERSIONS=$'["capms-ubuntu/1.32.9", "ubuntu/24.04"]' \
 go run ./cmd/tools/handle-release --dry-run
 ```

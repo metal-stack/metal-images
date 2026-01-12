@@ -51,8 +51,7 @@ const (
 	distroVersions = "DISTRO_VERSIONS"
 	filename       = "FILENAME"
 	gcsBucket      = "GCS_BUCKET"
-	gitRef         = "REF"
-	prefix         = "PREFIX"
+	gitRefName     = "REF_NAME"
 	token          = "TOKEN"
 )
 
@@ -70,16 +69,12 @@ func main() {
 
 func run() error {
 	var (
+		gcsPrefix   = "metal-os/stable"
 		dummyRegion = "dummy" // we don't use AWS S3, we don't need a proper region
 		endpoint    = "metal-stack.io"
 		bucket      = "images"
 		whitelist   []string
 	)
-
-	prefixVal, err := getEnvVar(prefix)
-	if err != nil {
-		return err
-	}
 
 	whitelistString, err := getEnvVar(distroVersions)
 	if err != nil {
@@ -107,27 +102,27 @@ func run() error {
 		res    = map[string]artifact{}
 	)
 
-	gitRefVal, err := getEnvVar(gitRef)
+	gitRefNameVal, err := getEnvVar(gitRefName)
 	if err != nil {
 		return err
 	}
 
 	err = client.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket: &bucket,
-		Prefix: &prefixVal,
+		Prefix: &gcsPrefix,
 	}, func(objects *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range objects.Contents {
 			key := *o.Key
 
-			after, found := strings.CutPrefix(key, prefixVal)
+			after, found := strings.CutPrefix(key, gcsPrefix)
 			if !found {
 				continue
 			}
 
 			base := path.Dir(key)
 			a := res[base]
-			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, prefixVal, after)
-			a.image = fmt.Sprintf("%s%s", prefixVal, path.Dir(after))
+			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
+			a.image = fmt.Sprintf("%s%s", gcsPrefix, path.Dir(after))
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
 			if len(parts) > 2 {
@@ -149,7 +144,7 @@ func run() error {
 				}
 
 				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefVal, operatingSystem, version)
+				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
 			}
 
 			switch {
