@@ -98,7 +98,7 @@ target "ubuntu" {
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.56"
-        CONTAINERD_VERSION = "10.4.2-0~ubuntu24.04.1"
+        CONTAINERD_VERSION = "2.1.5-1~ubuntu.24.04~noble"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
