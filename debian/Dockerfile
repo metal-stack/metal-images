@@ -93,7 +93,7 @@ RUN set -ex \
  && curl -fLsS ${DOCKER_URL}/linux/${DOCKER_APT_OS}/gpg | apt-key add - \
  && echo "deb [arch=amd64] ${DOCKER_URL}/linux/${DOCKER_APT_OS} ${DOCKER_APT_CHANNEL} stable" > /etc/apt/sources.list.d/docker.list \
  && apt-get update \
- && apt-get install --yes --no-install-recommends containerd.io={CONTAINERD_VERSION} \
+ && apt-get install --yes --no-install-recommends containerd.io=${CONTAINERD_VERSION} \
  # generate a default containerd config because the one coming with the package prevents GNA to create a proper config for cgroup v2
  && /usr/bin/containerd config default > /etc/containerd/config.toml \
  # Install crictl to be able to manipulate containers managed with containerd
