@@ -27,6 +27,7 @@ ARG KERNEL_VERSION
 ARG UBUNTU_MAINLINE_KERNEL_VERSION
 ARG ICE_VERSION
 ARG ICE_PKG_VERSION
+ARG CONTAINERD_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -94,7 +95,7 @@ RUN set -ex \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null \
  && apt-get update \
- && apt-get install --yes --no-install-recommends containerd.io \
+ && apt-get install --yes --no-install-recommends containerd.io=${CONTAINERD_VERSION} \
  # generate a default containerd config because the one coming with the package prevents GNA to create a proper config for cgroup v2
  && /usr/bin/containerd config default > /etc/containerd/config.toml \
  # Install crictl to be able to manipulate containers managed with containerd
