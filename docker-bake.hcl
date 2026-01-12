@@ -50,12 +50,13 @@ target "debian" {
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="bookworm"
         FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.1-0~deb12u1"
+        FRR_VERSION_DETAIL ="10.4.2-0~deb12u1"
         FRR_APT_CHANNEL ="bookworm"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-      # upgrade to > 6.1.0-40 actually not possible because it breaks calico: 
+      # upgrade to > 6.1.0-40 actually not possible because it breaks calico:
       # see https://github.com/projectcalico/calico/issues/11302#issuecomment-3526431095
         KERNEL_VERSION = "6.1.0-40"
+        CONTAINERD_VERSION = "2.1.5-1~debian.12~bookworm"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -93,10 +94,11 @@ target "ubuntu" {
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="noble"
         FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.1-0~ubuntu24.04.1"
+        FRR_VERSION_DETAIL ="10.4.2-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.56"
+        CONTAINERD_VERSION = "2.1.5-1~ubuntu.24.04~noble"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
