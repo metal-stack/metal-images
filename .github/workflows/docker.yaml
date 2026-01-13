@@ -36,7 +36,6 @@ jobs:
       - name: Run tests
         run: make test
 
-
   debian_ubuntu:
     name: Build Debian and Ubuntu based OS images
     needs: test-go
@@ -235,8 +234,16 @@ jobs:
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
         if: ${{ matrix.os.name == 'debian' }}
 
+      - name: Create GCS destination
+        run: |
+          [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "GCS_DEST=gs://$GCS_BUCKET/metal-os/pull_requests/" >> $GITHUB_ENV || true
+          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "GCS_DEST=gs://$GCS_BUCKET/metal-os" >> $GITHUB_ENV || true
+
       - name: Upload image tarballs to GCS
-        run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+        run: |
+          cd images && gsutil -m -h "Cache-Control:no-store" cp -r . "${GCS_DEST}"
+        env:
+          GCS_DEST: ${{ env.GCS_DEST }}
 
   almalinux:
     name: Build Almalinux based OS image
@@ -314,5 +321,13 @@ jobs:
           service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Create GCS destination
+        run: |
+          [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "GCS_DEST=gs://$GCS_BUCKET/metal-os/pull_requests/" >> $GITHUB_ENV || true
+          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "GCS_DEST=gs://$GCS_BUCKET/metal-os" >> $GITHUB_ENV || true
+
       - name: Upload image tarballs to GCS
-        run: cd images && gsutil -m -h "Cache-Control:no-store" cp -r . gs://$GCS_BUCKET/metal-os/pull_requests/
+        run: |
+          cd images && gsutil -m -h "Cache-Control:no-store" cp -r . "${GCS_DEST}"
+        env:
+          GCS_DEST: ${{ env.GCS_DEST }}
