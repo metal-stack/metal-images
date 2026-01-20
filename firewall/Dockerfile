@@ -7,6 +7,8 @@ FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-a
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} AS firewall-controller-artifacts
 
+FROM ghcr.io/metal-stack/frr:10.4.1-ubuntu-24.04 AS frr-artifacts
+
 FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
@@ -26,6 +28,11 @@ RUN apt-get update --quiet \
     tcpdump \
  && apt-get remove --yes iptables \
  && apt install --yes iptables
+
+# Forcefully install frr from our own builds because upstream repo removes older patch versions
+COPY --from=frr-artifacts /artifacts/*.deb /tmp/
+RUN apt remove --yes frr* \
+ && apt install --yes --allow-downgrades /tmp/*.deb
 
 # Context:
 # - chrony.conf provides default configuration for chrony
