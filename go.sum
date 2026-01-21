@@ -279,8 +279,8 @@ github.com/mattn/go-runewidth v0.0.16 h1:E5ScNMtiwvlvB5paMFdw9p4kSQzbXFikJ5SQO6T
 github.com/mattn/go-runewidth v0.0.16/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/metal-stack/metal-go v0.42.3 h1:oNpXWQHDT+6HuymcK3jQblhzhNISvnIHp1fg6VDLpSU=
 github.com/metal-stack/metal-go v0.42.3/go.mod h1:T0lbyrc+aHlI/GWAu2Og4Fmj4oaj5RD55736jBG0R8Y=
-github.com/metal-stack/metal-hammer v0.13.13 h1:E3quFspdcR/5EnmUsanGPbMpAvuo/6XYsCfKc8JZQsU=
-github.com/metal-stack/metal-hammer v0.13.13/go.mod h1:y13Ge7myKp5oH4Z4aRhMrjaV1uyVAwIGfNAcJwm8jiI=
+github.com/metal-stack/metal-hammer v0.13.16-0.20251107070646-20b7c188fbea h1:q196c1FDpfQUx+62AGhU40rHpW6Zujgnaiiz6DwvGjs=
+github.com/metal-stack/metal-hammer v0.13.16-0.20251107070646-20b7c188fbea/go.mod h1:mfA4mb6AsfWPcYxMLxORatJ2Ea+1gmjGrbg1QCX4Jn4=
 github.com/metal-stack/metal-lib v0.23.4 h1:/xvCpgfvkGM8kdF0C3+mP7WGl0wiwU33MKG2UGIDXA8=
 github.com/metal-stack/metal-lib v0.23.4/go.mod h1:Q0GXBtKJ5ycqtwGYtWI7NFKdGo0+q7TLGnstgfUwBCQ=
 github.com/metal-stack/metal-networker v0.46.2 h1:RIbXXsWoPNJbzkcxy+svFDMcY9Q6Bx+2RGcmrnKbV70=

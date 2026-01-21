@@ -999,6 +999,7 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
 				config: mustParseInstallYAML(t, fs),
 			}
 
+			i.config.BmcExists = true
 			err := i.grubInstall(tt.cmdline)
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Errorf("error diff (+got -want):\n %s", diff)

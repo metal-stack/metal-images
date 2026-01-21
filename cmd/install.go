@@ -398,6 +398,7 @@ func (i *installer) configureNetwork() error {
 		return fmt.Errorf("unknown role:%s", i.config.Role)
 	}
 
+	// TODO
 	err = kb.Validate(kind)
 	if err != nil {
 		return err
@@ -628,20 +629,28 @@ func (i *installer) kernelAndInitrdPath() (kern string, initrd string, err error
 
 func (i *installer) grubInstall(cmdLine string) error {
 	i.log.Info("install grub")
-	// ttyS1,115200n8
-	serialPort, serialSpeed, found := strings.Cut(i.config.Console, ",")
-	if !found {
-		return fmt.Errorf("serial console could not be split into port and speed")
+
+	var serialPort, serialSpeed string
+	if i.config.BmcExists {
+		var found bool
+		serialPort, serialSpeed, found = strings.Cut(i.config.Console, ",")
+		if !found {
+			return fmt.Errorf("serial console could not be split into port and speed")
+		}
+		_, serialPort, found = strings.Cut(serialPort, "ttyS")
+		if !found {
+			return fmt.Errorf("serial port could not be split")
+		}
+		serialSpeed, _, found = strings.Cut(serialSpeed, "n8")
+		if !found {
+			return fmt.Errorf("serial speed could not be split")
+		}
 	}
 
-	_, serialPort, found = strings.Cut(serialPort, "ttyS")
-	if !found {
-		return fmt.Errorf("serial port could not be split")
-	}
-
-	serialSpeed, _, found = strings.Cut(serialSpeed, "n8")
-	if !found {
-		return fmt.Errorf("serial speed could not be split")
+	serialConfig := `GRUB_TERMINAL=console`
+	if i.config.BmcExists {
+		serialConfig = fmt.Sprintf(`GRUB_TERMINAL=serial
+GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"`, serialSpeed, serialPort)
 	}
 
 	defaultGrub := fmt.Sprintf(`GRUB_DEFAULT=0
@@ -649,14 +658,8 @@ GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR=%s
 GRUB_CMDLINE_LINUX_DEFAULT=""
 GRUB_CMDLINE_LINUX="%s"
-GRUB_TERMINAL=serial
-GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
-`, i.oss.BootloaderID(), cmdLine, serialSpeed, serialPort)
-
-	if i.oss == osAlmalinux {
-		defaultGrub += fmt.Sprintf("GRUB_DEVICE=UUID=%s\n", i.config.RootUUID)
-		defaultGrub += "GRUB_ENABLE_BLSCFG=false\n"
-	}
+%s
+`, i.oss.BootloaderID(), cmdLine, serialConfig)
 
 	err := afero.WriteFile(i.fs, "/etc/default/grub", []byte(defaultGrub), 0755)
 	if err != nil {

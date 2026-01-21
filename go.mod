@@ -10,7 +10,7 @@ require (
 	github.com/flatcar/ignition v0.36.2
 	github.com/google/go-cmp v0.7.0
 	github.com/metal-stack/metal-go v0.42.3
-	github.com/metal-stack/metal-hammer v0.13.13
+	github.com/metal-stack/metal-hammer v0.13.16-0.20251107070646-20b7c188fbea
 	github.com/metal-stack/metal-lib v0.23.4
 	github.com/metal-stack/metal-networker v0.46.2
 	github.com/metal-stack/v v1.0.3
