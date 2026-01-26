@@ -24,7 +24,7 @@ We also publish images that we need for special purposes but do not officially s
 
 ### GPU Support
 
-With the nvidia image a worker has GPU support. Please check our official documentation on [docs.metal-stack.io](https://docs.metal-stack.io/stable/overview/gpu-support/) on how to get this running on Kubernetes.
+With the nvidia image a worker has GPU support. Please check our official documentation on [docs.metal-stack.io](https://metal-stack.io/docs/gpu-workers) on how to get this running on Kubernetes.
 
 ## How new images become usable in a metal-stack partition
 
@@ -46,7 +46,7 @@ These URLs can be used to define an image at the metal-api.
 
 ## Local development and integration testing
 
-Please also refer to our documentation on docs.metal-stack.io on [Build Your Own Images](https://docs.metal-stack.io/stable/overview/os/#Building-Your-Own-Images) to check for the contract an OS image is expected to fulfill.
+Please also refer to our documentation on docs.metal-stack.io on [Build Your Own Images](https://metal-stack.io/docs/operating-systems#building-your-own-images) to check for the contract an OS image is expected to fulfill.
 
 Before you can start developing changes for metal-images or even introduce new operating systems, you should install the following tools:
 
@@ -118,4 +118,4 @@ vgchange -ay
 mount /dev/csi-lvm/varlib /var/lib/
 ```
 
-Keep in mind that you are still running on the metal-hammer kernel, which is different from the kernel that will be run in the operating system after provisioning. For further information on the metal-stack machine provisioning sequence, check out documentation on [docs.metal-stack.io](https://docs.metal-stack.io/stable/overview/architecture/#Machine-Provisioning-Sequence). The kernel used by the metal-hammer is built on our own inside the [kernel repository](https://github.com/metal-stack/kernel).
+Keep in mind that you are still running on the metal-hammer kernel, which is different from the kernel that will be run in the operating system after provisioning. For further information on the metal-stack machine provisioning sequence, check out documentation on [docs.metal-stack.io](https://metal-stack.io/docs/architecture/#Machine-Provisioning-Sequence). The kernel used by the metal-hammer is built on our own inside the [kernel repository](https://github.com/metal-stack/kernel).
