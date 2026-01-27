@@ -79,7 +79,7 @@ jobs:
       - name: Make SEMVER_PATCH
         run: |
           [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "SEMVER_PATCH=-${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV || true
-          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=" >> $GITHUB_ENV || true
+          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=-stable" >> $GITHUB_ENV || true
 
       - name: Lint
         uses: golangci/golangci-lint-action@v8
@@ -280,7 +280,7 @@ jobs:
       - name: Make SEMVER_PATCH
         run: |
           [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "SEMVER_PATCH=-${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV || true
-          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=" >> $GITHUB_ENV || true
+          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=-stable" >> $GITHUB_ENV || true
 
       - name: build install
         run: |
