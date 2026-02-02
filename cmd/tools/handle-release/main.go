@@ -48,11 +48,11 @@ type artifact struct {
 const (
 	ghcrPrefix = "ghcr.io/metal-stack"
 
-	distroVersions = "DISTRO_VERSIONS"
-	filename       = "FILENAME"
-	gcsBucket      = "GCS_BUCKET"
-	gitRefName     = "REF_NAME"
-	token          = "TOKEN"
+	distroVersionsKey = "DISTRO_VERSIONS"
+	filenameKey       = "FILENAME"
+	gcsBucketKey      = "GCS_BUCKET"
+	gitRefNameKey     = "REF_NAME"
+	githubTokenKey    = "GITHUB_TOKEN"
 )
 
 var (
@@ -76,13 +76,13 @@ func run() error {
 		whitelist   []string
 	)
 
-	whitelistString, err := getEnvVar(distroVersions)
+	whitelistString, err := getEnvVar(distroVersionsKey)
 	if err != nil {
 		return err
 	}
 	err = json.Unmarshal([]byte(whitelistString), &whitelist)
 	if err != nil {
-		return fmt.Errorf("unable to unmarshal %s: %v", distroVersions, err)
+		return fmt.Errorf("unable to unmarshal %s: %v", distroVersionsKey, err)
 	}
 
 	ss, err := session.NewSession(&aws.Config{
@@ -102,7 +102,7 @@ func run() error {
 		res    = map[string]artifact{}
 	)
 
-	gitRefNameVal, err := getEnvVar(gitRefName)
+	gitRefNameVal, err := getEnvVar(gitRefNameKey)
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,7 @@ func run() error {
 	}
 	fmt.Println()
 
-	gcsBucketVal, err := getEnvVar(gcsBucket)
+	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func tagImages(artifacts []*artifact) error {
 		}
 	}()
 
-	tokenVal, err := getEnvVar(token)
+	githubTokenVal, err := getEnvVar(githubTokenKey)
 	if err != nil {
 		errs = append(errs, err)
 		return errors.Join(errs...)
@@ -223,7 +223,7 @@ func tagImages(artifacts []*artifact) error {
 	var authConfigBase64 string
 	authConfig := registry.AuthConfig{
 		Username:      "metal-stack",
-		Password:      tokenVal,
+		Password:      githubTokenVal,
 		ServerAddress: "ghcr.io",
 	}
 	authConfigBytes, err := json.Marshal(authConfig)
@@ -327,7 +327,7 @@ func printDownloadsMarkdown(artifacts []*artifact) error {
 		return artifacts[i].url < artifacts[j].url
 	})
 
-	fn, err := getEnvVar(filename)
+	fn, err := getEnvVar(filenameKey)
 	if err != nil {
 		return err
 	}
