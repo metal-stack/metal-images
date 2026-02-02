@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/docker/docker/api/types/image"
@@ -53,6 +54,7 @@ const (
 	gcsBucketKey      = "GCS_BUCKET"
 	gitRefNameKey     = "REF_NAME"
 	githubTokenKey    = "GITHUB_TOKEN"
+	gcpTokenKey       = "GCP_SA_KEY"
 )
 
 var (
@@ -283,21 +285,30 @@ func tagImages(artifacts []*artifact) error {
 func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.Client) error {
 	var (
 		ctx  = context.Background()
-		err  error
 		errs []error
 	)
 
 	if client == nil {
-		client, err = storage.NewClient(ctx)
+		gcpTokenVal, err := getEnvVar(gcpTokenKey)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
-			return errors.Join(errs...)
-		}
-		defer func() {
-			if err = client.Close(); err != nil {
-				errs = append(errs, err)
+			errs = append(errs, err)
+
+			if gcpTokenVal == "" {
+				client, err = storage.NewClient(ctx)
+			} else {
+				client, err = storage.NewClient(ctx, option.WithAPIKey(gcpTokenVal))
 			}
-		}()
+
+			if err != nil {
+				errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
+				return errors.Join(errs...)
+			}
+			defer func() {
+				if err = client.Close(); err != nil {
+					errs = append(errs, err)
+				}
+			}()
+		}
 	}
 
 	for _, a := range artifacts {
