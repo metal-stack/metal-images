@@ -18,6 +18,7 @@ require (
 	github.com/spf13/afero v1.14.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
+	golang.org/x/oauth2 v0.30.0
 	google.golang.org/api v0.247.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -152,7 +153,6 @@ require (
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/net v0.45.0 // indirect
-	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/text v0.30.0 // indirect

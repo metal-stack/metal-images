@@ -25,7 +25,7 @@ jobs:
         env:
           FILENAME: downloads.md
           GCS_BUCKET: images.metal-pod.io
-          GCP_SA_KEY: '${{ secrets.GCP_SA_KEY }}'
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REF_NAME: ${{ github.ref_name }}
           DISTRO_VERSIONS: |

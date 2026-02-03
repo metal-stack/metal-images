@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"golang.org/x/oauth2"
 	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
@@ -52,9 +53,9 @@ const (
 	distroVersionsKey = "DISTRO_VERSIONS"
 	filenameKey       = "FILENAME"
 	gcsBucketKey      = "GCS_BUCKET"
+	gcsTokenKey       = "GCP_SA_KEY"
 	gitRefNameKey     = "REF_NAME"
 	githubTokenKey    = "GITHUB_TOKEN"
-	gcpTokenKey       = "GCP_SA_KEY"
 )
 
 var (
@@ -289,26 +290,30 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 	)
 
 	if client == nil {
-		gcpTokenVal, err := getEnvVar(gcpTokenKey)
+		gcsTokenVal, err := getEnvVar(gcsTokenKey)
 		if err != nil {
 			errs = append(errs, err)
+			fmt.Println("gcsTokenVal is empty")
 
-			if gcpTokenVal == "" {
-				client, err = storage.NewClient(ctx)
-			} else {
-				client, err = storage.NewClient(ctx, option.WithAPIKey(gcpTokenVal))
-			}
+			client, err = storage.NewClient(ctx)
+		} else {
+			fmt.Println("gcsTokenVal is not empty")
 
-			if err != nil {
-				errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
-				return errors.Join(errs...)
-			}
-			defer func() {
-				if err = client.Close(); err != nil {
-					errs = append(errs, err)
-				}
-			}()
+			token := oauth2.Token{AccessToken: gcsTokenVal}
+			client, err = storage.NewClient(ctx, option.WithTokenSource(oauth2.StaticTokenSource(&token)))
 		}
+
+		if err != nil {
+			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
+			return errors.Join(errs...)
+		}
+		defer func() {
+			if err = client.Close(); err != nil {
+				errs = append(errs, err)
+			}
+		}()
+
+		fmt.Println("gcs client created successfully")
 	}
 
 	for _, a := range artifacts {
