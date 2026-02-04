@@ -292,20 +292,13 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 	if client == nil {
 		gcsTokenVal, err := getEnvVar(gcsTokenKey)
 		if err != nil {
-			errs = append(errs, err)
-			fmt.Println("gcsTokenVal is empty")
-
-			client, err = storage.NewClient(ctx)
-		} else {
-			fmt.Println("gcsTokenVal is not empty")
-
-			token := oauth2.Token{AccessToken: gcsTokenVal}
-			client, err = storage.NewClient(ctx, option.WithTokenSource(oauth2.StaticTokenSource(&token)))
+			return err
 		}
 
+		token := oauth2.Token{AccessToken: gcsTokenVal}
+		client, err = storage.NewClient(ctx, option.WithTokenSource(oauth2.StaticTokenSource(&token)))
 		if err != nil {
-			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
-			return errors.Join(errs...)
+			return fmt.Errorf("creating a new gcs client failed: %v", err)
 		}
 		defer func() {
 			if err = client.Close(); err != nil {
