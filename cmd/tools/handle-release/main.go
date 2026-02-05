@@ -10,11 +10,13 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
@@ -42,8 +44,8 @@ type artifact struct {
 	checksumURL string
 	packagesURL string
 
-	gcsSrcSuffix  string
-	gcsDestSuffix string
+	gcsSrcPrefix  string
+	gcsDestPrefix string
 }
 
 const (
@@ -145,8 +147,8 @@ func run() error {
 					fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
 				}
 
-				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
+				a.gcsSrcPrefix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
+				a.gcsDestPrefix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
 			}
 
 			switch {
@@ -307,16 +309,34 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 		fmt.Println("gcs client created successfully")
 	}
 
+	bucket := client.Bucket(gcsBucketVal)
 	for _, a := range artifacts {
-		bucket := client.Bucket(gcsBucketVal)
-		src := bucket.Object(a.gcsSrcSuffix)
-		dest := bucket.Object(a.gcsDestSuffix)
+		it := bucket.Objects(ctx, &storage.Query{Prefix: a.gcsSrcPrefix})
+		for {
+			attrs, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to list objects: %v", err))
+				return errors.Join(errs...)
+			}
 
-		copier := dest.CopierFrom(src)
-		_, err := copier.Run(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err))
-			return errors.Join(errs...)
+			fmt.Println("Found object:", attrs.Name)
+			filename := filepath.Base(attrs.Name)
+			fmt.Println("With filename:", filename)
+
+			src := bucket.Object(attrs.Name)
+			dest := bucket.Object(filepath.Join(a.gcsDestPrefix, filename))
+
+			copier := dest.CopierFrom(src)
+			_, err = copier.Run(ctx)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcPrefix, a.gcsDestPrefix, err))
+				return errors.Join(errs...)
+			}
+
+			fmt.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), src.ObjectName()))
 		}
 
 		fmt.Println()
@@ -432,8 +452,8 @@ func logRunOutput(a *artifact, isFirst bool) error {
 		fmt.Printf("and %s\n", contentFormat.Render(t))
 	}
 	fmt.Println(dockerGcsBorder)
-	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcSuffix)
-	fmt.Printf("to: %s\n", contentFormat.Render(a.gcsDestSuffix))
+	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
+	fmt.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
 
 	return nil
 }

@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"testing"
 
 	"cloud.google.com/go/storage"
 	"github.com/docker/docker/api/types/container"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	tlog "github.com/testcontainers/testcontainers-go/log"
@@ -28,9 +28,10 @@ type connectionDetails struct {
 const (
 	testBucket        = "test-bucket"
 	testProjectID     = "test-project"
-	srcObjectName     = "path/to/src-file.txt"
-	destObjectName    = "dest/file.txt"
-	nonexistentSrc    = "path/to/missing-file.txt"
+	filename          = "file.txt"
+	srcObjectPrefix   = "path/to/"
+	destObjectPrefix  = "dest/"
+	nonexistentSrc    = "path/to/"
 	invalidDestName   = "" // invalid empty object name to force failure
 	testObjectContent = "hello from src"
 )
@@ -76,7 +77,7 @@ func Test_CopyGcsObjects(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("copy successfully", func(t *testing.T) {
-		src := bucket.Object(srcObjectName)
+		src := bucket.Object(filepath.Join(srcObjectPrefix, filename))
 		w := src.NewWriter(ctx)
 		_, err = fmt.Fprint(w, testObjectContent)
 		require.NoError(t, err)
@@ -85,15 +86,15 @@ func Test_CopyGcsObjects(t *testing.T) {
 
 		artifacts := []*artifact{
 			{
-				gcsSrcSuffix:  srcObjectName,
-				gcsDestSuffix: destObjectName,
+				gcsSrcPrefix:  srcObjectPrefix,
+				gcsDestPrefix: destObjectPrefix,
 			},
 		}
 		err = copyGcsObjects(artifacts, testBucket, client)
 		require.NoError(t, err)
 
 		// read destination and verify contents
-		dest := bucket.Object(destObjectName)
+		dest := bucket.Object(filepath.Join(destObjectPrefix, filename))
 		rc, err := dest.NewReader(ctx)
 		require.NotNil(t, rc)
 		require.NoError(t, err)
@@ -101,7 +102,7 @@ func Test_CopyGcsObjects(t *testing.T) {
 		buf := new(bytes.Buffer)
 		_, err = io.Copy(buf, rc)
 		require.NoError(t, err)
-		assert.Equal(t, testObjectContent, buf.String())
+		require.Equal(t, testObjectContent, buf.String())
 
 		err = rc.Close()
 		require.NoError(t, err)
@@ -110,8 +111,8 @@ func Test_CopyGcsObjects(t *testing.T) {
 	t.Run("copy non-existent file", func(t *testing.T) {
 		artifacts := []*artifact{
 			{
-				gcsSrcSuffix:  nonexistentSrc,
-				gcsDestSuffix: destObjectName,
+				gcsSrcPrefix:  nonexistentSrc,
+				gcsDestPrefix: destObjectPrefix,
 			},
 		}
 		err = copyGcsObjects(artifacts, testBucket, client)
@@ -121,8 +122,8 @@ func Test_CopyGcsObjects(t *testing.T) {
 	t.Run("copy to non-existent destination", func(t *testing.T) {
 		artifacts := []*artifact{
 			{
-				gcsSrcSuffix:  srcObjectName,
-				gcsDestSuffix: invalidDestName,
+				gcsSrcPrefix:  srcObjectPrefix,
+				gcsDestPrefix: invalidDestName,
 			},
 		}
 		err = copyGcsObjects(artifacts, testBucket, client)
