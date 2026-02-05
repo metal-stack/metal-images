@@ -15,6 +15,8 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"golang.org/x/oauth2"
+	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/docker/docker/api/types/image"
@@ -48,11 +50,12 @@ type artifact struct {
 const (
 	ghcrPrefix = "ghcr.io/metal-stack"
 
-	distroVersions = "DISTRO_VERSIONS"
-	filename       = "FILENAME"
-	gcsBucket      = "GCS_BUCKET"
-	gitRefName     = "REF_NAME"
-	token          = "TOKEN"
+	distroVersionsKey = "DISTRO_VERSIONS"
+	filenameKey       = "FILENAME"
+	gcsBucketKey      = "GCS_BUCKET"
+	gcsTokenKey       = "GCP_SA_KEY"
+	gitRefNameKey     = "REF_NAME"
+	githubTokenKey    = "GITHUB_TOKEN"
 )
 
 var (
@@ -76,13 +79,13 @@ func run() error {
 		whitelist   []string
 	)
 
-	whitelistString, err := getEnvVar(distroVersions)
+	whitelistString, err := getEnvVar(distroVersionsKey)
 	if err != nil {
 		return err
 	}
 	err = json.Unmarshal([]byte(whitelistString), &whitelist)
 	if err != nil {
-		return fmt.Errorf("unable to unmarshal %s: %v", distroVersions, err)
+		return fmt.Errorf("unable to unmarshal %s: %v", distroVersionsKey, err)
 	}
 
 	ss, err := session.NewSession(&aws.Config{
@@ -102,7 +105,7 @@ func run() error {
 		res    = map[string]artifact{}
 	)
 
-	gitRefNameVal, err := getEnvVar(gitRefName)
+	gitRefNameVal, err := getEnvVar(gitRefNameKey)
 	if err != nil {
 		return err
 	}
@@ -187,7 +190,7 @@ func run() error {
 	}
 	fmt.Println()
 
-	gcsBucketVal, err := getEnvVar(gcsBucket)
+	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
 		return err
 	}
@@ -215,7 +218,7 @@ func tagImages(artifacts []*artifact) error {
 		}
 	}()
 
-	tokenVal, err := getEnvVar(token)
+	githubTokenVal, err := getEnvVar(githubTokenKey)
 	if err != nil {
 		errs = append(errs, err)
 		return errors.Join(errs...)
@@ -223,7 +226,7 @@ func tagImages(artifacts []*artifact) error {
 	var authConfigBase64 string
 	authConfig := registry.AuthConfig{
 		Username:      "metal-stack",
-		Password:      tokenVal,
+		Password:      githubTokenVal,
 		ServerAddress: "ghcr.io",
 	}
 	authConfigBytes, err := json.Marshal(authConfig)
@@ -283,21 +286,27 @@ func tagImages(artifacts []*artifact) error {
 func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.Client) error {
 	var (
 		ctx  = context.Background()
-		err  error
 		errs []error
 	)
 
 	if client == nil {
-		client, err = storage.NewClient(ctx)
+		gcsTokenVal, err := getEnvVar(gcsTokenKey)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
-			return errors.Join(errs...)
+			return err
+		}
+
+		token := oauth2.Token{AccessToken: gcsTokenVal}
+		client, err = storage.NewClient(ctx, option.WithTokenSource(oauth2.StaticTokenSource(&token)))
+		if err != nil {
+			return fmt.Errorf("creating a new gcs client failed: %v", err)
 		}
 		defer func() {
 			if err = client.Close(); err != nil {
 				errs = append(errs, err)
 			}
 		}()
+
+		fmt.Println("gcs client created successfully")
 	}
 
 	for _, a := range artifacts {
@@ -327,7 +336,7 @@ func printDownloadsMarkdown(artifacts []*artifact) error {
 		return artifacts[i].url < artifacts[j].url
 	})
 
-	fn, err := getEnvVar(filename)
+	fn, err := getEnvVar(filenameKey)
 	if err != nil {
 		return err
 	}
