@@ -236,7 +236,7 @@ func tagImages(artifacts []*artifact) error {
 	for _, a := range artifacts {
 		sourceImage := a.dockerImage
 
-		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
+		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{All: false, RegistryAuth: authConfigBase64})
 		if err != nil {
 			errs = append(errs, fmt.Errorf("image pull failed: %v", err))
 			return errors.Join(errs...)
