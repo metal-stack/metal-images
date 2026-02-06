@@ -8,9 +8,8 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
-	"time"
-
 	"testing"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/docker/docker/api/types/container"
@@ -28,16 +27,13 @@ type connectionDetails struct {
 const (
 	testBucket        = "test-bucket"
 	testProjectID     = "test-project"
-	filename          = "file.txt"
 	srcObjectPrefix   = "path/to/"
 	destObjectPrefix  = "dest/"
-	nonexistentSrc    = "path/to/"
-	invalidDestName   = "" // invalid empty object name to force failure
 	testObjectContent = "hello from src"
 )
 
 func Test_CopyGcsObjects(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Minute)
 	defer cancel()
 
 	c, conn := startFakeGcsContainer(t, ctx)
@@ -53,6 +49,7 @@ func Test_CopyGcsObjects(t *testing.T) {
 				fmt.Println(string(logs))
 			}
 		}
+
 		err := c.Terminate(ctx)
 		require.NoError(t, err)
 	}()
@@ -77,6 +74,7 @@ func Test_CopyGcsObjects(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("copy successfully", func(t *testing.T) {
+		filename := "file.txt"
 		src := bucket.Object(filepath.Join(srcObjectPrefix, filename))
 		w := src.NewWriter(ctx)
 		_, err = fmt.Fprint(w, testObjectContent)
@@ -93,7 +91,7 @@ func Test_CopyGcsObjects(t *testing.T) {
 		err = copyGcsObjects(artifacts, testBucket, client)
 		require.NoError(t, err)
 
-		// read destination and verify contents
+		// verify that the file was copied
 		dest := bucket.Object(filepath.Join(destObjectPrefix, filename))
 		rc, err := dest.NewReader(ctx)
 		require.NotNil(t, rc)
@@ -108,26 +106,242 @@ func Test_CopyGcsObjects(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("copy non-existent file", func(t *testing.T) {
+	t.Run("copy multiple files", func(t *testing.T) {
+		for i := range 3 {
+			filename := fmt.Sprintf("file_%d.txt", i)
+			src := bucket.Object(filepath.Join(srcObjectPrefix, filename))
+			w := src.NewWriter(ctx)
+			_, err = fmt.Fprintf(w, "content of file %d", i)
+			require.NoError(t, err)
+			err = w.Close()
+			require.NoError(t, err)
+		}
+
 		artifacts := []*artifact{
 			{
-				gcsSrcPrefix:  nonexistentSrc,
+				gcsSrcPrefix:  srcObjectPrefix,
 				gcsDestPrefix: destObjectPrefix,
 			},
 		}
 		err = copyGcsObjects(artifacts, testBucket, client)
-		require.Error(t, err) // FIXME: compare if error is of type storage.ErrObjectNotExist
+		require.NoError(t, err)
+
+		// verify that all files were copied
+		for i := range 3 {
+			filename := fmt.Sprintf("file_%d.txt", i)
+			dest := bucket.Object(filepath.Join(destObjectPrefix, filename))
+			rc, err := dest.NewReader(ctx)
+			require.NoError(t, err)
+
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, rc)
+			require.NoError(t, err)
+			require.Equal(t, fmt.Sprintf("content of file %d", i), buf.String())
+
+			err = rc.Close()
+			require.NoError(t, err)
+		}
 	})
 
-	t.Run("copy to non-existent destination", func(t *testing.T) {
+	t.Run("copy with different file types", func(t *testing.T) {
+		files := []struct {
+			name    string
+			content string
+		}{
+			{"file.txt", "text content"},
+			{"image.jpg", "image content"},
+			{"data.json", `{"key": "value"}`},
+		}
+
+		for _, file := range files {
+			src := bucket.Object(filepath.Join(srcObjectPrefix, file.name))
+			w := src.NewWriter(ctx)
+			_, err = fmt.Fprint(w, file.content)
+			require.NoError(t, err)
+			err = w.Close()
+			require.NoError(t, err)
+		}
+
 		artifacts := []*artifact{
 			{
 				gcsSrcPrefix:  srcObjectPrefix,
-				gcsDestPrefix: invalidDestName,
+				gcsDestPrefix: destObjectPrefix,
 			},
 		}
 		err = copyGcsObjects(artifacts, testBucket, client)
-		require.Error(t, err) // FIXME: compare to "object name is empty"
+		require.NoError(t, err)
+
+		// verify that all files were copied
+		for _, file := range files {
+			dest := bucket.Object(filepath.Join(destObjectPrefix, file.name))
+			rc, err := dest.NewReader(ctx)
+			require.NoError(t, err)
+
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, rc)
+			require.NoError(t, err)
+			require.Equal(t, file.content, buf.String())
+
+			err = rc.Close()
+			require.NoError(t, err)
+		}
+	})
+
+	t.Run("copy with nested prefixes", func(t *testing.T) {
+		nestedFiles := []struct {
+			name    string
+			content string
+		}{
+			{"subdir/file1.txt", "content of file1"},
+			{"subdir/subsubdir/file2.txt", "content of file2"},
+		}
+
+		for _, file := range nestedFiles {
+			src := bucket.Object(filepath.Join(srcObjectPrefix, file.name))
+			w := src.NewWriter(ctx)
+			_, err = fmt.Fprint(w, file.content)
+			require.NoError(t, err)
+			err = w.Close()
+			require.NoError(t, err)
+		}
+
+		artifacts := []*artifact{
+			{
+				gcsSrcPrefix:  srcObjectPrefix,
+				gcsDestPrefix: destObjectPrefix,
+			},
+		}
+		err = copyGcsObjects(artifacts, testBucket, client)
+		require.NoError(t, err)
+
+		// verify that all files were copied
+		for _, file := range nestedFiles {
+			dest := bucket.Object(filepath.Join(destObjectPrefix, file.name))
+			rc, err := dest.NewReader(ctx)
+			require.NoError(t, err)
+
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, rc)
+			require.NoError(t, err)
+			require.Equal(t, file.content, buf.String())
+
+			err = rc.Close()
+			require.NoError(t, err)
+		}
+	})
+
+	t.Run("copy with special characters in filenames", func(t *testing.T) {
+		files := []struct {
+			name    string
+			content string
+		}{
+			{"file with spaces.txt", "content with spaces"},
+			{"file-with-dashes.txt", "content with dashes"},
+			{"file_with_underscores.txt", "content with underscores"},
+		}
+
+		for _, file := range files {
+			src := bucket.Object(filepath.Join(srcObjectPrefix, file.name))
+			w := src.NewWriter(ctx)
+			_, err = fmt.Fprint(w, file.content)
+			require.NoError(t, err)
+			err = w.Close()
+			require.NoError(t, err)
+		}
+
+		artifacts := []*artifact{
+			{
+				gcsSrcPrefix:  srcObjectPrefix,
+				gcsDestPrefix: destObjectPrefix,
+			},
+		}
+		err = copyGcsObjects(artifacts, testBucket, client)
+		require.NoError(t, err)
+
+		// verify that all files were copied
+		for _, file := range files {
+			dest := bucket.Object(filepath.Join(destObjectPrefix, file.name))
+			rc, err := dest.NewReader(ctx)
+			require.NoError(t, err)
+
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, rc)
+			require.NoError(t, err)
+			require.Equal(t, file.content, buf.String())
+
+			err = rc.Close()
+			require.NoError(t, err)
+		}
+	})
+
+	t.Run("copy with overlapping prefixes", func(t *testing.T) {
+		filename := "file.txt"
+		src := bucket.Object(filepath.Join(srcObjectPrefix, filename))
+		w := src.NewWriter(ctx)
+		_, err = fmt.Fprint(w, testObjectContent)
+		require.NoError(t, err)
+		err = w.Close()
+		require.NoError(t, err)
+
+		overlapPrefix := "path/to/dest/"
+		artifacts := []*artifact{
+			{
+				gcsSrcPrefix:  srcObjectPrefix,
+				gcsDestPrefix: overlapPrefix,
+			},
+		}
+		err = copyGcsObjects(artifacts, testBucket, client)
+		require.NoError(t, err)
+
+		// verify that the file was copied
+		dest := bucket.Object(filepath.Join(overlapPrefix, filename))
+		rc, err := dest.NewReader(ctx)
+		require.NoError(t, err)
+
+		buf := new(bytes.Buffer)
+		_, err = io.Copy(buf, rc)
+		require.NoError(t, err)
+		require.Equal(t, testObjectContent, buf.String())
+
+		err = rc.Close()
+		require.NoError(t, err)
+	})
+
+	t.Run("copy with large files", func(t *testing.T) {
+		largeContent := make([]byte, 10*1024*1024) // 10MB
+		for i := range largeContent {
+			largeContent[i] = byte(i % 256)
+		}
+
+		filename := "large_file.dat"
+		src := bucket.Object(filepath.Join(srcObjectPrefix, filename))
+		w := src.NewWriter(ctx)
+		_, err = w.Write(largeContent)
+		require.NoError(t, err)
+		err = w.Close()
+		require.NoError(t, err)
+
+		artifacts := []*artifact{
+			{
+				gcsSrcPrefix:  srcObjectPrefix,
+				gcsDestPrefix: destObjectPrefix,
+			},
+		}
+		err = copyGcsObjects(artifacts, testBucket, client)
+		require.NoError(t, err)
+
+		// verify that the file was copied
+		dest := bucket.Object(filepath.Join(destObjectPrefix, filename))
+		rc, err := dest.NewReader(ctx)
+		require.NoError(t, err)
+
+		buf := new(bytes.Buffer)
+		_, err = io.Copy(buf, rc)
+		require.NoError(t, err)
+		require.Equal(t, largeContent, buf.Bytes())
+
+		err = rc.Close()
+		require.NoError(t, err)
 	})
 }
 
