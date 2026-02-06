@@ -279,6 +279,8 @@ func tagImages(artifacts []*artifact) error {
 				return errors.Join(errs...)
 			}
 		}
+
+		fmt.Println()
 	}
 
 	return errors.Join(errs...)
@@ -322,12 +324,25 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 				return errors.Join(errs...)
 			}
 
-			fmt.Println("Found object:", attrs.Name)
+			fmt.Println("found object:", attrs.Name)
+
 			filename := filepath.Base(attrs.Name)
-			fmt.Println("With filename:", filename)
+			dir := filepath.Dir(attrs.Name)
+			relDir, err := filepath.Rel(a.gcsSrcPrefix, dir)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to calculate relative path: %v", err))
+				return errors.Join(errs...)
+			}
+
+			var destName string
+			if relDir == "." {
+				destName = filepath.Join(a.gcsDestPrefix, filename)
+			} else {
+				destName = filepath.Join(a.gcsDestPrefix, relDir, filename)
+			}
 
 			src := bucket.Object(attrs.Name)
-			dest := bucket.Object(filepath.Join(a.gcsDestPrefix, filename))
+			dest := bucket.Object(destName)
 
 			copier := dest.CopierFrom(src)
 			_, err = copier.Run(ctx)
@@ -336,10 +351,9 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 				return errors.Join(errs...)
 			}
 
-			fmt.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), src.ObjectName()))
+			fmt.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName()))
+			fmt.Println()
 		}
-
-		fmt.Println()
 	}
 
 	return errors.Join(errs...)
