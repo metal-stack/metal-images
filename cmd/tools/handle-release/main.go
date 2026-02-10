@@ -8,14 +8,16 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
 
 	"cloud.google.com/go/storage"
-	"golang.org/x/oauth2"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
@@ -43,8 +45,8 @@ type artifact struct {
 	checksumURL string
 	packagesURL string
 
-	gcsSrcSuffix  string
-	gcsDestSuffix string
+	gcsSrcPrefix  string
+	gcsDestPrefix string
 }
 
 const (
@@ -53,7 +55,7 @@ const (
 	distroVersionsKey = "DISTRO_VERSIONS"
 	filenameKey       = "FILENAME"
 	gcsBucketKey      = "GCS_BUCKET"
-	gcsTokenKey       = "GCP_SA_KEY"
+	gcsSaJSONKey      = "GCP_SA_KEY"
 	gitRefNameKey     = "REF_NAME"
 	githubTokenKey    = "GITHUB_TOKEN"
 )
@@ -146,8 +148,8 @@ func run() error {
 					fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
 				}
 
-				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
+				a.gcsSrcPrefix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
+				a.gcsDestPrefix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
 			}
 
 			switch {
@@ -188,7 +190,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println()
+	log.Println()
 
 	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
@@ -278,6 +280,8 @@ func tagImages(artifacts []*artifact) error {
 				return errors.Join(errs...)
 			}
 		}
+
+		log.Println()
 	}
 
 	return errors.Join(errs...)
@@ -290,13 +294,12 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 	)
 
 	if client == nil {
-		gcsTokenVal, err := getEnvVar(gcsTokenKey)
+		gcsSaJSONVal, err := getEnvVar(gcsSaJSONKey)
 		if err != nil {
 			return err
 		}
 
-		token := oauth2.Token{AccessToken: gcsTokenVal}
-		client, err = storage.NewClient(ctx, option.WithTokenSource(oauth2.StaticTokenSource(&token)))
+		client, err = storage.NewClient(ctx, option.WithCredentialsJSON([]byte(gcsSaJSONVal)))
 		if err != nil {
 			return fmt.Errorf("creating a new gcs client failed: %v", err)
 		}
@@ -306,22 +309,52 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 			}
 		}()
 
-		fmt.Println("gcs client created successfully")
+		log.Println("gcs client created successfully")
 	}
 
+	bucket := client.Bucket(gcsBucketVal)
 	for _, a := range artifacts {
-		bucket := client.Bucket(gcsBucketVal)
-		src := bucket.Object(a.gcsSrcSuffix)
-		dest := bucket.Object(a.gcsDestSuffix)
+		it := bucket.Objects(ctx, &storage.Query{Prefix: a.gcsSrcPrefix})
+		for {
+			attrs, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to list objects: %v", err))
+				return errors.Join(errs...)
+			}
 
-		copier := dest.CopierFrom(src)
-		_, err := copier.Run(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err))
-			return errors.Join(errs...)
+			log.Println("found object:", attrs.Name)
+
+			filename := filepath.Base(attrs.Name)
+			dir := filepath.Dir(attrs.Name)
+			relDir, err := filepath.Rel(a.gcsSrcPrefix, dir)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to calculate relative path: %v", err))
+				return errors.Join(errs...)
+			}
+
+			var destName string
+			if relDir == "." {
+				destName = filepath.Join(a.gcsDestPrefix, filename)
+			} else {
+				destName = filepath.Join(a.gcsDestPrefix, relDir, filename)
+			}
+
+			src := bucket.Object(attrs.Name)
+			dest := bucket.Object(destName)
+
+			copier := dest.CopierFrom(src)
+			_, err = copier.Run(ctx)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcPrefix, a.gcsDestPrefix, err))
+				return errors.Join(errs...)
+			}
+
+			log.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName()))
+			log.Println()
 		}
-
-		fmt.Println()
 	}
 
 	return errors.Join(errs...)
@@ -408,34 +441,23 @@ func getEnvVar(envVarName string) (string, error) {
 }
 
 func logRunOutput(a *artifact, isFirst bool) error {
-	physicalWidth, err := term.GetWinsize(os.Stdout.Fd())
-	if err != nil {
-		return err
-	}
-
 	contentFormat := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575"))
-	dockerGcsBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#0B6623")).
-		Render(strings.Repeat("─ ", int(physicalWidth.Width)/2))
-	globalBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#9B59FF")).
-		Render(strings.Repeat("─", int(physicalWidth.Width)-1))
 
 	if !isFirst {
-		fmt.Println(globalBorder)
+		log.Println()
 	}
-	fmt.Printf("tag docker image: %s\n", a.dockerImage)
+	log.Printf("tag docker image: %s\n", a.dockerImage)
 	for i, t := range a.dockerTags {
 		if i == 0 {
-			fmt.Printf("also as %s\n", contentFormat.Render(t))
+			log.Printf("also as %s\n", contentFormat.Render(t))
 			continue
 		}
 
-		fmt.Printf("and %s\n", contentFormat.Render(t))
+		log.Printf("and %s\n", contentFormat.Render(t))
 	}
-	fmt.Println(dockerGcsBorder)
-	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcSuffix)
-	fmt.Printf("to: %s\n", contentFormat.Render(a.gcsDestSuffix))
+	log.Println()
+	log.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
+	log.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
 
 	return nil
 }
