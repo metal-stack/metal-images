@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -189,7 +190,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println()
+	log.Println()
 
 	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
@@ -280,7 +281,7 @@ func tagImages(artifacts []*artifact) error {
 			}
 		}
 
-		fmt.Println()
+		log.Println()
 	}
 
 	return errors.Join(errs...)
@@ -308,7 +309,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 			}
 		}()
 
-		fmt.Println("gcs client created successfully")
+		log.Println("gcs client created successfully")
 	}
 
 	bucket := client.Bucket(gcsBucketVal)
@@ -324,7 +325,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 				return errors.Join(errs...)
 			}
 
-			fmt.Println("found object:", attrs.Name)
+			log.Println("found object:", attrs.Name)
 
 			filename := filepath.Base(attrs.Name)
 			dir := filepath.Dir(attrs.Name)
@@ -351,8 +352,8 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 				return errors.Join(errs...)
 			}
 
-			fmt.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName()))
-			fmt.Println()
+			log.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName()))
+			log.Println()
 		}
 	}
 
@@ -440,34 +441,23 @@ func getEnvVar(envVarName string) (string, error) {
 }
 
 func logRunOutput(a *artifact, isFirst bool) error {
-	physicalWidth, err := term.GetWinsize(os.Stdout.Fd())
-	if err != nil {
-		return err
-	}
-
 	contentFormat := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575"))
-	dockerGcsBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#0B6623")).
-		Render(strings.Repeat("─ ", int(physicalWidth.Width)/2))
-	globalBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#9B59FF")).
-		Render(strings.Repeat("─", int(physicalWidth.Width)-1))
 
 	if !isFirst {
-		fmt.Println(globalBorder)
+		log.Println()
 	}
-	fmt.Printf("tag docker image: %s\n", a.dockerImage)
+	log.Printf("tag docker image: %s\n", a.dockerImage)
 	for i, t := range a.dockerTags {
 		if i == 0 {
-			fmt.Printf("also as %s\n", contentFormat.Render(t))
+			log.Printf("also as %s\n", contentFormat.Render(t))
 			continue
 		}
 
-		fmt.Printf("and %s\n", contentFormat.Render(t))
+		log.Printf("and %s\n", contentFormat.Render(t))
 	}
-	fmt.Println(dockerGcsBorder)
-	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
-	fmt.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
+	log.Println()
+	log.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
+	log.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
 
 	return nil
 }
