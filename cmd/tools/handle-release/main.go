@@ -126,7 +126,6 @@ func run() error {
 
 			base := path.Dir(key)
 			a := res[base]
-			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
 			a.image = fmt.Sprintf("%s%s", gcsPrefix, path.Dir(after))
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
@@ -151,6 +150,9 @@ func run() error {
 				a.gcsSrcPrefix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
 				a.gcsDestPrefix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
 			}
+
+			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
+			url = strings.ReplaceAll(url, "stable", gitRefNameVal)
 
 			switch {
 			case strings.HasSuffix(key, ".tar.lz4"):
@@ -177,10 +179,7 @@ func run() error {
 
 	if *dryRun {
 		for i, a := range artifacts {
-			err = logRunOutput(a, i == 0)
-			if err != nil {
-				return err
-			}
+			logRunOutput(a, i == 0)
 		}
 
 		return nil
@@ -190,7 +189,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	log.Println()
 
 	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
@@ -310,6 +308,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 		}()
 
 		log.Println("gcs client created successfully")
+		log.Println()
 	}
 
 	bucket := client.Bucket(gcsBucketVal)
@@ -352,7 +351,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 				return errors.Join(errs...)
 			}
 
-			log.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName()))
+			log.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName())
 			log.Println()
 		}
 	}
@@ -440,7 +439,7 @@ func getEnvVar(envVarName string) (string, error) {
 	return envVar, nil
 }
 
-func logRunOutput(a *artifact, isFirst bool) error {
+func logRunOutput(a *artifact, isFirst bool) {
 	contentFormat := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575"))
 
 	if !isFirst {
@@ -458,13 +457,11 @@ func logRunOutput(a *artifact, isFirst bool) error {
 	log.Println()
 	log.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
 	log.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
-
-	return nil
 }
 
 func renderDockerOutput(reader io.ReadCloser) error {
 	id, isTerm := term.GetFdInfo(os.Stdout)
-	err := jsonmessage.DisplayJSONMessagesStream(reader, os.Stdout, id, isTerm, nil)
+	err := jsonmessage.DisplayJSONMessagesStream(reader, log.Default().Writer(), id, isTerm, nil)
 
 	return err
 }
