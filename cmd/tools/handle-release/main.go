@@ -126,7 +126,6 @@ func run() error {
 
 			base := path.Dir(key)
 			a := res[base]
-			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
 			a.image = fmt.Sprintf("%s%s", gcsPrefix, path.Dir(after))
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
@@ -151,6 +150,9 @@ func run() error {
 				a.gcsSrcPrefix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
 				a.gcsDestPrefix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
 			}
+
+			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
+			url = strings.ReplaceAll(url, "stable", gitRefNameVal)
 
 			switch {
 			case strings.HasSuffix(key, ".tar.lz4"):
