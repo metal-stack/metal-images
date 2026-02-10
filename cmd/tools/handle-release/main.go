@@ -177,10 +177,7 @@ func run() error {
 
 	if *dryRun {
 		for i, a := range artifacts {
-			err = logRunOutput(a, i == 0)
-			if err != nil {
-				return err
-			}
+			logRunOutput(a, i == 0)
 		}
 
 		return nil
@@ -190,7 +187,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	log.Println()
 
 	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
@@ -310,6 +306,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 		}()
 
 		log.Println("gcs client created successfully")
+		log.Println()
 	}
 
 	bucket := client.Bucket(gcsBucketVal)
@@ -352,7 +349,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 				return errors.Join(errs...)
 			}
 
-			log.Println(fmt.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName()))
+			log.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName())
 			log.Println()
 		}
 	}
@@ -440,7 +437,7 @@ func getEnvVar(envVarName string) (string, error) {
 	return envVar, nil
 }
 
-func logRunOutput(a *artifact, isFirst bool) error {
+func logRunOutput(a *artifact, isFirst bool) {
 	contentFormat := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575"))
 
 	if !isFirst {
@@ -458,13 +455,11 @@ func logRunOutput(a *artifact, isFirst bool) error {
 	log.Println()
 	log.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
 	log.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
-
-	return nil
 }
 
 func renderDockerOutput(reader io.ReadCloser) error {
 	id, isTerm := term.GetFdInfo(os.Stdout)
-	err := jsonmessage.DisplayJSONMessagesStream(reader, os.Stdout, id, isTerm, nil)
+	err := jsonmessage.DisplayJSONMessagesStream(reader, log.Default().Writer(), id, isTerm, nil)
 
 	return err
 }
