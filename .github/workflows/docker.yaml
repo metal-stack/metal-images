@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Set up Go 1.25
-        uses: actions/setup-go@v5
+      - name: Set up Go 1.26
+        uses: actions/setup-go@v6
         with:
-          go-version: '1.25.x'
+          go-version: '1.26.x'
           cache: false
 
       - name: Set up Docker
@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -67,10 +67,10 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Set up Go 1.25
-        uses: actions/setup-go@v5
+      - name: Set up Go 1.26
+        uses: actions/setup-go@v6
         with:
-          go-version: '1.25.x'
+          go-version: '1.26.x'
           cache: false
 
       - name: Set up Docker Buildx
@@ -82,7 +82,7 @@ jobs:
           [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=-stable" >> $GITHUB_ENV || true
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           args: --build-tags integration --timeout=3m
 
@@ -252,7 +252,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -268,10 +268,10 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Set up Go 1.25
+      - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.x'
+          go-version: '1.26.x'
           cache: false
 
       - name: Set up Docker Buildx
