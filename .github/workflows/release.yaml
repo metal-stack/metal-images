@@ -33,9 +33,9 @@ jobs:
               "ubuntu/24.04",
               "capms-ubuntu/1.32.9",
               "firewall/3.0-ubuntu",
-              "debian/12",
-              "debian-nvidia/12",
-              "almalinux/9"
+              "debian/13",
+              "debian-nvidia/13",
+              "almalinux/9",
             ]
 
       - name: Update release body
