@@ -297,7 +297,7 @@ func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.
 			return err
 		}
 
-		client, err = storage.NewClient(ctx, option.WithCredentialsJSON([]byte(gcsSaJSONVal)))
+		client, err = storage.NewClient(ctx, option.WithCredentialsJSON([]byte(gcsSaJSONVal))) // nolint:staticcheck
 		if err != nil {
 			return fmt.Errorf("creating a new gcs client failed: %v", err)
 		}
