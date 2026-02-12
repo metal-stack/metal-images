@@ -8,13 +8,17 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/docker/docker/api/types/image"
@@ -41,18 +45,19 @@ type artifact struct {
 	checksumURL string
 	packagesURL string
 
-	gcsSrcSuffix  string
-	gcsDestSuffix string
+	gcsSrcPrefix  string
+	gcsDestPrefix string
 }
 
 const (
 	ghcrPrefix = "ghcr.io/metal-stack"
 
-	distroVersions = "DISTRO_VERSIONS"
-	filename       = "FILENAME"
-	gcsBucket      = "GCS_BUCKET"
-	gitRefName     = "REF_NAME"
-	token          = "TOKEN"
+	distroVersionsKey = "DISTRO_VERSIONS"
+	filenameKey       = "FILENAME"
+	gcsBucketKey      = "GCS_BUCKET"
+	gcsSaJSONKey      = "GCP_SA_KEY"
+	gitRefNameKey     = "REF_NAME"
+	githubTokenKey    = "GITHUB_TOKEN"
 )
 
 var (
@@ -76,13 +81,13 @@ func run() error {
 		whitelist   []string
 	)
 
-	whitelistString, err := getEnvVar(distroVersions)
+	whitelistString, err := getEnvVar(distroVersionsKey)
 	if err != nil {
 		return err
 	}
 	err = json.Unmarshal([]byte(whitelistString), &whitelist)
 	if err != nil {
-		return fmt.Errorf("unable to unmarshal %s: %v", distroVersions, err)
+		return fmt.Errorf("unable to unmarshal %s: %v", distroVersionsKey, err)
 	}
 
 	ss, err := session.NewSession(&aws.Config{
@@ -102,7 +107,7 @@ func run() error {
 		res    = map[string]artifact{}
 	)
 
-	gitRefNameVal, err := getEnvVar(gitRefName)
+	gitRefNameVal, err := getEnvVar(gitRefNameKey)
 	if err != nil {
 		return err
 	}
@@ -121,7 +126,6 @@ func run() error {
 
 			base := path.Dir(key)
 			a := res[base]
-			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
 			a.image = fmt.Sprintf("%s%s", gcsPrefix, path.Dir(after))
 
 			parts := strings.Split(strings.TrimPrefix(after, "/"), "/")
@@ -143,9 +147,12 @@ func run() error {
 					fmt.Sprintf("%s/%s:latest", ghcrPrefix, a.os),
 				}
 
-				a.gcsSrcSuffix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
-				a.gcsDestSuffix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
+				a.gcsSrcPrefix = fmt.Sprintf("metal-os/stable/%s/%s", operatingSystem, version)
+				a.gcsDestPrefix = fmt.Sprintf("metal-os/%s/%s/%s", gitRefNameVal, operatingSystem, version)
 			}
+
+			url := fmt.Sprintf("https://%s.%s/%s%s", bucket, endpoint, gcsPrefix, after)
+			url = strings.ReplaceAll(url, "stable", gitRefNameVal)
 
 			switch {
 			case strings.HasSuffix(key, ".tar.lz4"):
@@ -172,10 +179,7 @@ func run() error {
 
 	if *dryRun {
 		for i, a := range artifacts {
-			err = logRunOutput(a, i == 0)
-			if err != nil {
-				return err
-			}
+			logRunOutput(a, i == 0)
 		}
 
 		return nil
@@ -185,9 +189,8 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println()
 
-	gcsBucketVal, err := getEnvVar(gcsBucket)
+	gcsBucketVal, err := getEnvVar(gcsBucketKey)
 	if err != nil {
 		return err
 	}
@@ -215,7 +218,7 @@ func tagImages(artifacts []*artifact) error {
 		}
 	}()
 
-	tokenVal, err := getEnvVar(token)
+	githubTokenVal, err := getEnvVar(githubTokenKey)
 	if err != nil {
 		errs = append(errs, err)
 		return errors.Join(errs...)
@@ -223,7 +226,7 @@ func tagImages(artifacts []*artifact) error {
 	var authConfigBase64 string
 	authConfig := registry.AuthConfig{
 		Username:      "metal-stack",
-		Password:      tokenVal,
+		Password:      githubTokenVal,
 		ServerAddress: "ghcr.io",
 	}
 	authConfigBytes, err := json.Marshal(authConfig)
@@ -236,7 +239,7 @@ func tagImages(artifacts []*artifact) error {
 	for _, a := range artifacts {
 		sourceImage := a.dockerImage
 
-		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{RegistryAuth: authConfigBase64})
+		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{All: false, RegistryAuth: authConfigBase64})
 		if err != nil {
 			errs = append(errs, fmt.Errorf("image pull failed: %v", err))
 			return errors.Join(errs...)
@@ -275,6 +278,8 @@ func tagImages(artifacts []*artifact) error {
 				return errors.Join(errs...)
 			}
 		}
+
+		log.Println()
 	}
 
 	return errors.Join(errs...)
@@ -283,36 +288,73 @@ func tagImages(artifacts []*artifact) error {
 func copyGcsObjects(artifacts []*artifact, gcsBucketVal string, client *storage.Client) error {
 	var (
 		ctx  = context.Background()
-		err  error
 		errs []error
 	)
 
 	if client == nil {
-		client, err = storage.NewClient(ctx)
+		gcsSaJSONVal, err := getEnvVar(gcsSaJSONKey)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("creating a new gcs client failed: %v", err))
-			return errors.Join(errs...)
+			return err
+		}
+
+		// FIXME replace with the non deprecated option
+		client, err = storage.NewClient(ctx, option.WithCredentialsJSON([]byte(gcsSaJSONVal))) // nolint:staticcheck
+		if err != nil {
+			return fmt.Errorf("creating a new gcs client failed: %v", err)
 		}
 		defer func() {
 			if err = client.Close(); err != nil {
 				errs = append(errs, err)
 			}
 		}()
+
+		log.Println("gcs client created successfully")
+		log.Println()
 	}
 
+	bucket := client.Bucket(gcsBucketVal)
 	for _, a := range artifacts {
-		bucket := client.Bucket(gcsBucketVal)
-		src := bucket.Object(a.gcsSrcSuffix)
-		dest := bucket.Object(a.gcsDestSuffix)
+		it := bucket.Objects(ctx, &storage.Query{Prefix: a.gcsSrcPrefix})
+		for {
+			attrs, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to list objects: %v", err))
+				return errors.Join(errs...)
+			}
 
-		copier := dest.CopierFrom(src)
-		_, err := copier.Run(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcSuffix, a.gcsDestSuffix, err))
-			return errors.Join(errs...)
+			log.Println("found object:", attrs.Name)
+
+			filename := filepath.Base(attrs.Name)
+			dir := filepath.Dir(attrs.Name)
+			relDir, err := filepath.Rel(a.gcsSrcPrefix, dir)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("failed to calculate relative path: %v", err))
+				return errors.Join(errs...)
+			}
+
+			var destName string
+			if relDir == "." {
+				destName = filepath.Join(a.gcsDestPrefix, filename)
+			} else {
+				destName = filepath.Join(a.gcsDestPrefix, relDir, filename)
+			}
+
+			src := bucket.Object(attrs.Name)
+			dest := bucket.Object(destName)
+
+			copier := dest.CopierFrom(src)
+			_, err = copier.Run(ctx)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("copying resources from %s to %s failed: %v", a.gcsSrcPrefix, a.gcsDestPrefix, err))
+				return errors.Join(errs...)
+			}
+
+			log.Printf("copied %s to %s successfully", src.ObjectName(), dest.ObjectName())
+			log.Println()
 		}
-
-		fmt.Println()
 	}
 
 	return errors.Join(errs...)
@@ -327,7 +369,7 @@ func printDownloadsMarkdown(artifacts []*artifact) error {
 		return artifacts[i].url < artifacts[j].url
 	})
 
-	fn, err := getEnvVar(filename)
+	fn, err := getEnvVar(filenameKey)
 	if err != nil {
 		return err
 	}
@@ -398,42 +440,29 @@ func getEnvVar(envVarName string) (string, error) {
 	return envVar, nil
 }
 
-func logRunOutput(a *artifact, isFirst bool) error {
-	physicalWidth, err := term.GetWinsize(os.Stdout.Fd())
-	if err != nil {
-		return err
-	}
-
+func logRunOutput(a *artifact, isFirst bool) {
 	contentFormat := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575"))
-	dockerGcsBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#0B6623")).
-		Render(strings.Repeat("─ ", int(physicalWidth.Width)/2))
-	globalBorder := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#9B59FF")).
-		Render(strings.Repeat("─", int(physicalWidth.Width)-1))
 
 	if !isFirst {
-		fmt.Println(globalBorder)
+		log.Println()
 	}
-	fmt.Printf("tag docker image: %s\n", a.dockerImage)
+	log.Printf("tag docker image: %s\n", a.dockerImage)
 	for i, t := range a.dockerTags {
 		if i == 0 {
-			fmt.Printf("also as %s\n", contentFormat.Render(t))
+			log.Printf("also as %s\n", contentFormat.Render(t))
 			continue
 		}
 
-		fmt.Printf("and %s\n", contentFormat.Render(t))
+		log.Printf("and %s\n", contentFormat.Render(t))
 	}
-	fmt.Println(dockerGcsBorder)
-	fmt.Printf("copy gcs data from: %s\n", a.gcsSrcSuffix)
-	fmt.Printf("to: %s\n", contentFormat.Render(a.gcsDestSuffix))
-
-	return nil
+	log.Println()
+	log.Printf("copy gcs data from: %s\n", a.gcsSrcPrefix)
+	log.Printf("to: %s\n", contentFormat.Render(a.gcsDestPrefix))
 }
 
 func renderDockerOutput(reader io.ReadCloser) error {
 	id, isTerm := term.GetFdInfo(os.Stdout)
-	err := jsonmessage.DisplayJSONMessagesStream(reader, os.Stdout, id, isTerm, nil)
+	err := jsonmessage.DisplayJSONMessagesStream(reader, log.Default().Writer(), id, isTerm, nil)
 
 	return err
 }
