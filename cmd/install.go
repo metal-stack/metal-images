@@ -177,11 +177,11 @@ nameserver 8.8.4.4
 `)
 
 	if len(i.config.DNSServers) > 0 {
-		var s string
+		var s strings.Builder
 		for _, dnsServer := range i.config.DNSServers {
-			s += "nameserver " + *dnsServer.IP + "\n"
+			s.WriteString("nameserver " + *dnsServer.IP + "\n")
 		}
-		content = []byte(s)
+		content = []byte(s.String())
 
 	}
 
@@ -285,7 +285,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 	rootUUID := i.config.RootUUID
 
 	var rootDisk string
-	for _, line := range strings.Split(string(blkidOut), "\n") {
+	for line := range strings.SplitSeq(string(blkidOut), "\n") {
 		if strings.Contains(line, rootUUID) {
 			rd, _, found := strings.Cut(line, ":")
 			if found {
@@ -309,7 +309,7 @@ func (i *installer) findMDUUID() (mdUUID string, found bool) {
 		return "", false
 	}
 
-	for _, line := range strings.Split(string(mdadmOut), "\n") {
+	for line := range strings.SplitSeq(string(mdadmOut), "\n") {
 		_, md, found := strings.Cut(line, "MD_UUID=")
 		if found {
 			mdUUID = md
@@ -730,7 +730,7 @@ GRUB_SERIAL_COMMAND="serial --speed=%s --unit=%s --word=8"
 			return err
 		}
 
-		for _, line := range strings.Split(string(out), "\n") {
+		for line := range strings.SplitSeq(string(out), "\n") {
 			if strings.Contains(line, `PARTLABEL="efi"`) {
 				disk, _, found := strings.Cut(line, ":")
 				if !found {
