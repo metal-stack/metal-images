@@ -3,7 +3,7 @@
 set -e
 
 echo "do machine test"
-ssh -4 -F ./ssh/config -t machine <<EOF
+ssh -F ./ssh/config -t machine <<EOF
     set -ex
     sudo ip addr add 100.100.0.2/24 dev lan0 || true
     sudo ip route add default via 100.100.0.1 dev lan0 || true
