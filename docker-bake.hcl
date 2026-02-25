@@ -94,7 +94,7 @@ target "ubuntu" {
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="noble"
         FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.2-0~ubuntu24.04.1"
+        FRR_VERSION_DETAIL ="10.4.3-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.74"
