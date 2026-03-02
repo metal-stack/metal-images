@@ -19,8 +19,8 @@ target "_common_args" {
         IGNITION_BRANCH = "v0.36.2"
         GOLLDPD_VERSION = "v0.4.10"
         CRI_VERSION = "v1.34.0"
-        ICE_VERSION = "1.14.13"
-        ICE_PKG_VERSION = "1.3.36.0"
+        ICE_VERSION = "2.4.5"
+        ICE_PKG_VERSION = "1.3.53.0"
     }
 }
 
@@ -55,7 +55,7 @@ target "debian" {
       # see https://packages.debian.org/bookworm/kernel/ for available versions
       # upgrade to > 6.1.0-40 actually not possible because it breaks calico:
       # see https://github.com/projectcalico/calico/issues/11302#issuecomment-3526431095
-        KERNEL_VERSION = "6.1.0-40"
+        KERNEL_VERSION = "6.1.0-43"
         CONTAINERD_VERSION = "2.1.5-1~debian.12~bookworm"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
@@ -97,7 +97,7 @@ target "ubuntu" {
         FRR_VERSION_DETAIL ="10.4.3-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.74"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.14"
         CONTAINERD_VERSION = "2.1.5-1~ubuntu.24.04~noble"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]

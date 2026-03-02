@@ -111,7 +111,7 @@ RUN set -ex \
  && apt update \
  && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
  # Install Intel Firmware for e800 based network cards
- && curl -fLsS https://sourceforge.net/projects/e1000/files/ice%20stable/${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz/download -o ice.tar.gz \
+ && curl -fLsS https://github.com/intel/ethernet-linux-ice/releases/download/v${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz -o ice.tar.gz \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \
  && mkdir -p /lib/firmware/intel/ice/ddp/ \
  && mv ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg /lib/firmware/intel/ice/ddp/ice.pkg \
