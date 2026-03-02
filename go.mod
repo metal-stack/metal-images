@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	cloud.google.com/go/storage v1.60.0
-	github.com/aws/aws-sdk-go v1.55.7
+	github.com/aws/aws-sdk-go v1.55.7 // 1.55.8 is deprecated
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/flatcar/ignition v0.36.2
