@@ -46,4 +46,4 @@ cloud-hypervisor ${INITRAMFS} \
   --memory size=1G \
   --net "tap=tap0,ip=100.100.0.3,mask=255.255.255.0,mac=00:03:00:11:11:01" &
 
-sleep 3
+sleep 10
