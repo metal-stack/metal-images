@@ -8,6 +8,7 @@ ip link set up dev vm-br0 || true
 ip addr add 100.100.0.1/24 dev vm-br0 || true
 
 echo "Setting up tap device for VM"
+ip link del tap0 || true
 ip tuntap add mode tap name tap0 || true
 ip link set tap0 up || true
 ip link set tap0 master vm-br0 || true
@@ -46,4 +47,4 @@ cloud-hypervisor ${INITRAMFS} \
   --memory size=1G \
   --net "tap=tap0,ip=100.100.0.3,mask=255.255.255.0,mac=00:03:00:11:11:01" &
 
-sleep 10
+sleep 5
