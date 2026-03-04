@@ -51,6 +51,7 @@ RUN set -ex \
     curl \
     cryptsetup \
     dbus \
+    e2fsprogs \
     efibootmgr \
     ethtool \
     gettext-base \
