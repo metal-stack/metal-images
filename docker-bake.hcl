@@ -19,8 +19,8 @@ target "_common_args" {
         IGNITION_BRANCH = "v0.36.2"
         GOLLDPD_VERSION = "v0.4.10"
         CRI_VERSION = "v1.34.0"
-        ICE_VERSION = "1.14.13"
-        ICE_PKG_VERSION = "1.3.36.0"
+        ICE_VERSION = "2.4.5"
+        ICE_PKG_VERSION = "1.3.53.0"
     }
 }
 
@@ -50,10 +50,10 @@ target "debian" {
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="trixie"
         FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.2-0~deb13u1"
+        FRR_VERSION_DETAIL ="10.4.3-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
-        KERNEL_VERSION = "6.12.63+deb13"
+        KERNEL_VERSION = "6.12.73+deb13"
         CONTAINERD_VERSION = "2.1.5-1~debian.13~trixie"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
@@ -92,10 +92,10 @@ target "ubuntu" {
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="noble"
         FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.2-0~ubuntu24.04.1"
+        FRR_VERSION_DETAIL ="10.4.3-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.64"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.74"
         CONTAINERD_VERSION = "2.1.5-1~ubuntu.24.04~noble"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]

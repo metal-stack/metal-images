@@ -95,7 +95,7 @@ func detectOS(fs afero.Fs) (operatingsystem, error) {
 	}
 
 	env := map[string]string{}
-	for _, line := range strings.Split(string(content), "\n") {
+	for line := range strings.SplitSeq(string(content), "\n") {
 		k, v, found := strings.Cut(line, "=")
 		if found {
 			env[k] = v

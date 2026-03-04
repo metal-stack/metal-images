@@ -9,7 +9,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/metal-stack/metal-go/api/models"
 	"github.com/metal-stack/metal-hammer/pkg/api"
-	"github.com/metal-stack/metal-lib/pkg/pointer"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	"github.com/metal-stack/v"
 	"github.com/spf13/afero"
@@ -183,7 +182,6 @@ func Test_installer_detectFirmware(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			log := slog.Default()
 
@@ -235,7 +233,7 @@ nameserver 8.8.4.4
 		},
 		{
 			name:   "overwrite resolv.conf with custom DNS",
-			config: &api.InstallerConfig{DNSServers: []*models.V1DNSServer{{IP: pointer.Pointer("1.2.3.4")}, {IP: pointer.Pointer("5.6.7.8")}}},
+			config: &api.InstallerConfig{DNSServers: []*models.V1DNSServer{{IP: new("1.2.3.4")}, {IP: new("5.6.7.8")}}},
 			want: `nameserver 1.2.3.4
 nameserver 5.6.7.8
 `,
@@ -243,7 +241,6 @@ nameserver 5.6.7.8
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
 				log:    slog.Default(),
@@ -293,7 +290,7 @@ func Test_installer_writeNTPConf(t *testing.T) {
 			ntpPath:    "/etc/systemd/timesyncd.conf",
 			oss:        osUbuntu,
 			role:       "machine",
-			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			ntpServers: []*models.V1NTPServer{{Address: new("custom.1.ntp.org")}, {Address: new("custom.2.ntp.org")}},
 			want: `[Time]
 NTP=custom.1.ntp.org custom.2.ntp.org
 `,
@@ -318,7 +315,7 @@ NTP=custom.1.ntp.org custom.2.ntp.org
 			ntpPath:    "/etc/systemd/timesyncd.conf",
 			oss:        osDebian,
 			role:       "machine",
-			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			ntpServers: []*models.V1NTPServer{{Address: new("custom.1.ntp.org")}, {Address: new("custom.2.ntp.org")}},
 			want: `[Time]
 NTP=custom.1.ntp.org custom.2.ntp.org
 `,
@@ -343,7 +340,7 @@ NTP=custom.1.ntp.org custom.2.ntp.org
 			oss:        osAlmalinux,
 			ntpPath:    "/etc/chrony.conf",
 			role:       "machine",
-			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			ntpServers: []*models.V1NTPServer{{Address: new("custom.1.ntp.org")}, {Address: new("custom.2.ntp.org")}},
 			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
 # information about usable directives.
 
@@ -398,7 +395,7 @@ makestep 1 3`,
 			},
 			ntpPath:    "/etc/chrony/chrony.conf",
 			role:       "firewall",
-			ntpServers: []*models.V1NTPServer{{Address: pointer.Pointer("custom.1.ntp.org")}, {Address: pointer.Pointer("custom.2.ntp.org")}},
+			ntpServers: []*models.V1NTPServer{{Address: new("custom.1.ntp.org")}, {Address: new("custom.2.ntp.org")}},
 			want: `# Welcome to the chrony configuration file. See chrony.conf(5) for more
 # information about usable directives.
 
@@ -447,7 +444,6 @@ makestep 1 3`,
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
 				log:    slog.Default(),
@@ -491,7 +487,6 @@ func Test_installer_fixPermissions(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			i := &installer{
 				log: slog.Default(),
@@ -545,7 +540,6 @@ func Test_installer_findMDUUID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
@@ -622,7 +616,6 @@ func Test_installer_buildCMDLine(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
@@ -664,7 +657,6 @@ func Test_installer_unsetMachineID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
@@ -765,7 +757,6 @@ func Test_installer_writeBootInfo(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
@@ -849,7 +840,6 @@ func Test_installer_processUserdata(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
@@ -979,7 +969,6 @@ GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=1 --word=8"
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
@@ -1041,7 +1030,6 @@ ignitionVersion: Ignition v0.36.2
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			if tt.fsMocks != nil {
