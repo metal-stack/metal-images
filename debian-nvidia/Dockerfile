@@ -1,5 +1,6 @@
 FROM baseapp
 
+ARG KERNEL_VERSION
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive"
 
@@ -9,6 +10,7 @@ RUN set -ex \
  && rm -f /.dockerenv \
  && apt-get update \
  && apt-get install --yes \
+    linux-image-${KERNEL_VERSION}-amd64 \
     dkms \
  && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/debian13/x86_64/cuda-keyring_1.1-1_all.deb -o cuda-keyring_1.1-1_all.deb \
  && dpkg -i cuda-keyring_1.1-1_all.deb \

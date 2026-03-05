@@ -76,6 +76,9 @@ target "debian-nvidia" {
         baseapp = "target:debian"
         ctx = "./debian-nvidia/context"
     }
+    args = {
+       KERNEL_VERSION = "6.12.73+deb13" # must match with KERNEL_VERSION from debian
+    }
     tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
