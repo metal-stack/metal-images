@@ -1,5 +1,8 @@
 ARG BASE_OS_NAME=debian
 ARG BASE_OS_VERSION=bookworm
+ARG FRR_TAG=10.4.1-debian-12
+
+FROM ghcr.io/metal-stack/frr:${FRR_TAG} AS frr-artifacts
 
 FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
@@ -16,12 +19,9 @@ RUN set -ex \
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
 # Beware, ARGs for ENV variables except FROM line must be below FROM
 
-ARG FRR_VERSION
-ARG FRR_VERSION_DETAIL
 ARG GOLLDPD_VERSION
 ARG DOCKER_APT_OS
 ARG DOCKER_APT_CHANNEL
-ARG FRR_APT_CHANNEL
 ARG CRI_VERSION
 ARG KERNEL_VERSION
 ARG UBUNTU_MAINLINE_KERNEL_VERSION
@@ -37,6 +37,7 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 COPY --from=ctx etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 COPY --from=ctx kernel-installation.sh /
+COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 
 RUN set -ex \
  && rm -f /.dockerenv \
@@ -105,11 +106,8 @@ RUN set -ex \
  # Switch to use iptables-legacy on worker nodes
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
- # install frr from frrouting debian package repo
- && curl -s https://deb.frrouting.org/frr/keys.gpg | tee /usr/share/keyrings/frrouting.gpg > /dev/null \
- && echo "deb [signed-by=/usr/share/keyrings/frrouting.gpg] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
- && apt update \
- && apt install --yes --no-install-recommends frr=${FRR_VERSION_DETAIL} frr-pythontools=${FRR_VERSION_DETAIL} \
+ # Forcefully install frr from our own builds because upstream repo removes older patch versions
+ && apt install --yes --allow-downgrades /tmp/*.deb \
  # Install Intel Firmware for e800 based network cards
  && curl -fLsS https://github.com/intel/ethernet-linux-ice/releases/download/v${ICE_VERSION}/ice-${ICE_VERSION}.tar.gz -o ice.tar.gz \
  && tar -xf ice.tar.gz ice-${ICE_VERSION}/ddp/ice-${ICE_PKG_VERSION}.pkg \

@@ -2,12 +2,13 @@ ARG DROPTAILER_VERSION=v0.2.19
 ARG FIREWALL_CONTROLLER_VERSION=v2.4.2
 ARG TAILSCALE_VERSION=v1.90.6
 ARG NODE_EXPORTER_VERSION=v1.10.2
+ARG FRR_TAG=10.4.1-ubuntu-24.04
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} AS firewall-controller-artifacts
 
-FROM ghcr.io/metal-stack/frr:10.4.1-ubuntu-24.04 AS frr-artifacts
+FROM ghcr.io/metal-stack/frr:${FRR_TAG} AS frr-artifacts
 
 FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
