@@ -5,6 +5,6 @@
 ```bash
 FILENAME=downloads.md \
 REF_NAME=$(git rev-parse --abbrev-ref HEAD) \
-DISTRO_VERSIONS=$'["capms-ubuntu/1.34.5", "ubuntu/24.04", "almalinux/9"]' \
+DISTRO_VERSIONS=$'["capms-ubuntu/1.33.9", "capms-ubuntu/1.34.5", "capms-ubuntu/1.35.2", "ubuntu/24.04", "almalinux/9"]' \
 go run . --dry-run
 ```
