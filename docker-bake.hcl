@@ -17,7 +17,7 @@ target "_common" {
 target "_common_args" {
     args = {
         IGNITION_BRANCH = "v0.36.2"
-        GOLLDPD_VERSION = "v0.4.11"
+        GOLLDPD_VERSION = "v0.4.12"
         CRI_VERSION = "v1.35.0"
         ICE_VERSION = "2.4.5"
         ICE_PKG_VERSION = "1.3.53.0"
@@ -53,7 +53,7 @@ target "debian" {
         FRR_VERSION_DETAIL ="10.4.3-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
-        KERNEL_VERSION = "6.12.73+deb13"
+        KERNEL_VERSION = "6.12.74+deb13"
         CONTAINERD_VERSION = "2.1.5-1~debian.13~trixie"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
