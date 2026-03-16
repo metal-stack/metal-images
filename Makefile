@@ -73,6 +73,14 @@ capms: test ubuntu
 	docker buildx bake --no-cache ubuntu-capms
 	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
 
+.PHONY: capms-kamaji
+capms-kamaji: test ubuntu
+	KUBE_VERSION=1.33.5 \
+	KUBE_APT_BRANCH=v1.33 \
+	SEMVER_MAJOR_MINOR=1.33.5 \
+	docker buildx bake --no-cache ubuntu-capms
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.33.5 ./test.sh
+
 .PHONY: firewall
 firewall: test binary
 	mkdir -p "images/firewall/3.0-ubuntu"

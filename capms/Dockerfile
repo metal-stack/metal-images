@@ -30,7 +30,7 @@ RUN tar -xzf /download/gocontainerregistry.tar \
  && bash -c 'for img in $(kubeadm config images list --kubernetes-version ${KUBE_VERSION}); do \
         /crane pull --format tarball $img /kubeadm-images/$(basename $img).tar; \
     done' \
- && /crane pull --format tarball ghcr.io/kube-vip/kube-vip:${KUBE_VIP_VERSION} /kubeadm-images/kube-vip.tar
+ && [ "${KUBE_VIP_VERSION}" != "" ] && /crane pull --format tarball ghcr.io/kube-vip/kube-vip:${KUBE_VIP_VERSION} /kubeadm-images/kube-vip.tar
 
 FROM kubeadm-base AS kubeadm-runtime
 
