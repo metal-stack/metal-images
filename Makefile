@@ -66,12 +66,16 @@ ubuntu: test binary
 	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 ./test.sh
 
 .PHONY: capms
-capms: test ubuntu
-	KUBE_VERSION=1.32.9 \
-	KUBE_APT_BRANCH=v1.32 \
-	SEMVER_MAJOR_MINOR=1.32.9 \
+capms:
+	$(MAKE) capms-v1.34.5
+
+.PHONY: capms-v%
+capms-v%: test ubuntu
+	KUBE_VERSION=$@ \
+	KUBE_APT_BRANCH=v$(shell echo $@ | cut -d . -f1-2) \
+	SEMVER_MAJOR_MINOR=$@ \
 	docker buildx bake --no-cache ubuntu-capms
-	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=$@ ./test.sh
 
 .PHONY: firewall
 firewall: test binary
