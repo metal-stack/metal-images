@@ -19,7 +19,7 @@ RUN set -ex \
  && add-apt-repository contrib \
  && apt-get update \
  && apt-get install --yes \
-    cuda-drivers
+    nvidia-open
 
 # For newer versions of cuda, it might be worth looking at:
 # https://developer.nvidia.com/cuda-downloads
