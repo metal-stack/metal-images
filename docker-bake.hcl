@@ -49,9 +49,7 @@ target "debian" {
         BASE_OS_VERSION = "bookworm"
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="bookworm"
-        FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.3-0~deb12u1"
-        FRR_APT_CHANNEL ="bookworm"
+        FRR_TAG = "10.4.1-debian-12"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
         KERNEL_VERSION = "6.1.0-44"
         CONTAINERD_VERSION = "2.1.5-1~debian.12~bookworm"
@@ -91,9 +89,7 @@ target "ubuntu" {
         BASE_OS_VERSION = "24.04"
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="noble"
-        FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.3-0~ubuntu24.04.1"
-        FRR_APT_CHANNEL ="noble"
+        FRR_TAG = "10.4.1-ubuntu-24.04"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.12.77"
         CONTAINERD_VERSION = "2.1.5-1~ubuntu.24.04~noble"
