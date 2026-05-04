@@ -53,7 +53,7 @@ target "debian" {
         FRR_VERSION_DETAIL ="10.4.4-0~deb12u1"
         FRR_APT_CHANNEL ="bookworm"
       # see https://packages.debian.org/bookworm/kernel/ for available versions
-        KERNEL_VERSION = "6.1.170-1"
+        KERNEL_VERSION = "6.1.0-45"
         CONTAINERD_VERSION = "2.1.5-1~debian.12~bookworm"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
