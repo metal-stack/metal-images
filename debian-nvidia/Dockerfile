@@ -16,7 +16,7 @@ RUN set -ex \
  && dpkg -i cuda-keyring_1.1-1_all.deb \
  && apt-get update \
  && apt-get install --yes \
-    cuda-drivers
+    nvidia-open
 
 # For newer versions of cuda, it might be worth looking at:
 # https://developer.nvidia.com/cuda-downloads

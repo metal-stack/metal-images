@@ -1,0 +1,67 @@
+file:
+{{- range mkSlice "/usr/bin/kubeadm" "/usr/bin/kubelet" "/usr/bin/kubectl" }}
+  {{.}}:
+    exists: true
+    filetype: file
+
+  "/var/lib/kubelet":
+    exists: true
+    mode: "0755"
+    owner: root
+    group: root
+    filetype: directory
+
+service:
+  containerd:
+    enabled: true
+    running: true
+  kubelet:
+    enabled: true
+    running: true
+
+  capi-controller-manager:
+    enabled: true
+    running: true
+  capi-kubeadm-control-plane-controller-manager:
+    enabled: true
+    running: true
+  capi-kubeadm-bootstrap-controller-manager:
+    enabled: true
+    running: true
+
+command:
+  cri-socket:
+    exec: ps -ef | grep kubelet | grep -- --container-runtime-endpoint | grep -o '/run/containerd/containerd.sock'
+    exit-status: 0
+    stdout:
+      - /run/containerd/containerd.sock
+
+  containerd-cgroup:
+    exec: ps -ef | grep kubelet | grep -- --cgroup-driver=systemd
+    exit-status: 0
+    stdout:
+      - systemd
+
+  swap-disabled:
+    exec: swapon --show
+    exit-status: 1
+    stdout: []
+
+  versions-compatible:
+    exec: |
+      kubeadm_version=$(kubeadm version --output=json | jq -r '.clientVersion.gitVersion')
+      kubelet_version=$(kubelet --version | awk '{print $3}')
+      kubectl_version=$(kubectl version --client --short | awk '{print $3}')
+
+      # Extract major.minor version (e.g., v1.28.0 -> 1.28)
+      kubeadm_major_minor=$(echo $kubeadm_version | sed 's/v\([0-9]\+\.[0-9]\+\).*/\1/')
+      kubelet_major_minor=$(echo $kubelet_version | sed 's/v\([0-9]\+\.[0-9]\+\).*/\1/')
+      kubectl_major_minor=$(echo $kubectl_version | sed 's/v\([0-9]\+\.[0-9]\+\).*/\1/')
+
+      if [ "$kubeadm_major_minor" = "$kubelet_major_minor" ] && [ "$kubelet_major_minor" = "$kubectl_major_minor" ]; then
+        exit 0
+      else
+        exit 1
+      fi
+    exit-status: 0
+    stdout: []

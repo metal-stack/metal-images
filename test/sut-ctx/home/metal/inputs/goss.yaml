@@ -1,4 +1,9 @@
 ---
+gossfile:
+{{ if eq .Env.OS "capms-ubuntu" }}
+ - capi.yaml
+{{ end }}
+
 user:
   metal:
     exists: true
