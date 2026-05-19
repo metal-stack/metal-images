@@ -1,7 +1,13 @@
-# metal-images
+# metal-stack.io | metal-images
+
+![Go version](https://img.shields.io/github/go-mod/go-version/metal-stack/metal-images)
+[![Go Report Card](https://goreportcard.com/badge/github.com/metal-stack/metal-images)](https://goreportcard.com/report/github.com/metal-stack/metal-images)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/metal-stack/metal-images)
+[![Build](https://github.com/metal-stack/metal-images/actions/workflows/docker.yaml/badge.svg?branch=master)](https://github.com/metal-stack/metal-images/actions)
+[![Slack](https://img.shields.io/badge/slack-metal--stack-brightgreen.svg?logo=slack)](https://metal-stack.slack.com/)
 
 This project builds operating system images that can be used for bare metal server deployments with [metal-stack](https://metal-stack.io).
-Every OS image is built from a Dockerfile, exported to a lz4 compressed tarball, and uploaded to <https://images.metal-stack.io/>.
+Every OS image is built from a `Dockerfile`, exported to a `lz4` compressed tarball, and uploaded to [images.metal-stack.io](https://images.metal-stack.io/).
 
 More information about the image store is available in [IMAGE_STORE.md](./IMAGE_STORE.md).
 
@@ -24,11 +30,11 @@ We also publish images that we need for special purposes but do not officially s
 
 ### GPU Support
 
-With the nvidia image a worker has GPU support. Please check our official documentation on [docs.metal-stack.io](https://metal-stack.io/docs/gpu-workers) on how to get this running on Kubernetes.
+GPU support for workers are available by using the `debian-nvidia` images. Please check our official documentation at [metal-stack.io](https://metal-stack.io/docs/gpu-workers) how to get this running on Kubernetes.
 
 ## How new images become usable in a metal-stack partition
 
-Images are synchronized to partitions using a service called [metal-image-cache-sync](https://github.com/metal-stack/metal-image-cache-sync). The service mirrors the public operating system images to the management servers and transparently serves the metal images within a partition.
+Images are synchronized to partitions using a service called [metal-image-cache-sync](https://github.com/metal-stack/metal-image-cache-sync). This service mirrors the public operating system images to the management servers and transparently serves the metal-images within a partition.
 
 Released images are tagged with the release date and can be accessed using the following image URL pattern:
 
@@ -42,15 +48,15 @@ For other branches, the URL pattern is as follows:
 
 `https://images.metal-stack.io/metal-os/pull_requests/${CI_COMMIT_REF_SLUG}/debian/12/img.tar.lz4`
 
-These URLs can be used to define an image at the metal-api.
+These URLs can be used to define an image at the `metal-api`.
 
 ## Local development and integration testing
 
-Please also refer to our documentation on docs.metal-stack.io on [Build Your Own Images](https://metal-stack.io/docs/operating-systems#building-your-own-images) to check for the contract an OS image is expected to fulfill.
+Please also refer to our section [Build Your Own Images](https://metal-stack.io/docs/operating-systems#building-your-own-images) in our documentation to check for the contract an OS image is expected to fulfill.
 
 Before you can start developing changes for metal-images or even introduce new operating systems, you should install the following tools:
 
-- **docker**: for sure
+- **docker**
 - **golang**
 - **kvm**: hypervisor used for integration tests
 - **lz4**: to compress tarballs
@@ -76,7 +82,7 @@ make nvidia
 make almalinux
 ```
 
-*IMPORTANT* if you prefer the old docker build output instead of the fancy buildx srolling behind output, do the following:
+_IMPORTANT_ if you prefer the old docker build output instead of the fancy buildx rolling behind output, do the following:
 
 ```bash
 BUILDKIT_PROGRESS=plain make debian
@@ -118,4 +124,4 @@ vgchange -ay
 mount /dev/csi-lvm/varlib /var/lib/
 ```
 
-Keep in mind that you are still running on the metal-hammer kernel, which is different from the kernel that will be run in the operating system after provisioning. For further information on the metal-stack machine provisioning sequence, check out documentation on [docs.metal-stack.io](https://metal-stack.io/docs/architecture/#Machine-Provisioning-Sequence). The kernel used by the metal-hammer is built on our own inside the [kernel repository](https://github.com/metal-stack/kernel).
+Keep in mind that you are still running on the metal-hammer kernel, which is different from the kernel that will be run in the operating system after provisioning. For further information on the metal-stack machine provisioning sequence, check out our documentation at [metal-stack.io](https://metal-stack.io/docs/architecture/#Machine-Provisioning-Sequence). The kernel used by the metal-hammer is built on our own inside the [kernel repository](https://github.com/metal-stack/kernel).
