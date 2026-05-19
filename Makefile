@@ -67,11 +67,23 @@ ubuntu: test binary
 
 .PHONY: capms
 capms: test ubuntu
-	KUBE_VERSION=1.32.9 \
-	KUBE_APT_BRANCH=v1.32 \
-	SEMVER_MAJOR_MINOR=1.32.9 \
+	KUBE_VERSION=1.33.9 \
+	KUBE_APT_BRANCH=v1.33 \
+	SEMVER_MAJOR_MINOR=1.33.9 \
 	docker buildx bake --no-cache ubuntu-capms
-	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.33.9 ./test.sh
+
+	KUBE_VERSION=1.34.5 \
+	KUBE_APT_BRANCH=v1.34 \
+	SEMVER_MAJOR_MINOR=1.34.5 \
+	docker buildx bake --no-cache ubuntu-capms
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.34.5 ./test.sh
+
+	KUBE_VERSION=1.35.2 \
+	KUBE_APT_BRANCH=v1.35 \
+	SEMVER_MAJOR_MINOR=1.35.2 \
+	docker buildx bake --no-cache ubuntu-capms
+	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.35.2 ./test.sh
 
 .PHONY: firewall
 firewall: test binary
