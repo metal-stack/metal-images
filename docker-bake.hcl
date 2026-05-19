@@ -17,8 +17,8 @@ target "_common" {
 target "_common_args" {
     args = {
         IGNITION_BRANCH = "v0.36.2"
-        GOLLDPD_VERSION = "v0.4.10"
-        CRI_VERSION = "v1.34.0"
+        GOLLDPD_VERSION = "v0.4.12"
+        CRI_VERSION = "v1.35.0"
         ICE_VERSION = "2.4.5"
         ICE_PKG_VERSION = "1.3.53.0"
     }
@@ -46,15 +46,15 @@ target "debian" {
     }
     args = {
         BASE_OS_NAME = "debian"
-        BASE_OS_VERSION = "bookworm"
+        BASE_OS_VERSION = "trixie"
         DOCKER_APT_OS = "debian"
-        DOCKER_APT_CHANNEL ="bookworm"
+        DOCKER_APT_CHANNEL ="trixie"
         FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.4-0~deb12u1"
-        FRR_APT_CHANNEL ="bookworm"
-      # see https://packages.debian.org/bookworm/kernel/ for available versions
-        KERNEL_VERSION = "6.1.0-48"
-        CONTAINERD_VERSION = "2.1.5-1~debian.12~bookworm"
+        FRR_VERSION_DETAIL ="10.4.4-0~deb13u1"
+        FRR_APT_CHANNEL ="trixie"
+      # see https://packages.debian.org/trixie/kernel/ for available versions
+        KERNEL_VERSION = "6.12.88+deb13"
+        CONTAINERD_VERSION = "2.1.5-1~debian.13~trixie"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -70,7 +70,7 @@ target "debian-firewall" {
 }
 
 target "debian-nvidia" {
-    inherits = ["_common"]
+    inherits = ["_common", "debian"]
     dockerfile = "./debian-nvidia/Dockerfile"
     contexts = {
         baseapp = "target:debian"
