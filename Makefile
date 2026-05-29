@@ -50,14 +50,14 @@ test:
 
 .PHONY: debian
 debian: test binary
-	mkdir -p "images/debian/12"
-	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian
-	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=12 ./test.sh
+	mkdir -p "images/debian/13"
+	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache debian
+	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=13 ./test.sh
 
 .PHONY: nvidia
 nvidia:
-	mkdir -p "images/nvidia/12"
-	OS_NAME=nvidia OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=12 docker buildx bake --no-cache debian-nvidia
+	mkdir -p "images/nvidia/13"
+	OS_NAME=nvidia OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache debian-nvidia
 
 .PHONY: ubuntu
 ubuntu: test binary
