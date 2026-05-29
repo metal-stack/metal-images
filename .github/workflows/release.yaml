@@ -31,7 +31,7 @@ jobs:
           DISTRO_VERSIONS: |
             [
               "ubuntu/24.04",
-              "capms-ubuntu/1.32.9",
+              "capms-ubuntu/1.34.5",
               "firewall/3.0-ubuntu",
               "debian/12",
               "debian-nvidia/12",
