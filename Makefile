@@ -61,9 +61,9 @@ nvidia:
 
 .PHONY: ubuntu
 ubuntu: test binary
-	mkdir -p "images/ubuntu/24.04"
-	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 docker buildx bake --no-cache ubuntu
-	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=24.04 ./test.sh
+	mkdir -p "images/ubuntu/26.04"
+	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=26.04 docker buildx bake --no-cache ubuntu
+	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=26.04 ./test.sh
 
 .PHONY: capms
 capms: test ubuntu
