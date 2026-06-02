@@ -3,6 +3,7 @@
 set -e
 
 echo "do machine test"
+# FIXME remove this || true once we understand why goss tests fail on google dns.
 ssh -F ./ssh/config -t machine <<"EOF" || true
     set -ex
     sudo ip addr add 100.100.0.2/24 dev lan0 || true
