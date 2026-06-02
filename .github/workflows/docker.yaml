@@ -303,7 +303,7 @@ jobs:
           set: _common.output+=type=registry
         env:
           OS_NAME: almalinux
-          SEMVER_MAJOR_MINOR: 9
+          SEMVER_MAJOR_MINOR: 10
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
 
       - name: Test and export docker image for almalinux based workers
