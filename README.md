@@ -11,10 +11,10 @@ Information about our initial architectural decisions can be found in [ARCHITECT
 
 Currently these images are supported:
 
-1. Debian 12
+1. Debian 13
 1. Ubuntu 24.04
 1. Firewall 3.0-ubuntu (based on Ubuntu 24.04)
-1. Nvidia (based on Debian 12)
+1. Nvidia (based on Debian 13)
 
 ## Unsupported Images
 
