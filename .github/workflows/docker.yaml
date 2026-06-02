@@ -294,7 +294,7 @@ jobs:
           SEMVER_MAJOR_MINOR: 9
 
       - name: Build image
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         with:
           source: .
           files: ./docker-bake.hcl
