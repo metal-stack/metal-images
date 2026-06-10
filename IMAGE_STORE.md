@@ -4,12 +4,12 @@ The metal-images tarballs are stored on <https://images.metal-stack.io/>. The ta
 The actual directory layout should look like:
 
 ```bash
-<imagesdir>/<os>/<major.minor>/<patch>/img.tar.lz4
-<imagesdir>/<os>/<major.minor>/<patch>/img.tar.lz4.md5
-<imagesdir>/<os>/<major.minor>/<patch>/packages.txt
+<imagesdir>/<os>/<major.minor>/img.tar.lz4
+<imagesdir>/<os>/<major.minor>/img.tar.lz4.md5
+<imagesdir>/<os>/<major.minor>/packages.txt
 ```
 
-Where `<imagesdir>` is `/` for the master branch and `/${CI_COMMIT_REF_SLUG}/` for branches and merge requests.
+Where `<imagesdir>` is `stable` for the master branch, `<patch>` for releases and `pull_requests/<pr-number>-<branch-name>` for pull requests.
 
 `<os>` is the name of the os in use, some images like `firewall` are derived from another os image (in this case the `ubuntu` image).
 
