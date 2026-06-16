@@ -18,7 +18,7 @@ target "_common_args" {
     args = {
         IGNITION_BRANCH = "v0.36.2"
         GOLLDPD_VERSION = "v0.4.12"
-        CRI_VERSION = "v1.35.0"
+        CRI_VERSION = "v1.36.0"
         ICE_VERSION = "2.4.5"
         ICE_PKG_VERSION = "1.3.53.0"
     }
