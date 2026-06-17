@@ -17,7 +17,7 @@ FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
-    NFTABLES_EXPORTER_VERSION=v0.4.3
+    NFTABLES_EXPORTER_VERSION=v0.4.4
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.
@@ -48,8 +48,6 @@ RUN /suricata-and-chrony-installation.sh
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
- && systemctl disable systemd-time-wait-sync.service \
- && systemctl mask systemd-time-wait-sync.service \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
