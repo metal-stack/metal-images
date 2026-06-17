@@ -6,7 +6,7 @@
 [![Build](https://github.com/metal-stack/metal-images/actions/workflows/docker.yaml/badge.svg?branch=master)](https://github.com/metal-stack/metal-images/actions)
 [![Slack](https://img.shields.io/badge/slack-metal--stack-brightgreen.svg?logo=slack)](https://metal-stack.slack.com/)
 
-This project builds operating system images that can be used for bare metal server deployments with [metal-stack](https://metal-stack.io).
+This project builds officially supported operating system images that can be used for bare metal server deployments with [metal-stack](https://metal-stack.io).
 Every OS image is built from a `Dockerfile`, exported to a `lz4` compressed tarball, and uploaded to [images.metal-stack.io](https://images.metal-stack.io/).
 
 More information about the image store is available in [IMAGE_STORE.md](./IMAGE_STORE.md).
@@ -27,6 +27,10 @@ Currently these images are supported:
 We also publish images that we need for special purposes but do not officially support. Use at your own risk.
 
 1. Almalinux 9
+
+## Building Custom Images (Out-Of-Tree)
+
+It is fully possible to build custom operating system images and provision them through the metal-stack without directly contributing them to this repository. Please find information [in the official docs](https://metal-stack.io/docs/next/operating-systems#building-your-own-images) and in the [image builder contract](./ARCHITECTURE.md).
 
 ### GPU Support
 
