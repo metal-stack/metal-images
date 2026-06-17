@@ -47,7 +47,7 @@ jobs:
           - name: debian
             version: 13
           - name: ubuntu
-            version: 24.04
+            version: 26.04
 
     steps:
       - name: Checkout
@@ -60,12 +60,12 @@ jobs:
           username: metal-stack
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Set up Go 1.26
         uses: actions/setup-go@v6
@@ -261,12 +261,12 @@ jobs:
           username: metal-stack
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Set up Go 1.26
         uses: actions/setup-go@v6
@@ -316,10 +316,7 @@ jobs:
           SEMVER_MAJOR_MINOR: 9
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
 
-      - uses: google-github-actions/setup-gcloud@v0
-        with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v3
 
       - name: Create GCS destination
         run: |
