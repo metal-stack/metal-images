@@ -48,8 +48,6 @@ RUN /suricata-and-chrony-installation.sh
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
- && systemctl disable systemd-time-wait-sync.service \
- && systemctl mask systemd-time-wait-sync.service \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
  && mkdir /etc/vrf \
  && echo chrony > /etc/vrf/systemd.conf \
