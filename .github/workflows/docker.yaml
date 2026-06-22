@@ -291,7 +291,7 @@ jobs:
         shell: bash
         run: ./prepare.sh almalinux
         env:
-          SEMVER_MAJOR_MINOR: 9
+          SEMVER_MAJOR_MINOR: 10
 
       - name: Build image
         uses: docker/bake-action@v7
