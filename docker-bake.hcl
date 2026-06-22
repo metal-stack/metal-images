@@ -31,7 +31,7 @@ target "almalinux" {
         ctx = "./almalinux/context"
     }
     args = {
-        BASE_OS_VERSION = 9
+        BASE_OS_VERSION = 10
         FRR_VERSION="frr-stable"
     }
     tags = ["ghcr.io/metal-stack/almalinux:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]

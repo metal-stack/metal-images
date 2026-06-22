@@ -81,6 +81,6 @@ firewall: test binary
 
 .PHONY: almalinux
 almalinux: test binary
-	mkdir -p "images/almalinux/9"
-	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 docker buildx bake --no-cache almalinux
-	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=9 ./test.sh
+	mkdir -p "images/almalinux/10"
+	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=10 docker buildx bake --no-cache almalinux
+	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=10 ./test.sh

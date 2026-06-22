@@ -35,7 +35,7 @@ jobs:
               "firewall/3.0-ubuntu",
               "debian/13",
               "debian-nvidia/13",
-              "almalinux/9"
+              "almalinux/10"
             ]
 
       - name: Update release body
