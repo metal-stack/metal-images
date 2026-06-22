@@ -26,7 +26,7 @@ Currently these images are supported:
 
 We also publish images that we need for special purposes but do not officially support. Use at your own risk.
 
-1. Almalinux 9
+1. Almalinux 10
 
 ## Building Custom Images (Out-Of-Tree)
 

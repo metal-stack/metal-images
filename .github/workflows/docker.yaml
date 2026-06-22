@@ -313,7 +313,7 @@ jobs:
         env:
           IMG_PKG_COMMAND: rpm -qa
           OS_NAME: almalinux
-          SEMVER_MAJOR_MINOR: 9
+          SEMVER_MAJOR_MINOR: 10
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
 
       - uses: google-github-actions/setup-gcloud@v3
