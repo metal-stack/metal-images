@@ -75,9 +75,9 @@ capms: test ubuntu
 
 .PHONY: firewall
 firewall: test binary
-	mkdir -p "images/firewall/3.0-ubuntu"
-	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache ubuntu-firewall
-	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh
+	mkdir -p "images/firewall/3.0"
+	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0 docker buildx bake --no-cache debian-firewall
+	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0 ./test.sh
 
 .PHONY: almalinux
 almalinux: test binary

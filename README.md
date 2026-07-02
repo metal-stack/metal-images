@@ -19,7 +19,7 @@ Currently these images are supported:
 
 1. Debian 13
 1. Ubuntu 26.04
-1. Firewall 3.0-ubuntu (based on Ubuntu 26.04)
+1. Firewall 3.0 (based on Debian 13)
 1. Nvidia (based on Debian 13)
 
 ## Unsupported Images

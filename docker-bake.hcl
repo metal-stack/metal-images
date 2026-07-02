@@ -101,16 +101,6 @@ target "ubuntu" {
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
-target "ubuntu-firewall" {
-    inherits = ["_common"]
-    dockerfile = "./firewall/Dockerfile"
-    contexts = {
-        baseapp = "target:ubuntu"
-        ctx = "./firewall/context"
-    }
-    tags = ["ghcr.io/metal-stack/firewall:3.0-ubuntu${SEMVER_PATCH}"]
-}
-
 variable "KUBE_VERSION" {}
 variable "KUBE_APT_BRANCH" {}
 

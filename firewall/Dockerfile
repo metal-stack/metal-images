@@ -7,7 +7,7 @@ FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-a
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} AS firewall-controller-artifacts
 
-FROM ghcr.io/metal-stack/frr:10.4.1-ubuntu-24.04 AS frr-artifacts
+FROM ghcr.io/metal-stack/frr:10.4.1-debian-12 AS frr-artifacts
 
 FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
@@ -18,6 +18,15 @@ FROM baseapp
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NFTABLES_EXPORTER_VERSION=v0.4.5
+
+# Install newer kernel from trixie-backports for VRF/nftables fixes not in 6.12
+RUN echo "deb http://deb.debian.org/debian trixie-backports main" > /etc/apt/sources.list.d/backports.list \
+ && apt-get update --quiet \
+ && apt-get remove --yes linux-image-* \
+ && apt-get install --yes -t trixie-backports linux-image-amd64 \
+ && rm -f /etc/apt/sources.list.d/backports.list \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # iptables reinstallation is required, so that image works in mini-lab environment.
 # Most likely the reason is that old config is removed during deletion.

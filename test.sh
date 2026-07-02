@@ -9,7 +9,7 @@ set -ex
 # WORKS 					OS_NAME=debian CIS_VERSION=v4.1-4 ./test.sh ghcr.io/metal-stack/debian:13-stable
 # WORKS_WITH_METAL_KERNEL   OS_NAME=debian-nvidia ./test.sh ghcr.io/metal-stack/debian-nvidia:13-stable
 # WORKS_WITH_METAL_KERNEL   OS_NAME=debian ./test.sh ghcr.io/metal-stack/debian:13-stable
-# WORKS					    OS_NAME=firewall ./test.sh ghcr.io/metal-stack/firewall:3.0-ubuntu-stable
+# WORKS					    OS_NAME=firewall ./test.sh ghcr.io/metal-stack/firewall:3.0-stable
 # WORKS                     OS_NAME=almalinux ./test.sh ghcr.io/metal-stack/almalinux:10-stable
 
 export MACHINE_TYPE="machine"
