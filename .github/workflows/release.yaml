@@ -32,7 +32,7 @@ jobs:
             [
               "ubuntu/26.04",
               "capms-ubuntu/1.32.9",
-              "firewall/3.0-ubuntu",
+              "firewall/3.0",
               "debian/13",
               "debian-nvidia/13",
               "almalinux/10"
