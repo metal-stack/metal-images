@@ -86,11 +86,6 @@ jobs:
         with:
           args: --build-tags integration --timeout=3m
 
-      - name: build install
-        run: |
-          make clean
-          make binary
-
       - name: Prepare build environment
         shell: bash
         run: ./prepare.sh ${{ matrix.os.name }}
@@ -281,11 +276,6 @@ jobs:
         run: |
           [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "SEMVER_PATCH=-${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV || true
           [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "SEMVER_PATCH=-stable" >> $GITHUB_ENV || true
-
-      - name: build install
-        run: |
-          make clean
-          make binary
 
       - name: Prepare build environment
         shell: bash
