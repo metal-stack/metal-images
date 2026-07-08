@@ -2,12 +2,12 @@
 .idea
 .vagrant
 bin
-install-go
 images
 .vscode
 *.sock
 metal-kernel
 os-kernel
+os-installer
 disk.raw
 rootfs
 initramfs

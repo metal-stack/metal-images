@@ -42,7 +42,10 @@ wget -qO "${ROOTFS}/usr/local/bin/goss" "${GOSS_URL}"
 chmod 755 "${ROOTFS}/usr/local/bin/goss"
 
 echo "Run /install-go in the chroot environment"
-chroot ${ROOTFS} /bin/bash -lc "PATH=/sbin:$PATH MACHINE_TYPE='${MACHINE_TYPE}' INSTALL_FROM_CI=true /install-go"
+docker create --name os-installer ghcr.io/metal-stack/os-installer:v0.3.0
+docker cp os-installer:/os-installer ${ROOTFS}/os-installer
+docker rm os-installer
+chroot ${ROOTFS} /bin/bash -lc "PATH=/sbin:$PATH MACHINE_TYPE='${MACHINE_TYPE}' INSTALL_FROM_CI=true /os-installer"
 
 echo "Extract kernel from os"
 ls -alh ${ROOTFS}/boot/
