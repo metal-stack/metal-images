@@ -1,7 +1,7 @@
-ARG DROPTAILER_VERSION=v0.2.20
+ARG DROPTAILER_VERSION=v0.2.21
 ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.98.8
-ARG NODE_EXPORTER_VERSION=v1.11.1
+ARG NODE_EXPORTER_VERSION=v1.12.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -54,7 +54,10 @@ RUN systemctl disable chrony \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
  && systemctl enable nftables \
  && systemctl enable fever \
- && systemctl enable frr.service
+ && systemctl enable frr.service \
+ && systemctl enable ethtool-lan0.service \
+ && systemctl enable ethtool-lan1.service
+ 
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
