@@ -1,0 +1,12 @@
+[Unit]
+Description=Disable TSO on lan0
+After=network.target sys-subsystem-net-devices-lan0.device
+Wants=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ethtool -K lan0 tx-checksum-ipv4 off
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
