@@ -53,7 +53,7 @@ target "debian" {
         FRR_VERSION_DETAIL ="10.4.4-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
-        KERNEL_VERSION = "6.12.95+deb13"
+        KERNEL_VERSION = "6.12.96+deb13"
         CONTAINERD_VERSION = "2.1.5-1~debian.13~trixie"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
@@ -95,7 +95,7 @@ target "ubuntu" {
         FRR_VERSION_DETAIL ="10.4.4-0~ubuntu24.04.1"
         FRR_APT_CHANNEL ="noble"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.38"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.39"
         CONTAINERD_VERSION = "2.2.5-1~ubuntu.26.04~resolute"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
