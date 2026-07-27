@@ -53,13 +53,8 @@ target "debian" {
         FRR_VERSION_DETAIL ="10.4.4-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
-<<<<<<< HEAD
-        KERNEL_VERSION = "6.12.95+deb13"
-        CONTAINERD_VERSION = "2.2.6-1~debian.13~trixie"
-=======
         KERNEL_VERSION = "6.12.96+deb13"
-        CONTAINERD_VERSION = "2.1.5-1~debian.13~trixie"
->>>>>>> 65fc9c7193bb556cf24aaf85cb2eb6ad9cd55cb2
+        CONTAINERD_VERSION = "2.2.6-1~debian.13~trixie"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
