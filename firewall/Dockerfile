@@ -1,7 +1,7 @@
-ARG DROPTAILER_VERSION=v0.2.20
+ARG DROPTAILER_VERSION=v0.2.21
 ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.98.8
-ARG NODE_EXPORTER_VERSION=v1.11.1
+ARG NODE_EXPORTER_VERSION=v1.12.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -19,15 +19,12 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NFTABLES_EXPORTER_VERSION=v0.4.5
 
-# iptables reinstallation is required, so that image works in mini-lab environment.
-# Most likely the reason is that old config is removed during deletion.
+# Install bridge-utils as a requirement for frr
+# remove iptables as it is not required anymore from tailscale
 RUN apt-get update --quiet \
- && apt-get install --yes \
-    bridge-utils \
-    fever \
-    tcpdump \
  && apt-get remove --yes iptables \
- && apt install --yes iptables
+ && apt-get install --yes \
+    bridge-utils
 
 # Forcefully install frr from our own builds because upstream repo removes older patch versions
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
@@ -53,8 +50,10 @@ RUN systemctl disable chrony \
  && echo chrony > /etc/vrf/systemd.conf \
  && mv /lib/systemd/system/chrony.service /lib/systemd/system/chrony@.service \
  && systemctl enable nftables \
- && systemctl enable fever \
- && systemctl enable frr.service
+ && systemctl enable frr.service \
+ && systemctl enable ethtool-lan0.service \
+ && systemctl enable ethtool-lan1.service
+ 
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
