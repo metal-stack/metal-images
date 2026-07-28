@@ -19,6 +19,11 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
     NFTABLES_EXPORTER_VERSION=v0.4.5
 
+# Install bridge-utils as a requirement for frr
+RUN apt-get update --quiet \
+ && apt-get install --yes \
+    bridge-utils
+
 # Forcefully install frr from our own builds because upstream repo removes older patch versions
 COPY --from=frr-artifacts /artifacts/*.deb /tmp/
 RUN apt remove --yes frr* \
