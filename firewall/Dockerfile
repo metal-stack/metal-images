@@ -20,7 +20,9 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     NFTABLES_EXPORTER_VERSION=v0.4.5
 
 # Install bridge-utils as a requirement for frr
+# remove iptables as it is not required anymore from tailscale
 RUN apt-get update --quiet \
+ && apt-get remove --yes iptables \
  && apt-get install --yes \
     bridge-utils
 
