@@ -3,7 +3,6 @@ SHA := $(shell git rev-parse --short=8 HEAD)
 GITVERSION := $(shell git describe --long --all)
 BUILDDATE := $(shell date -Iseconds)
 VERSION := $(or ${VERSION},$(shell git describe --tags --exact-match 2> /dev/null || git symbolic-ref -q --short HEAD || git rev-parse --short HEAD))
-BINARY := install
 
 LINKMODE := -extldflags=-static \
 		 -X 'github.com/metal-stack/v.Version=$(VERSION)' \
@@ -12,44 +11,25 @@ LINKMODE := -extldflags=-static \
 		 -X 'github.com/metal-stack/v.BuildDate=$(BUILDDATE)'
 
 
-all: clean test binary
+all: clean test
 
 .PHONY: clean
 clean:
-	rm -f debian/context/install-go
-	rm -f almalinux/context/install-go
-	sudo umount test/rootfs/sys/firmware/efi/efivars
-	sudo umount test/rootfs/sys
-	sudo umount test/rootfs/proc
-	sudo umount test/rootfs/dev
-	sudo umount test/rootfs
 	rm -rf test/rootfs
 	rm -f test/disk.raw
 	rm -f test/initramfs
 	rm -f test/metal-kernel
 	rm -f test/os-kernel
+	rm -f test/os-installer
 	rm -rf images
 	rm -rf bin
-
-.PHONY: binary
-binary:
-	GGO_ENABLED=0 \
-		go build \
-			-trimpath \
-			-tags osusergo,netgo \
-			-o bin/$(BINARY) \
-			-ldflags "$(LINKMODE)" \
-		github.com/metal-stack/metal-images/cmd
-	strip bin/$(BINARY)
-	cp bin/$(BINARY) debian/context/install-go
-	cp bin/$(BINARY) almalinux/context/install-go
 
 .PHONY: test
 test:
 	GO_ENV=testing go test -race -cover ./...
 
 .PHONY: debian
-debian: test binary
+debian: test
 	mkdir -p "images/debian/13"
 	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache debian
 	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=13 ./test.sh
@@ -60,7 +40,7 @@ nvidia:
 	OS_NAME=nvidia OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache debian-nvidia
 
 .PHONY: ubuntu
-ubuntu: test binary
+ubuntu: test
 	mkdir -p "images/ubuntu/26.04"
 	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=26.04 docker buildx bake --no-cache ubuntu
 	OS_NAME=ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=26.04 ./test.sh
@@ -74,13 +54,13 @@ capms: test ubuntu
 	OS_NAME=capms-ubuntu OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=1.32.9 ./test.sh
 
 .PHONY: firewall
-firewall: test binary
+firewall: test
 	mkdir -p "images/firewall/3.0-ubuntu"
 	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu docker buildx bake --no-cache ubuntu-firewall
 	OS_NAME=firewall OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=3.0-ubuntu ./test.sh
 
 .PHONY: almalinux
-almalinux: test binary
+almalinux: test
 	mkdir -p "images/almalinux/10"
 	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=10 docker buildx bake --no-cache almalinux
 	OS_NAME=almalinux OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=10 ./test.sh

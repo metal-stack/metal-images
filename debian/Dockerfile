@@ -140,7 +140,6 @@ RUN set -ex \
 
 COPY --from=ctx . /
 # COPY --from=ctx etc/ /etc/
-# COPY --from=ctx install-go /
 
 # CIS 5.2.1 - permissions and ownership to root 600 for sshd_config
 RUN chmod 600 /etc/ssh/sshd_config \
