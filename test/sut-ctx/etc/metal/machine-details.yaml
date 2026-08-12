@@ -1,0 +1,38 @@
+id: 00000000-0000-0000-0000-ac1f6b7aeb90
+nics:
+    - mac: ac:1f:6b:7a:eb:90
+      name: eth4
+      identifier: ""
+      vendor: ""
+      model: ""
+      speed: 0
+      neighbors:
+        - mac: Eth1/4(Port1)
+          name: Ethernet3
+          identifier: ""
+          vendor: ""
+          model: ""
+          speed: 0
+          neighbors: []
+          hostname: ""
+      hostname: ""
+    - mac: ac:1f:6b:7a:eb:91
+      name: eth5
+      identifier: ""
+      vendor: ""
+      model: ""
+      speed: 0
+      neighbors:
+        - mac: Eth1/4(Port1)
+          name: Ethernet3
+          identifier: ""
+          vendor: ""
+          model: ""
+          speed: 0
+          neighbors: []
+          hostname: ""
+      hostname: ""
+password: EShBPP3mFJdVd4+p
+console: ttyS1,115200n8
+raidenabled: false
+root_uuid: 5c210377-c47e-46f8-adbb-444b452c78ac
