@@ -46,7 +46,7 @@ target "debian" {
     }
     args = {
         BASE_OS_NAME = "debian"
-        BASE_OS_VERSION = "trixie"
+        BASE_OS_VERSION = "trixie-slim"
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="trixie"
         FRR_VERSION ="frr-10.4"
