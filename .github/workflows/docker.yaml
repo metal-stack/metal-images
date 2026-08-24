@@ -100,6 +100,8 @@ jobs:
 
       - name: Build docker image for workers
         uses: docker/bake-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           source: .
           files: ./docker-bake.hcl
@@ -139,6 +141,8 @@ jobs:
 
       - name: Build docker image for firewalls
         uses: docker/bake-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           source: .
           files: ./docker-bake.hcl
@@ -173,6 +177,8 @@ jobs:
 
       - name: Build docker image for capms
         uses: docker/bake-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           source: .
           files: ./docker-bake.hcl
@@ -207,6 +213,8 @@ jobs:
 
       - name: Build docker image for debian-nvidia
         uses: docker/bake-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           source: .
           files: ./docker-bake.hcl
@@ -285,6 +293,8 @@ jobs:
 
       - name: Build image
         uses: docker/bake-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           source: .
           files: ./docker-bake.hcl
