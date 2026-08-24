@@ -99,7 +99,7 @@ jobs:
           sudo cp test/lz4 /usr/bin/lz4
 
       - name: Build docker image for workers
-        uses: docker/bake-action@v7
+        uses: docker/bake-action@v6
         with:
           source: .
           files: ./docker-bake.hcl
@@ -209,7 +209,7 @@ jobs:
         if: ${{ matrix.os.name == 'debian' }}
 
       - name: Build docker image for debian-nvidia
-        uses: docker/bake-action@v7
+        uses: docker/bake-action@v6
         with:
           source: .
           files: ./docker-bake.hcl
