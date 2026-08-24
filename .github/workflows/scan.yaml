@@ -1,0 +1,166 @@
+name: Scheduled Vulnerability Scan
+
+on:
+  schedule:
+    - cron: '6 0 * * *'  # Daily scan at 00:06
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  issues: write
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.generate.outputs.images }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: 🧮 Derive image matrix from docker-bake.hcl
+        id: generate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          images='[]'
+
+          # the repositories to scan are the ones the bake file publishes to; the
+          # currently maintained tag of each is the most recently pushed -stable tag
+          while read -r repo; do
+            tag=$(gh api --paginate "/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${repo}/versions?per_page=100" \
+              --jq '.[] | select(any(.metadata.container.tags[]?; endswith("-stable")))' \
+              | jq -rs 'sort_by(.updated_at) | last | .metadata.container.tags | map(select(endswith("-stable"))) | first // empty')
+
+            if [ -z "${tag}" ]; then
+              echo "no -stable tag published for ${repo}, skipping"
+              continue
+            fi
+
+            # ubuntu-based images (baseapp = target:ubuntu in docker-bake.hcl) run a
+            # mainline kernel, which the scan has to treat specially
+            case "${repo}" in
+              ubuntu|firewall|capms-ubuntu) mainline=true ;;
+              *) mainline=false ;;
+            esac
+
+            images=$(jq -c --arg name "${repo}" --arg tag "${tag}" --argjson mainline "${mainline}" \
+              '. + [{name: $name, tag: $tag, "mainline-kernel": $mainline}]' <<< "${images}")
+          done < <(grep -oE 'ghcr\.io/metal-stack/[a-z0-9-]+' docker-bake.hcl | sort -u | cut -d/ -f3)
+
+          echo "scanning: ${images}"
+          echo "images=${images}" >> "${GITHUB_OUTPUT}"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: generate-matrix
+
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.generate-matrix.outputs.images) }}
+
+    env:
+      IMAGE: ghcr.io/metal-stack/${{ matrix.image.name }}:${{ matrix.image.tag }}
+      ISSUE_TITLE: "🛑 Alert for vulnerable packages in the ${{ matrix.image.name }}:${{ matrix.image.tag }} image"
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: metal-stack
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📄 Extract SBOM attestation from image
+        run: |
+          # the signed debian kernel carries upstream=linux-signed-<arch>, but the
+          # debian security tracker keys kernel CVEs on the source package "linux",
+          # so without this rewrite the kernel gets no distro-based matching at all
+          docker buildx imagetools inspect "${IMAGE}" \
+            --format '{{ json .SBOM.SPDX }}' \
+            | jq '(.packages[].externalRefs[]? | select(.referenceType=="purl") | .referenceLocator) |= sub("upstream=linux-signed[^&]*"; "upstream=linux")' \
+            > sbom.spdx.json
+
+      - name: 📝 Prepare Grype config
+        run: |
+          # the generic linux-kernel package is matched against mainline kernel
+          # releases from NVD, which cannot account for distro backports; kernel
+          # CVEs are covered by the distro package (linux-image deb / kernel rpm).
+          # go-module matching over-reports because the binaries carry no function
+          # symbols, so it is disabled for now
+          cat > .grype.yaml <<'EOF'
+          ignore:
+            - package:
+                name: "linux-kernel"
+            - package:
+                type: "go-module"
+          EOF
+          # ubuntu-based images run a mainline kernel from kernel.ubuntu.com whose
+          # version cannot be assessed against the ubuntu archive security feed
+          if [ "${{ matrix.image.mainline-kernel }}" == "true" ]; then
+          cat >> .grype.yaml <<'EOF'
+            - package:
+                name: "linux-(image|modules|headers)-.*"
+          EOF
+          fi
+
+      - name: 🛡️ Run Grype scan on the SBOM
+        id: grype-scan
+        uses: anchore/scan-action@v6
+        continue-on-error: true
+        with:
+          sbom: sbom.spdx.json
+          fail-build: true
+          only-fixed: true
+          severity-cutoff: critical
+          output-format: table
+          output-file: scan-results.txt
+
+      - name: 📮 Create issue if vulnerabilities found
+        if: ${{ steps.grype-scan.outcome == 'failure' }}
+        run: |
+          # fingerprint of the detected vulnerability ids, so that daily runs
+          # only post to the issue when the findings actually changed
+          fingerprint=$(grep -oE '(CVE|GHSA|GO|DSA|USN|ALSA|ELSA)-[0-9a-zA-Z-]+' scan-results.txt | sort -u | sha256sum | cut -d' ' -f1)
+
+          {
+            echo "**The scheduled Grype scan of the SBOM attached to \`${IMAGE}\` detected fixable vulnerabilities**"
+            echo
+            echo '```'
+            head -c 60000 scan-results.txt
+            echo '```'
+            echo
+            echo "_Scan executed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)_"
+            echo
+            echo "Hint: This issue is updated by the scheduled scan whenever the findings change and will be closed automatically once a scan passes."
+            echo
+            echo "<!-- grype-fingerprint: ${fingerprint} -->"
+          } > issue-body.md
+
+          existing=$(gh issue list --repo "${GITHUB_REPOSITORY}" --state open --search "in:title \"${ISSUE_TITLE}\"" --json number --jq '.[0].number')
+
+          if [ -z "${existing}" ]; then
+            gh issue create --repo "${GITHUB_REPOSITORY}" --title "${ISSUE_TITLE}" --body-file issue-body.md \
+              --label security --label automated-alert
+            exit 0
+          fi
+
+          last_fingerprint=$(gh issue view "${existing}" --repo "${GITHUB_REPOSITORY}" --json body,comments \
+            --jq '[.body, .comments[].body] | map(capture("<!-- grype-fingerprint: (?<f>[0-9a-f]+) -->"; "g") | .f) | last // ""')
+
+          if [ "${last_fingerprint}" != "${fingerprint}" ]; then
+            gh issue comment "${existing}" --repo "${GITHUB_REPOSITORY}" --body-file issue-body.md
+          fi
+
+      - name: ✅ Close issue if no vulnerabilities found anymore
+        if: ${{ steps.grype-scan.outcome == 'success' }}
+        run: |
+          existing=$(gh issue list --repo "${GITHUB_REPOSITORY}" --state open --search "in:title \"${ISSUE_TITLE}\"" --json number --jq '.[0].number')
+
+          if [ -n "${existing}" ]; then
+            gh issue close "${existing}" --repo "${GITHUB_REPOSITORY}" \
+              --comment "The scheduled vulnerability scan passed for this image, closing."
+          fi
