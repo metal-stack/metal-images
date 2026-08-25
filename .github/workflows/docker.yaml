@@ -118,7 +118,7 @@ jobs:
           OS_NAME: ${{ matrix.os.name }}
           SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
-          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
 
       - name: Test and export docker image for workers
         run: |
@@ -150,7 +150,7 @@ jobs:
           OS_NAME: firewall
           SEMVER_MAJOR_MINOR: 3.0-ubuntu
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
-          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
         if: ${{ matrix.os.name == 'ubuntu' }}
 
       # TODO enable debian build again, actually droptailer and firewall-controller did not get enabled
@@ -187,7 +187,7 @@ jobs:
           OS_NAME: capms-ubuntu
           SEMVER_MAJOR_MINOR: 1.32.9
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
-          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
         if: ${{ matrix.os.name == 'ubuntu' }}
 
       - name: Test and export docker image for capms
@@ -220,7 +220,7 @@ jobs:
           OS_NAME: debian-nvidia
           SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
-          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
         if: ${{ matrix.os.name == 'debian' }}
 
       - name: Test and export docker image for debian-nvidia based workers
@@ -299,7 +299,7 @@ jobs:
           OS_NAME: almalinux
           SEMVER_MAJOR_MINOR: 10
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
-          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
 
       - name: Test and export docker image for almalinux based workers
         run: |
