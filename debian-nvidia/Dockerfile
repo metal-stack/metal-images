@@ -15,7 +15,7 @@ RUN set -ex \
  && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/debian13/x86_64/cuda-keyring_1.1-1_all.deb -o cuda-keyring_1.1-1_all.deb \
  && dpkg -i cuda-keyring_1.1-1_all.deb \
  && apt-get update \
- && apt-get install --yes \
+ && apt-get install --yes --no-install-recommends \
     nvidia-open
 
 # For newer versions of cuda, it might be worth looking at:
@@ -28,4 +28,4 @@ RUN set -ex \
     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
  && apt-get update \
- && apt-get install --yes nvidia-container-toolkit
+ && apt-get install --yes --no-install-recommends nvidia-container-toolkit
