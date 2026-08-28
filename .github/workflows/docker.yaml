@@ -215,7 +215,10 @@ jobs:
           files: ./docker-bake.hcl
           targets: debian-nvidia
           no-cache: true
-          set: _common.output+=type=registry
+          # FIXME sbom generation disabled for this image because sbom size exceeds 40MB limit of buildx
+          set: |
+            _common.output+=type=registry
+            debian-nvidia.attest=type=sbom,disabled=true
         env:
           OS_NAME: debian-nvidia
           SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
