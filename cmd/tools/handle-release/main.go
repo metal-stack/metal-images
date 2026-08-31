@@ -27,6 +27,7 @@ import (
 	"github.com/moby/term"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/metal-stack/metal-lib/pkg/genericcli/printers"
@@ -91,6 +92,9 @@ func run() error {
 		awsconfig.WithRegion(dummyRegion),
 		awsconfig.WithBaseEndpoint(endpoint),
 		awsconfig.WithCredentialsProvider(aws.AnonymousCredentials{}),
+		awsconfig.WithRetryer(func() aws.Retryer {
+			return retry.AddWithMaxAttempts(retry.NewStandard(), 3)
+		}),
 	)
 	if err != nil {
 		return err
