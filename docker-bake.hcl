@@ -50,7 +50,7 @@ target "debian" {
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="trixie"
         FRR_VERSION ="frr-10.7"
-        FRR_VERSION_DETAIL ="10.7.0-0~deb13u1"
+        FRR_VERSION_DETAIL ="10.7.1-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
         KERNEL_VERSION = "6.12.107+deb13"
@@ -92,7 +92,7 @@ target "ubuntu" {
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="resolute"
         FRR_VERSION ="frr-10.7"
-        FRR_VERSION_DETAIL ="10.7.0-0~ubuntu26.1"
+        FRR_VERSION_DETAIL ="10.7.1-0~ubuntu26.1"
         FRR_APT_CHANNEL ="resolute"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.48"
