@@ -24,10 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up Go 1.26
-        uses: actions/setup-go@v6
+      - name: Set up Go 1.27
+        uses: actions/setup-go@v7
         with:
-          go-version: '1.26.x'
+          go-version: '1.27.x'
           cache: false
 
       - name: Set up Docker
@@ -38,7 +38,6 @@ jobs:
 
   debian_ubuntu:
     name: Build Debian and Ubuntu based OS images
-    needs: test-go
     runs-on: self-hosted
 
     strategy:
@@ -67,10 +66,10 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Set up Go 1.26
-        uses: actions/setup-go@v6
+      - name: Set up Go 1.27
+        uses: actions/setup-go@v7
         with:
-          go-version: '1.26.x'
+          go-version: '1.27.x'
           cache: false
 
       - name: Set up Docker Buildx
@@ -212,7 +211,10 @@ jobs:
           files: ./docker-bake.hcl
           targets: debian-nvidia
           no-cache: true
-          set: _common.output+=type=registry
+          # FIXME sbom generation disabled for this image because sbom size exceeds 40MB limit of buildx
+          set: |
+            _common.output+=type=registry
+            debian-nvidia.attest=type=sbom,disabled=true
         env:
           OS_NAME: debian-nvidia
           SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
@@ -242,7 +244,6 @@ jobs:
 
   almalinux:
     name: Build Almalinux based OS image
-    needs: test-go
     runs-on: self-hosted
 
     steps:
@@ -263,10 +264,10 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Set up Go 1.26
-        uses: actions/setup-go@v6
+      - name: Set up Go 1.27
+        uses: actions/setup-go@v7
         with:
-          go-version: '1.26.x'
+          go-version: '1.27.x'
           cache: false
 
       - name: Set up Docker Buildx

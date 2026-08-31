@@ -49,11 +49,11 @@ target "debian" {
         BASE_OS_VERSION = "trixie"
         DOCKER_APT_OS = "debian"
         DOCKER_APT_CHANNEL ="trixie"
-        FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.4-0~deb13u1"
+        FRR_VERSION ="frr-10.7"
+        FRR_VERSION_DETAIL ="10.7.1-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
-        KERNEL_VERSION = "6.12.101+deb13"
+        KERNEL_VERSION = "6.12.107+deb13"
         CONTAINERD_VERSION = "2.2.6-1~debian.13~trixie"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
@@ -91,11 +91,11 @@ target "ubuntu" {
         BASE_OS_VERSION = "26.04"
         DOCKER_APT_OS = "ubuntu"
         DOCKER_APT_CHANNEL ="resolute"
-        FRR_VERSION ="frr-10.4"
-        FRR_VERSION_DETAIL ="10.4.4-0~ubuntu24.04.1"
-        FRR_APT_CHANNEL ="noble"
+        FRR_VERSION ="frr-10.7"
+        FRR_VERSION_DETAIL ="10.7.1-0~ubuntu26.1"
+        FRR_APT_CHANNEL ="resolute"
         # see https://kernel.ubuntu.com/mainline for available versions
-        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.40"
+        UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.48"
         CONTAINERD_VERSION = "2.2.6-1~ubuntu.26.04~resolute"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]

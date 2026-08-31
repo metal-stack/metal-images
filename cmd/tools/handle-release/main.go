@@ -21,10 +21,9 @@ import (
 	"google.golang.org/api/option"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/api/types/registry"
-	docker "github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/jsonmessage"
+	"github.com/moby/moby/api/types/registry"
+	moby "github.com/moby/moby/client"
+	"github.com/moby/moby/client/pkg/jsonmessage"
 	"github.com/moby/term"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -205,7 +204,7 @@ func tagImages(artifacts []*artifact) error {
 	)
 
 	ctx := context.Background()
-	cli, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithAPIVersionNegotiation())
+	cli, err := moby.New(moby.FromEnv)
 	if err != nil {
 		return fmt.Errorf("failed to create docker client: %v", err)
 	}
@@ -236,7 +235,7 @@ func tagImages(artifacts []*artifact) error {
 	for _, a := range artifacts {
 		sourceImage := a.dockerImage
 
-		pullReader, err := cli.ImagePull(ctx, sourceImage, image.PullOptions{All: false, RegistryAuth: authConfigBase64})
+		pullReader, err := cli.ImagePull(ctx, sourceImage, moby.ImagePullOptions{All: false, RegistryAuth: authConfigBase64})
 		if err != nil {
 			errs = append(errs, fmt.Errorf("image pull failed: %v", err))
 			return errors.Join(errs...)
@@ -253,13 +252,13 @@ func tagImages(artifacts []*artifact) error {
 		}
 
 		for _, t := range a.dockerTags {
-			err = cli.ImageTag(ctx, sourceImage, t)
+			_, err = cli.ImageTag(ctx, moby.ImageTagOptions{Source: sourceImage, Target: t})
 			if err != nil {
 				errs = append(errs, fmt.Errorf("image tag failed: %v", err))
 				return errors.Join(errs...)
 			}
 
-			pushReader, err := cli.ImagePush(ctx, t, image.PushOptions{RegistryAuth: authConfigBase64})
+			pushReader, err := cli.ImagePush(ctx, t, moby.ImagePushOptions{RegistryAuth: authConfigBase64})
 			if err != nil {
 				errs = append(errs, fmt.Errorf("image push failed: %v", err))
 				return errors.Join(errs...)
