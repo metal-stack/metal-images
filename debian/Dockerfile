@@ -72,6 +72,7 @@ RUN set -ex \
     systemd-sysv \
     systemd-timesyncd \
     tcpdump \
+    traceroute \
     tzdata \
     watchdog \
     wget \
