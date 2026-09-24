@@ -44,8 +44,6 @@ RUN set -ex \
  && apt-get upgrade --yes \
  && apt-get install --yes --no-install-recommends \
     apparmor-utils \
-    apt-transport-https \
-    apt-utils \
     ca-certificates \
     cloud-init \
     curl \
@@ -54,20 +52,13 @@ RUN set -ex \
     e2fsprogs \
     efibootmgr \
     ethtool \
-    gettext-base \
-    gnupg2 \
-    gpg-agent \
     grub-efi-amd64-bin \
-    grub2 \
-    haveged \
+    grub2-common \
     initramfs-tools \
-    ipmitool \
     iptables \
     iputils-ping \
     iproute2 \
     jq \
-    lsb-release \
-    locales \
     lvm2 \
     mdadm \
     nvme-cli \
@@ -80,11 +71,10 @@ RUN set -ex \
     systemd-sysv \
     systemd-timesyncd \
     tcpdump \
-    traceroute \
     tzdata \
     watchdog \
     wget \
-    vim \
+    vim-tiny \
     zstd \
  # since ubuntu 24.04 there is a ubuntu user with uid 1000 which conflicts with metal user
  && userdel -f ubuntu || true \
@@ -103,7 +93,8 @@ RUN set -ex \
  && curl -fLsS https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRI_VERSION}/crictl-${CRI_VERSION}-linux-amd64.tar.gz -o /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz \
  && tar -xf /tmp/crictl-${CRI_VERSION}-linux-amd64.tar.gz -C /usr/local/bin \
  && chown root:root /usr/local/bin/crictl \
- && echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale \
+ # C.UTF-8 is built into glibc, no need for the locales package
+ && echo "LANG=\"C.UTF-8\"" > /etc/default/locale \
  && cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
  # Switch to use iptables-legacy on worker nodes
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
@@ -125,14 +116,20 @@ RUN set -ex \
  # Remove cruft which is not needed or dangerous
  RUN set -ex \
  # remove dhclient which could lead to dangerous configurations, not present anymore on ubuntu 24.04
- && apt-get remove --yes isc-dhcp-client || true \
+ && apt-get purge --yes isc-dhcp-client || true \
  # remove netplan from ubuntu 24.04
- && apt-get remove --yes netplan.io || true \
+ && apt-get purge --yes netplan.io || true \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
- # Remove devel and orphaned packages
- && apt autoremove --yes \
+ # Remove devel and orphaned packages including their config files
+ && apt-get autoremove --purge --yes \
+ # purge config files left behind by removed packages
+ && dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' | awk '$1 == "rc" {print $2}' | xargs -r dpkg --purge \
  && rm -rf /tmp/* /var/log/apt/* \
+ # remove setuid bit from binaries only root needs on a node
+ && for f in chfn chsh newgrp gpasswd mount umount; do \
+      if [ -e /usr/bin/$f ]; then chmod u-s /usr/bin/$f; fi; \
+    done \
  # create directory to store metal-networker tmp files
  && mkdir -p /etc/metal/networker \
  # remove /etc/nvme/hostnqn and /etc/nvme/hostid as these should be unique per system
@@ -166,6 +163,4 @@ RUN systemctl set-default multi-user.target \
                      cloud-init-custom.service \
  && systemctl disable console-getty.service \
  && systemctl mask console-getty.service \
- && update-ca-certificates \
- # generate locale
- && locale-gen
+ && update-ca-certificates
