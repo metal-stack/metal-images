@@ -20,17 +20,15 @@ import (
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/moby/moby/api/types/registry"
 	moby "github.com/moby/moby/client"
 	"github.com/moby/moby/client/pkg/jsonmessage"
 	"github.com/moby/term"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/client"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/metal-stack/metal-lib/pkg/genericcli/printers"
 )
 
@@ -89,21 +87,20 @@ func run() error {
 		return fmt.Errorf("unable to unmarshal %s: %v", distroVersionsKey, err)
 	}
 
-	ss, err := session.NewSession(&aws.Config{
-		Endpoint:    &endpoint,
-		Region:      &dummyRegion,
-		Credentials: credentials.AnonymousCredentials,
-		Retryer: client.DefaultRetryer{
-			NumMaxRetries: 3,
-		},
-	})
+	ctx := context.Background()
+	awsCfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion(dummyRegion),
+		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
+	)
 	if err != nil {
 		return err
 	}
 
 	var (
-		client = s3.New(ss)
-		res    = map[string]artifact{}
+		client = s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+			o.BaseEndpoint = aws.String("https://" + endpoint)
+		})
+		res = map[string]artifact{}
 	)
 
 	gitRefNameVal, err := getEnvVar(gitRefNameKey)
@@ -111,12 +108,19 @@ func run() error {
 		return err
 	}
 
-	err = client.ListObjectsPages(&s3.ListObjectsInput{
-		Bucket: &bucket,
-		Prefix: &gcsPrefix,
-	}, func(objects *s3.ListObjectsOutput, lastPage bool) bool {
+	paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(gcsPrefix),
+	})
+
+	for paginator.HasMorePages() {
+		objects, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("cannot list s3 objects: %w", err)
+		}
+
 		for _, o := range objects.Contents {
-			key := *o.Key
+			key := aws.ToString(o.Key)
 
 			after, found := strings.CutPrefix(key, gcsPrefix)
 			if !found {
@@ -165,10 +169,6 @@ func run() error {
 			res[base] = a
 		}
 
-		return true
-	})
-	if err != nil {
-		return fmt.Errorf("cannot list s3 objects:%w", err)
 	}
 
 	var artifacts []*artifact
