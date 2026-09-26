@@ -1,6 +1,6 @@
 ARG BASE_OS_VERSION=10
 
-FROM golang:1.22-bullseye AS ignition-builder
+FROM golang:1.22-bookworm AS ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
