@@ -1,4 +1,4 @@
-ARG BASE_OS_VERSION=9
+ARG BASE_OS_VERSION=10
 
 FROM golang:1.22-bullseye AS ignition-builder
 ARG IGNITION_BRANCH
@@ -18,7 +18,7 @@ FROM almalinux:${BASE_OS_VERSION}
 ARG GOLLDPD_VERSION
 ARG FRR_VERSION
 
-COPY context/etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
+COPY --from=ctx etc/initramfs-tools/conf.d/ /etc/initramfs-tools/conf.d/
 COPY --from=ignition-builder /work/ignition/bin/amd64/ignition* /usr/local/bin/
 
 RUN set -ex \
@@ -80,11 +80,12 @@ RUN curl -fLsS https://github.com/metal-stack/go-lldpd/releases/download/${GOLLD
 
 # Install FRR see https://rpm.frrouting.org/ for available channels
 RUN set -ex \
- && curl -fLsS https://rpm.frrouting.org/repo/${FRR_VERSION}-repo.el9.noarch.rpm -o /tmp/frr-repo.rpm \
+ && curl -fLsS https://rpm.frrouting.org/repo/${FRR_VERSION}-repo.el10.noarch.rpm -o /tmp/frr-repo.rpm \
  && dnf install -y /tmp/frr-repo.rpm \
  && dnf install -y frr frr-pythontools
 
-COPY context/ /
+COPY --from=ctx . /
+# COPY --from=ctx ./context/etc/ /etc/
 # Set default target to multi-user.target - otherwise it will be graphical.target
 # Fix WantedBy= definition of frr.service - network-online
 # is a target that is not pulled in per default during startup
@@ -92,7 +93,6 @@ RUN systemctl set-default multi-user.target \
  && systemctl enable lldpd.service \
                      frr.service \
                      watchdog.service \
-                     serial-getty@ttyS1.service \
  && systemctl disable serial-getty@tty1.service \
  && systemctl mask serial-getty@tty1.service \
  && systemctl unmask getty.target \

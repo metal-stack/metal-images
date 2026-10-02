@@ -12,17 +12,18 @@ if [ -n "${GITHUB_BASE_REF}" ]; then
     # this is a pull request build
     PULL_REQUEST_NUMBER=$(echo "$GITHUB_REF" | awk -F / '{print $3}')
     BRANCH="${GITHUB_HEAD_REF##*/}"
-    echo "::set-env name=OUTPUT_FOLDER::/${PULL_REQUEST_NUMBER}-${BRANCH}"
+    OUTPUT_FOLDER="/${PULL_REQUEST_NUMBER}-${BRANCH}"
 else
     if [ "$BRANCH" = "master" ]; then
         # this is a build from stable branch
-        echo "::set-env name=OUTPUT_FOLDER::/stable"
+        OUTPUT_FOLDER="/stable"
     else
         # this is a release build
         echo "::set-env name=SEMVER_PATCH::$(date +%Y%m%d)"
-        echo "::set-env name=OUTPUT_FOLDER::/"
+        OUTPUT_FOLDER="/"
     fi
 fi
+echo "::set-env name=OUTPUT_FOLDER::${OUTPUT_FOLDER}"
 
 echo "Generating build metadata"
 mkdir -p "${OS_FLAVOR}/context/etc/metal"
@@ -37,3 +38,13 @@ EOF
 
 echo "remove old firecracker images"
 sudo rm -rf /var/lib/firecracker/image/* /var/lib/firecracker/kernel/*
+
+echo "create tarball output directory"
+mkdir -p "images${OUTPUT_FOLDER}/${OS_FLAVOR}/${SEMVER_MAJOR_MINOR}"
+
+echo "download cloud-hypervisor"
+CLOUD_HYPERVISOR_PATH="/usr/local/bin/cloud-hypervisor"
+CLOUD_HYPERVISOR_VERSION="v51.1"
+sudo rm -f ${CLOUD_HYPERVISOR_PATH}
+sudo wget -qO ${CLOUD_HYPERVISOR_PATH} https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/${CLOUD_HYPERVISOR_VERSION}/cloud-hypervisor-static
+sudo chmod +x ${CLOUD_HYPERVISOR_PATH}

@@ -18,7 +18,7 @@ jobs:
     # it adds a generated download table to the release body with images from the stable folder.
 
     # - name: Checkout
-    #   uses: actions/checkout@v4
+    #   uses: actions/checkout@v7
 
     # - name: Set up Go 1.20
     #   uses: actions/setup-go@v5

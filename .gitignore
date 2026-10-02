@@ -2,7 +2,15 @@
 .idea
 .vagrant
 bin
-install-go
 images
-footloose.*yaml
 .vscode
+*.sock
+metal-kernel
+os-kernel
+os-installer
+disk.raw
+rootfs
+initramfs
+downloads.md
+
+!capms/**/bin

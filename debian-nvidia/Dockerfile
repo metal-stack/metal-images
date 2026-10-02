@@ -1,30 +1,22 @@
-ARG BASE_OS_NAME
-ARG BASE_OS_VERSION
-ARG SEMVER_PATCH
+FROM baseapp
 
-FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}${SEMVER_PATCH}
-
+ARG KERNEL_VERSION
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
-    DEBIAN_FRONTEND="noninteractive" \
-    SEMVER_MAJOR_MINOR=${SEMVER_MAJOR_MINOR}
+    DEBIAN_FRONTEND="noninteractive"
 
-COPY context/ /
+COPY --from=ctx . /
 
 RUN set -ex \
  && rm -f /.dockerenv \
  && apt-get update \
- && apt-get remove --yes linux-image-*-amd64 \
- && apt-get install --yes -t bookworm-backports \
-    linux-image-amd64 \
-    linux-headers-amd64 \
-    dkms \
-    software-properties-common \
- && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb -o cuda-keyring_1.1-1_all.deb \
- && dpkg -i cuda-keyring_1.1-1_all.deb \
- && add-apt-repository contrib \
- && apt-get update \
  && apt-get install --yes \
-    cuda-drivers
+    linux-headers-${KERNEL_VERSION}-amd64 \
+    dkms \
+ && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/debian13/x86_64/cuda-keyring_1.1-1_all.deb -o cuda-keyring_1.1-1_all.deb \
+ && dpkg -i cuda-keyring_1.1-1_all.deb \
+ && apt-get update \
+ && apt-get install --yes --no-install-recommends \
+    nvidia-open
 
 # For newer versions of cuda, it might be worth looking at:
 # https://developer.nvidia.com/cuda-downloads
@@ -36,4 +28,4 @@ RUN set -ex \
     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
  && apt-get update \
- && apt-get install --yes nvidia-container-toolkit
+ && apt-get install --yes --no-install-recommends nvidia-container-toolkit

@@ -1,0 +1,9 @@
+Host machine
+    HostName fe80::203:ff:fe11:1101%%vm-br0
+    User metal
+    IdentityFile ./files/key
+    IdentitiesOnly yes
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    AddressFamily inet6
+    ConnectTimeout 20
