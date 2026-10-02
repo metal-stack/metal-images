@@ -47,8 +47,6 @@ target "debian" {
     args = {
         BASE_OS_NAME = "debian"
         BASE_OS_VERSION = "trixie"
-        DOCKER_APT_OS = "debian"
-        DOCKER_APT_CHANNEL ="trixie"
         FRR_VERSION ="frr-10.7"
         FRR_VERSION_DETAIL ="10.7.1-0~deb13u1"
         FRR_APT_CHANNEL ="trixie"
@@ -89,8 +87,6 @@ target "ubuntu" {
     args = {
         BASE_OS_NAME = "ubuntu"
         BASE_OS_VERSION = "26.04"
-        DOCKER_APT_OS = "ubuntu"
-        DOCKER_APT_CHANNEL ="resolute"
         FRR_VERSION ="frr-10.7"
         FRR_VERSION_DETAIL ="10.7.1-0~ubuntu26.1"
         FRR_APT_CHANNEL ="resolute"
