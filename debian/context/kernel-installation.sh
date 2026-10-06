@@ -13,7 +13,8 @@ if [ "${ID}" = "ubuntu" ] ; then
          --execute robots=off \
         https://kernel.ubuntu.com/mainline/${UBUNTU_MAINLINE_KERNEL_VERSION}/amd64/
 
-    apt-get install --yes \
+    # no recommends, otherwise the kernel pulls in grub-pc (BIOS) although we only boot via EFI
+    apt-get install --yes --no-install-recommends \
         /tmp/linux-image* \
         /tmp/linux-modules* \
         cpufrequtils \
