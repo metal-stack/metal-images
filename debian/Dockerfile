@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME=debian
 ARG BASE_OS_VERSION=trixie
 
-FROM golang:1.22-bookworm AS ignition-builder
+FROM golang:1.26-trixie AS ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
@@ -10,7 +10,11 @@ RUN set -ex \
  && git clone https://github.com/flatcar/ignition.git \
  && cd ignition \
  && git checkout ${IGNITION_BRANCH} \
- && make \
+ # newer go versions do not allow "go clean -cache" with package arguments anymore,
+ # cleaning the cache is pointless in a fresh build container anyway. The build script
+ # is patched outside of the checkout, otherwise the version would be marked as dirty.
+ && sed '/go clean -cache/d' build > /tmp/build \
+ && bash /tmp/build \
  && strip bin/amd64/ignition
 
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION}
