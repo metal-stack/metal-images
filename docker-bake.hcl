@@ -77,6 +77,16 @@ target "debian-nvidia" {
     tags = ["ghcr.io/metal-stack/debian-nvidia:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
 
+target "debian-stainless" {
+    inherits = ["_common"]
+    dockerfile = "./debian-stainless/Dockerfile"
+    contexts = {
+        baseapp = "target:debian"
+        ctx = "./debian-stainless/context"
+    }
+    tags = ["ghcr.io/metal-stack/debian-stainless:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
+}
+
 target "ubuntu" {
     inherits = ["_common", "_common_args"]
     dockerfile = "./debian/Dockerfile"
