@@ -148,8 +148,10 @@ RUN set -ex \
 COPY --from=ctx . /
 # COPY --from=ctx etc/ /etc/
 
+# the kernel installation script is part of the context, but only needed during the build
+RUN rm -f /kernel-installation.sh \
 # CIS 5.2.1 - permissions and ownership to root 600 for sshd_config
-RUN chmod 600 /etc/ssh/sshd_config \
+ && chmod 600 /etc/ssh/sshd_config \
  && chown root:root /etc/ssh/sshd_config \
 # sudoers should be 440 (root:root)
  && chmod 440 /etc/sudoers /etc/sudoers.d/* \
