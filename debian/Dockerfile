@@ -125,6 +125,12 @@ RUN set -ex \
  && apt-get purge --yes netplan.io || true \
  # restore a fake dhclient binary to make networking.service happy
  && ln -sf /bin/true /usr/sbin/dhclient \
+ # remove dhcpcd for the same reason, the dhcpcd-base package can not be purged because
+ # cloud-init depends on it, so the binary is diverted away and package upgrades do not restore it
+ && if [ -e /usr/sbin/dhcpcd ]; then \
+      dpkg-divert --local --rename --divert /usr/sbin/dhcpcd.disabled --add /usr/sbin/dhcpcd \
+      && rm -f /usr/sbin/dhcpcd.disabled; \
+    fi \
  # Remove devel and orphaned packages including their config files
  && apt-get autoremove --purge --yes \
  # purge config files left behind by removed packages
