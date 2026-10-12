@@ -2,8 +2,11 @@ ARG DROPTAILER_VERSION=v0.2.21
 ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.102.2
 ARG NODE_EXPORTER_VERSION=v1.12.1
+ARG NFTABLES_EXPORTER_VERSION=v0.5.0
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
+
+FROM ghcr.io/metal-stack/nftables-exporter:${NFTABLES_EXPORTER_VERSION} AS nftables-exporter-artifacts
 
 FROM ghcr.io/metal-stack/firewall-controller:${FIREWALL_CONTROLLER_VERSION} AS firewall-controller-artifacts
 
@@ -16,8 +19,7 @@ FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-
 FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
-    DEBIAN_FRONTEND="noninteractive" \
-    NFTABLES_EXPORTER_VERSION=v0.4.5
+    DEBIAN_FRONTEND="noninteractive"
 
 # Install bridge-utils as a requirement for frr
 # remove iptables as it is not required anymore from tailscale
@@ -71,12 +73,9 @@ COPY --from=tailscale-artifacts /usr/local/bin/tailscale /usr/local/bin/tailscal
 # Install node_exporter
 COPY --from=node_exporter-artifacts /bin/node_exporter /usr/local/bin/node_exporter
 
-# Install nftables-exporter
-WORKDIR /tmp/
-RUN curl -fLsS https://github.com/metal-stack/nftables-exporter/releases/download/${NFTABLES_EXPORTER_VERSION}/nftables-exporter-linux-amd64.tgz -o nftables-exporter.tgz \
- && tar xvf nftables-exporter.tgz -C / \
- && systemctl enable nftables-exporter \
- && rm -rf /tmp/*
+# Install and enable nftables-exporter
+COPY --from=nftables-exporter-artifacts /nftables-exporter /usr/bin/nftables-exporter
+RUN systemctl enable nftables-exporter
 
 # Remove getty overrides to enable console password again
 RUN rm -rf /etc/systemd/system/getty@.service.d /etc/systemd/system/serial-getty@.service.d
