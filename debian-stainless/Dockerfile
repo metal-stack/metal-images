@@ -38,9 +38,6 @@ RUN set -ex \
       | xargs -r rm -fv \
  # dangling symlinks, e.g. enabled apt-daily.timer and dpkg-db-backup.timer units or alternatives
  && find /etc/systemd /etc/alternatives /usr/bin /usr/sbin -xtype l -print -delete \
- # syft finds dpkg databases by the glob **/lib/dpkg/status, dpkg itself would not use this location
- && rm -rf /var/lib/dpkg \
- && install -D -m 0644 /tmp/status /usr/share/metal/sbom/lib/dpkg/status \
  && rm -rf /etc/apt /etc/dpkg /etc/debconf.conf \
            /var/lib/apt /var/cache/apt /var/cache/debconf /var/log/apt /var/log/dpkg.log /var/log/alternatives.log \
            /usr/share/perl* /usr/lib/x86_64-linux-gnu/perl* /usr/share/debconf /usr/share/keyrings \
@@ -73,7 +70,20 @@ RUN set -ex \
              ${k}/kernel/net/wireless; \
       depmod "$(basename ${k})"; \
     done \
- && rm -rf /tmp/* \
+ # keep the dpkg status and the checksums of the files which still exist for the SBOM,
+ # syft finds dpkg databases by the glob **/lib/dpkg/status, dpkg itself would not use this location
+ && SBOM_DB=/usr/share/metal/sbom/lib/dpkg \
+ && mkdir -p "${SBOM_DB}/info" \
+ && cp /tmp/status "${SBOM_DB}/status" \
+ && for p in $(awk '/^Package: /{ print $2 }' /tmp/status); do \
+      for m in "/var/lib/dpkg/info/${p}.md5sums" "/var/lib/dpkg/info/${p}:amd64.md5sums"; do \
+        [ -f "${m}" ] || continue; \
+        while read -r sum f; do \
+          if [ -e "/${f}" ] || [ -L "/${f}" ]; then echo "${sum}  ${f}"; fi; \
+        done < "${m}" > "${SBOM_DB}/info/$(basename "${m}")"; \
+      done; \
+    done \
+ && rm -rf /var/lib/dpkg /tmp/* \
  # fail if one of the removed tools is still present
  && for b in apt apt-get dpkg dpkg-query perl; do \
       if command -v "${b}"; then echo "${b} is still present"; exit 1; fi; \
