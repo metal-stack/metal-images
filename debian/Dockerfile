@@ -100,6 +100,9 @@ RUN set -ex \
  # Switch to use iptables-legacy on worker nodes
  && update-alternatives --set iptables /usr/sbin/iptables-legacy \
  && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy \
+ # without grub-pc nothing creates /boot/grub, but os-installer runs update-grub
+ # without a prior grub-install when INSTALL_FROM_CI is set
+ && mkdir -p /boot/grub \
  # install frr from frrouting debian package repo
  && curl -s https://deb.frrouting.org/frr/keys.gpg | tee /usr/share/keyrings/frrouting.gpg > /dev/null \
  && echo "deb [signed-by=/usr/share/keyrings/frrouting.gpg] https://deb.frrouting.org/frr ${FRR_APT_CHANNEL} ${FRR_VERSION}" > /etc/apt/sources.list.d/frr.list \
