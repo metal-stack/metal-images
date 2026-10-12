@@ -211,6 +211,40 @@ jobs:
           SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
         if: ${{ matrix.os.name == 'debian' }}
 
+      - name: Prepare build environment
+        shell: bash
+        run: ./prepare.sh debian-stainless
+        env:
+          SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+        if: ${{ matrix.os.name == 'debian' }}
+
+      - name: Build docker image for debian-stainless
+        uses: docker/bake-action@v7
+        with:
+          source: .
+          files: ./docker-bake.hcl
+          targets: debian-stainless
+          no-cache: true
+          set: _common.output+=type=registry
+        env:
+          OS_NAME: debian-stainless
+          SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+          SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
+        if: ${{ matrix.os.name == 'debian' }}
+
+      # no CIS benchmark, it needs apt to install its dependencies
+      - name: Test and export docker image for debian-stainless based workers
+        run: |
+          ./test.sh
+          ./export.sh
+        env:
+          # there is no dpkg in this image, the package list is generated during the build
+          IMG_PKG_COMMAND: cat /etc/metal/packages.txt
+          OS_NAME: debian-stainless
+          SEMVER_MAJOR_MINOR: ${{ matrix.os.version }}
+          SEMVER_PATCH: ${{ env.SEMVER_PATCH }}
+        if: ${{ matrix.os.name == 'debian' }}
+
       - name: Create GCS destination
         run: |
           [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "GCS_DEST=gs://$GCS_BUCKET/metal-os/pull_requests/" >> $GITHUB_ENV || true
