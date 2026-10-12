@@ -6,10 +6,7 @@ RUN set -ex \
  # crictl is the only binary shipped with debug symbols
  && strip /usr/local/bin/crictl
 
-FROM baseapp AS stripped
-
-# include this stage in the SBOM attestation, it still carries a (pruned) dpkg status file
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
+FROM baseapp
 
 # Remove everything which is not needed on a kubernetes node, especially the package management (apt, dpkg)
 # and perl. Nodes are never updated in place, they get reinstalled with a new image instead.
@@ -26,7 +23,7 @@ RUN set -ex \
  && dpkg-query -W -f='${Package} ${Version}\n' | awk -v re="${REMOVE_RE}" '$1 !~ re' > /etc/metal/packages.txt \
  # package-owned files have to be resolved before dpkg is gone
  && for p in $(dpkg-query -W -f='${Package}\n' | grep -E "${REMOVE_RE}"); do dpkg -L "${p}"; done | sort -u > /tmp/remove.list \
- # prune the status file to the remaining packages, it is only kept for the SBOM scan of this stage
+ # prune the status file to the remaining packages, it is kept outside of /var/lib/dpkg for the SBOM
  && awk -v re="^Package: (${PKG_RE})\$" 'BEGIN { RS=""; ORS="\n\n" } { split($0, l, "\n"); if (l[1] !~ re) print }' \
       /var/lib/dpkg/status > /tmp/status \
  # mkinitramfs asks dpkg for the architecture, it is called by os-installer on RAID setups
@@ -41,8 +38,9 @@ RUN set -ex \
       | xargs -r rm -fv \
  # dangling symlinks, e.g. enabled apt-daily.timer and dpkg-db-backup.timer units or alternatives
  && find /etc/systemd /etc/alternatives /usr/bin /usr/sbin -xtype l -print -delete \
- && find /var/lib/dpkg -mindepth 1 -delete \
- && cp /tmp/status /var/lib/dpkg/status \
+ # syft finds dpkg databases by the glob **/lib/dpkg/status, dpkg itself would not use this location
+ && rm -rf /var/lib/dpkg \
+ && install -D -m 0644 /tmp/status /usr/share/metal/sbom/lib/dpkg/status \
  && rm -rf /etc/apt /etc/dpkg /etc/debconf.conf \
            /var/lib/apt /var/cache/apt /var/cache/debconf /var/log/apt /var/log/dpkg.log /var/log/alternatives.log \
            /usr/share/perl* /usr/lib/x86_64-linux-gnu/perl* /usr/share/debconf /usr/share/keyrings \
@@ -84,8 +82,3 @@ RUN set -ex \
 # copied after the cleanup, otherwise the dpkg-reconfigure shim would be removed together with debconf
 COPY --from=ctx . /
 COPY --from=strip /usr/local/bin/crictl /usr/local/bin/crictl
-
-FROM stripped
-
-# the package database was only kept for the SBOM scan of the previous stage
-RUN rm -rf /var/lib/dpkg
