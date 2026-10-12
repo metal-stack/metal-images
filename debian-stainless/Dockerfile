@@ -1,3 +1,11 @@
+# the debian image has no binutils, strip in a throwaway stage which still has apt
+FROM baseapp AS strip
+RUN set -ex \
+ && apt-get update \
+ && apt-get install --yes --no-install-recommends binutils \
+ # crictl is the only binary shipped with debug symbols
+ && strip /usr/local/bin/crictl
+
 FROM baseapp AS stripped
 
 # include this stage in the SBOM attestation, it still carries a (pruned) dpkg status file
@@ -39,12 +47,24 @@ RUN set -ex \
            /var/lib/apt /var/cache/apt /var/cache/debconf /var/log/apt /var/log/dpkg.log /var/log/alternatives.log \
            /usr/share/perl* /usr/lib/x86_64-linux-gnu/perl* /usr/share/debconf /usr/share/keyrings \
            /usr/share/doc/* /usr/share/man/* /usr/share/info/* /usr/share/lintian /usr/share/bug /usr/share/menu \
+ # locale sources, only used by localedef, C.UTF-8 is built into glibc
+           /usr/share/i18n \
+ # os-installer only calls ignition
+           /usr/local/bin/ignition-validate \
+ # python test suite and pydoc topics, bytecode caches are regenerated on demand
+           /usr/lib/python3.*/test /usr/lib/python3.*/pydoc_data \
+ && find /usr/lib/python3* /usr/share/python3 -name __pycache__ -type d -prune -exec rm -rf {} + \
  && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name locale.alias -exec rm -rf {} + \
  # kernel modules a bare-metal kubernetes worker never loads
- # gpu/drm is kept for the BMC console, infiniband for RDMA setups
+ # drm is kept for the BMC console (ast, mgag200), infiniband for RDMA setups
  && for k in /usr/lib/modules/*; do \
       rm -rf ${k}/kernel/sound \
              ${k}/kernel/drivers/bluetooth \
+             ${k}/kernel/drivers/gpu/drm/amd \
+             ${k}/kernel/drivers/gpu/drm/i915 \
+             ${k}/kernel/drivers/gpu/drm/nouveau \
+             ${k}/kernel/drivers/gpu/drm/radeon \
+             ${k}/kernel/drivers/gpu/drm/xe \
              ${k}/kernel/drivers/iio \
              ${k}/kernel/drivers/input/joystick \
              ${k}/kernel/drivers/media \
@@ -63,6 +83,7 @@ RUN set -ex \
 
 # copied after the cleanup, otherwise the dpkg-reconfigure shim would be removed together with debconf
 COPY --from=ctx . /
+COPY --from=strip /usr/local/bin/crictl /usr/local/bin/crictl
 
 FROM stripped
 
