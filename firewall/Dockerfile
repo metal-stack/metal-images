@@ -2,7 +2,7 @@ ARG DROPTAILER_VERSION=v0.2.21
 ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.102.2
 ARG NODE_EXPORTER_VERSION=v1.12.1
-ARG NFTABLES_EXPORTER_VERSION=v0.5.0
+ARG NFTABLES_EXPORTER_VERSION=v0.5.1
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -75,6 +75,7 @@ COPY --from=node_exporter-artifacts /bin/node_exporter /usr/local/bin/node_expor
 
 # Install and enable nftables-exporter
 COPY --from=nftables-exporter-artifacts /nftables-exporter /usr/bin/nftables-exporter
+COPY --from=nftables-exporter-artifacts /nftables-exporter.service /etc/systemd/system/nftables-exporter.service
 RUN systemctl enable nftables-exporter
 
 # Remove getty overrides to enable console password again
