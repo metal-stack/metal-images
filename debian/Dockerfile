@@ -1,7 +1,7 @@
 ARG BASE_OS_NAME=debian
 ARG BASE_OS_VERSION=trixie
 
-FROM golang:1.26-trixie AS ignition-builder
+FROM golang:1.27-trixie AS ignition-builder
 ARG IGNITION_BRANCH
 WORKDIR /work
 RUN set -ex \
