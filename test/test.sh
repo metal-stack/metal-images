@@ -118,7 +118,22 @@ cloud-hypervisor ${INITRAMFS} \
   --net "tap=tap0,ip=100.100.0.3,mask=255.255.255.0,mac=00:03:00:11:11:01" \
   </dev/null >cloud-hypervisor.log 2>&1 &
 
-sleep 5
+echo "waiting for the VM to become reachable"
+reachable=false
+for _ in $(seq 1 30); do
+  if ssh -F ./ssh/config -o BatchMode=yes -o ConnectTimeout=5 machine true 2>/dev/null; then
+    reachable=true
+    break
+  fi
+  sleep 2
+done
+
+if [ "${reachable}" != true ]; then
+  echo "VM did not become reachable, aborting"
+  cat cloud-hypervisor.log || true
+  killall cloud-hypervisor || true
+  exit 1
+fi
 
 echo "do machine test"
 # FIXME remove this || true once we understand why goss tests fail on google dns.
