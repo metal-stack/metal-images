@@ -160,6 +160,7 @@ jobs:
         env:
           COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
         run: |
+            set -x
             echo "verify image signature"
             echo "${COSIGN_PUBLIC_KEY}" > cosign.pub
             cosign verify --key cosign.pub "${{ needs.build.outputs.image-ref }}"
@@ -171,7 +172,7 @@ jobs:
             chmod +x test/lz4
             ./test/lz4 -d -f img.tar.lz4 img.tar
 
-            echo "Testing ${image_ref}"
+            echo "Testing ${{ needs.build.outputs.image-ref }}"
 
             cd test
 
