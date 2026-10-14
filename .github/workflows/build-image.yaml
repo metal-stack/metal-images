@@ -25,11 +25,12 @@ on:
         required: true
       COSIGN_PASSWORD:
         required: true
+      COSIGN_PUBLIC_KEY:
+        required: true
       DOCKER_REGISTRY_PASSWORD:
         description: The registry password to login with. Falls back to the GITHUB_TOKEN CI secret.
         required: false
       GCP_SA_KEY:
-        description: The GCP service account json.
         required: true
 
     outputs:
@@ -45,7 +46,7 @@ jobs:
     name: Build Image
     runs-on: ubuntu-latest
     outputs:
-      image-ref: ${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}:${{ steps.tag.outputs.container_tag }}
+      image-ref: ${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}@${{ steps.push.outputs.digest }}
     steps:
     - name: Checkout
       uses: actions/checkout@v7
@@ -89,43 +90,26 @@ jobs:
         username: ${{ inputs.registry-username }}
         password: ${{ secrets.DOCKER_REGISTRY_PASSWORD != '' && secrets.DOCKER_REGISTRY_PASSWORD || secrets.GITHUB_TOKEN }}
 
-    - name: Install Oras
-      uses: oras-project/setup-oras@v2
-
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@v4.1.2
-
-    - name: Push OCI image
-      shell: bash
-      run: |
-        echo "extract and remove sbom"
-        tar -xf ./img.tar sbom.spdx.json
-        tar --delete -f ./img.tar sbom.spdx.json
-        jq '.predicate' sbom.spdx.json > sbom.predicate.spdx.json
-
-        image_tag=${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}:${{ steps.tag.outputs.container_tag }}
-
-        echo "compress image"
-        lz4 -f -9 ./img.tar img.tar.lz4
-
-        echo "pushing to ${image_tag}"
-
-        md5sum img.tar.lz4 > img.tar.lz4.md5
-        sha512sum img.tar.lz4 > img.tar.lz4.sha512
-
-        digest=$(oras push ${image_tag} \
-            --artifact-type application/vnd.metal-stack.os-image.v1 \
-            img.tar.lz4:application/vnd.metal-stack.os-image.v1.tar+lz4 \
-            --format go-template \
-            --template "{{ .digest }}")
-
-        image_digest=${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}@${digest}
-
-        cosign sign --yes --key env://COSIGN_PRIVATE_KEY --signing-config .github/signing-config.json ${image_tag} ${image_digest}
-        cosign attest --yes --key env://COSIGN_PRIVATE_KEY --signing-config .github/signing-config.json --type spdxjson --predicate sbom.predicate.spdx.json ${image_digest}
+    - name: Push image
+      id: push
+      uses: ./.github/actions/oras-push
       env:
         COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      with:
+        image: ${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}
+        tag: ${{ steps.tag.outputs.container_tag }}
+        artifact-type: application/vnd.metal-stack.os-image.v1
+        media-type: application/vnd.metal-stack.os-image.v1.tar+lz4
+        file: img.tar.lz4
+        sbom: sbom.spdx.predicate.json
+        pre-push-command: |
+          # extract the sbom
+          tar -xf ./img.tar sbom.spdx.json
+          tar --delete -f ./img.tar sbom.spdx.json
+          jq '.predicate' sbom.spdx.json > sbom.spdx.predicate.json
+
+          lz4 -f -9 ./img.tar img.tar.lz4
 
     # - uses: google-github-actions/auth@v3
     #   with:
@@ -137,19 +121,28 @@ jobs:
     # - name: Upload image tarballs to GCS
     #   shell: bash
     #   run: |
+        # md5sum img.tar.lz4 > img.tar.lz4.md5
+        # sha512sum img.tar.lz4 > img.tar.lz4.sha512
         # cd image
         # gcloud storage cp --cache-control=no-store --recursive . gs://${{ inputs.bucket }}/${{ inputs.path-prefix }}/${{ steps.tag.outputs.folder }}/
 
   test:
-    name: Test metal-image
+    name: Test Image
     runs-on: self-hosted
+    timeout-minutes: 30
     needs:
       - build
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Prepare tests
+      - name: Install Oras
+        uses: oras-project/setup-oras@v2
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Prepare
         shell: bash
         run: |
             echo "remove old firecracker images"
@@ -162,23 +155,27 @@ jobs:
             sudo wget -qO ${CLOUD_HYPERVISOR_PATH} https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/${CLOUD_HYPERVISOR_VERSION}/cloud-hypervisor-static
             sudo chmod +x ${CLOUD_HYPERVISOR_PATH}
 
-      - name: Run tests
+      - name: Run
         shell: bash
+        env:
+          COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
         run: |
-            echo "Testing ${{ needs.build.outputs.image-ref }}"
+            echo "verify image signature"
+            echo "${COSIGN_PUBLIC_KEY}" > cosign.pub
+            cosign verify --key cosign.pub "${{ needs.build.outputs.image-ref }}"
 
-            cosign verify --key ${COSIGN_PUBLIC_KEY} "${{ needs.build.outputs.image-ref }}"
-            cosign verify-attestation --key ${COSIGN_PUBLIC_KEY} --type spdxjson "${{ needs.build.outputs.image-ref }}"
+            echo "download image"
+            timeout 300 oras pull "${{ needs.build.outputs.image-ref }}"
+
+            echo "decompress image tar"
+            chmod +x test/lz4
+            ./test/lz4 -d -f img.tar.lz4 img.tar
+
+            echo "Testing ${image_ref}"
 
             cd test
 
             chmod 0600 ./files/key
             chmod 0644 ./files/key.pub
 
-            # sudo MACHINE_TYPE="${MACHINE_TYPE}" \
-            # OS_NAME="${OS_NAME}" \
-            # OUTPUT_FOLDER="${OUTPUT_FOLDER}" \
-            # SEMVER_MAJOR_MINOR="${SEMVER_MAJOR_MINOR}" \
-            # ./00_create_disk.sh
-            # sudo OS_NAME="${OS_NAME}" ./01_start_vm.sh
-            # sudo OS_NAME="${OS_NAME}" MACHINE_TYPE="${MACHINE_TYPE}" CIS_VERSION="${CIS_VERSION}" ./02_run_tests_in_vm.sh
+            sudo OS_NAME="${{ inputs.target }}" ./test.sh
