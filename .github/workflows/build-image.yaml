@@ -106,7 +106,6 @@ jobs:
         pre-push-command: |
           # extract the sbom
           tar -xf ./img.tar sbom.spdx.json
-          tar --delete -f ./img.tar sbom.spdx.json
           jq '.predicate' sbom.spdx.json > sbom.spdx.predicate.json
 
           lz4 -f -9 ./img.tar img.tar.lz4
