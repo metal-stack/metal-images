@@ -12,5 +12,6 @@ disk.raw
 rootfs
 initramfs
 downloads.md
+cloud-hypervisor.log
 
 !capms/**/bin
