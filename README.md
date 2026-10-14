@@ -36,6 +36,10 @@ It is fully possible to build custom operating system images and provision them 
 
 GPU support for workers are available by using the `debian-nvidia` images. Please check our official documentation at [metal-stack.io](https://metal-stack.io/docs/gpu-workers) how to get this running on Kubernetes.
 
+### Stainless Debian
+
+The `debian-stainless` images are derived from the `debian` images and stripped down to what is needed on a Kubernetes worker node. They come without package management (`apt`, `dpkg`), `perl`, documentation and kernel modules for hardware which is not present in a server (sound, wireless, bluetooth, ...). These images can not be updated in place, nodes have to be reinstalled with a newer image instead. The list of installed packages is available in `/etc/metal/packages.txt`, the dpkg status of the installed packages is kept in `/usr/share/metal/sbom/lib/dpkg/status` for SBOM generation and vulnerability scanning with syft.
+
 ## How new images become usable in a metal-stack partition
 
 Images are synchronized to partitions using a service called [metal-image-cache-sync](https://github.com/metal-stack/metal-image-cache-sync). This service mirrors the public operating system images to the management servers and transparently serves the metal-images within a partition.
@@ -81,6 +85,9 @@ make firewall
 
 # for nvidia images
 make nvidia
+
+# for stainless debian images
+make debian-stainless
 
 # for almalinux images
 make almalinux
