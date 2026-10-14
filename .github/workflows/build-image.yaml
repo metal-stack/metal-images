@@ -1,0 +1,184 @@
+---
+name: Build, test and push metal-image
+
+on:
+  workflow_call:
+    inputs:
+        registry:
+            description: The registry to publish the container artifact to.
+            default: ghcr.io
+            required: false
+            type: string
+        registry-username:
+            description: The registry username to login with.
+            default: ${{ github.actor }}
+            required: false
+            type: string
+
+        target:
+            description: The image target in the docker-bake definition
+            required: true
+            type: string
+
+    secrets:
+      COSIGN_PRIVATE_KEY:
+        required: true
+      COSIGN_PASSWORD:
+        required: true
+      DOCKER_REGISTRY_PASSWORD:
+        description: The registry password to login with. Falls back to the GITHUB_TOKEN CI secret.
+        required: false
+      GCP_SA_KEY:
+        description: The GCP service account json.
+        required: true
+
+    outputs:
+        image-ref:
+          description: The OCI image tag.
+          value: ${{ jobs.build.outputs.image-ref }}
+
+env:
+  GCS_BUCKET: images.metal-pod.io
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    outputs:
+      image-ref: ${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}:${{ steps.tag.outputs.container_tag }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Make tags
+      id: tag
+      uses: metal-stack/actions-common/.github/actions/push-tags@v1
+      with:
+        default-branch-folder: stable
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Write build meta
+      shell: bash
+      run: |
+        dir=$(dirname $(docker buildx bake -f docker-bake-v2.hcl --print ${{ inputs.target }} | jq -r '.target.${{ inputs.target }}.dockerfile'))
+
+        mkdir -p "${dir}/context/etc/metal"
+        cat > "${dir}/context/etc/metal/build.yaml" <<EOF
+        builddate: '$(date --iso-8601=seconds)'
+        commit_ref: '${{ github.ref_name }}'
+        commit_sha1: '${{ github.sha }}'
+        gitrepo: '${{ github.repository }}'
+        EOF
+
+        cat "${dir}/context/etc/metal/build.yaml"
+
+    - name: Build image
+      uses: docker/bake-action@v7
+      with:
+        source: .
+        files: ./docker-bake-v2.hcl
+        targets: ${{ inputs.target }}
+        no-cache: true
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v4
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.registry-username }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWORD != '' && secrets.DOCKER_REGISTRY_PASSWORD || secrets.GITHUB_TOKEN }}
+
+    - name: Install Oras
+      uses: oras-project/setup-oras@v2
+
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v4.1.2
+
+    - name: Push OCI image
+      shell: bash
+      run: |
+        echo "extract and remove sbom"
+        tar -xf ./img.tar sbom.spdx.json
+        tar --delete -f ./img.tar sbom.spdx.json
+        jq '.predicate' sbom.spdx.json > sbom.predicate.spdx.json
+
+        image_tag=${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}:${{ steps.tag.outputs.container_tag }}
+
+        echo "compress image"
+        lz4 -f -9 ./img.tar img.tar.lz4
+
+        echo "pushing to ${image_tag}"
+
+        md5sum img.tar.lz4 > img.tar.lz4.md5
+        sha512sum img.tar.lz4 > img.tar.lz4.sha512
+
+        digest=$(oras push ${image_tag} \
+            --artifact-type application/vnd.metal-stack.os-image.v1 \
+            img.tar.lz4:application/vnd.metal-stack.os-image.v1.tar+lz4 \
+            --format go-template \
+            --template "{{ .digest }}")
+
+        image_digest=${{ inputs.registry }}/${{ github.repository }}/${{ inputs.target }}@${digest}
+
+        cosign sign --yes --key env://COSIGN_PRIVATE_KEY --signing-config .github/signing-config.json ${image_tag} ${image_digest}
+        cosign attest --yes --key env://COSIGN_PRIVATE_KEY --signing-config .github/signing-config.json --type spdxjson --predicate sbom.predicate.spdx.json ${image_digest}
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+    # - uses: google-github-actions/auth@v3
+    #   with:
+    #     credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    # - name: Setup gcloud
+    #   uses: google-github-actions/setup-gcloud@v3
+
+    # - name: Upload image tarballs to GCS
+    #   shell: bash
+    #   run: |
+        # cd image
+        # gcloud storage cp --cache-control=no-store --recursive . gs://${{ inputs.bucket }}/${{ inputs.path-prefix }}/${{ steps.tag.outputs.folder }}/
+
+  test:
+    name: Test metal-image
+    runs-on: self-hosted
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Prepare tests
+        shell: bash
+        run: |
+            echo "remove old firecracker images"
+            sudo rm -rf /var/lib/firecracker/image/* /var/lib/firecracker/kernel/*
+
+            echo "download cloud-hypervisor"
+            CLOUD_HYPERVISOR_PATH="/usr/local/bin/cloud-hypervisor"
+            CLOUD_HYPERVISOR_VERSION="v51.1"
+            sudo rm -f ${CLOUD_HYPERVISOR_PATH}
+            sudo wget -qO ${CLOUD_HYPERVISOR_PATH} https://github.com/cloud-hypervisor/cloud-hypervisor/releases/download/${CLOUD_HYPERVISOR_VERSION}/cloud-hypervisor-static
+            sudo chmod +x ${CLOUD_HYPERVISOR_PATH}
+
+      - name: Run tests
+        shell: bash
+        run: |
+            echo "Testing ${{ needs.build.outputs.image-ref }}"
+
+            cosign verify --key ${COSIGN_PUBLIC_KEY} "${{ needs.build.outputs.image-ref }}"
+            cosign verify-attestation --key ${COSIGN_PUBLIC_KEY} --type spdxjson "${{ needs.build.outputs.image-ref }}"
+
+            cd test
+
+            chmod 0600 ./files/key
+            chmod 0644 ./files/key.pub
+
+            # sudo MACHINE_TYPE="${MACHINE_TYPE}" \
+            # OS_NAME="${OS_NAME}" \
+            # OUTPUT_FOLDER="${OUTPUT_FOLDER}" \
+            # SEMVER_MAJOR_MINOR="${SEMVER_MAJOR_MINOR}" \
+            # ./00_create_disk.sh
+            # sudo OS_NAME="${OS_NAME}" ./01_start_vm.sh
+            # sudo OS_NAME="${OS_NAME}" MACHINE_TYPE="${MACHINE_TYPE}" CIS_VERSION="${CIS_VERSION}" ./02_run_tests_in_vm.sh
