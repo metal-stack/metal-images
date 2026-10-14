@@ -30,7 +30,6 @@ ARG UBUNTU_MAINLINE_KERNEL_VERSION
 ARG ICE_VERSION
 ARG ICE_PKG_VERSION
 ARG CONTAINERD_VERSION
-ARG RUNC_VERSION
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
     DEBIAN_FRONTEND="noninteractive" \
@@ -98,7 +97,8 @@ RUN set -ex \
  && mkdir -p /var/bin/containerruntimes /etc/containerd \
  && ls -l /lib/systemd/system \
  # install runc
- && curl -fLsS https://github.com/opencontainers/runc/releases/download/v${RUNC_VERSION}/runc.amd64 -o /usr/bin/runc \
+ && RUNC_VERSION="$(curl -fLsS https://raw.githubusercontent.com/containerd/containerd/refs/tags/v${CONTAINERD_VERSION}/script/setup/runc-version)" \
+ && curl -fLsS https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.amd64 -o /usr/bin/runc \
  && chmod 755 /usr/bin/runc \
  # generate a default containerd config because the one coming with the package prevents GNA to create a proper config for cgroup v2
  && /usr/bin/containerd config default > /etc/containerd/config.toml \

@@ -53,7 +53,6 @@ target "debian" {
       # see https://packages.debian.org/trixie/kernel/ for available versions
         KERNEL_VERSION = "6.12.111+deb13"
         CONTAINERD_VERSION = "2.2.10"
-        RUNC_VERSION = "1.3.6"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -94,7 +93,6 @@ target "ubuntu" {
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.55"
         CONTAINERD_VERSION = "2.2.10"
-        RUNC_VERSION = "1.3.6"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
