@@ -158,6 +158,14 @@ command:
   "internet is reachable":
     exec: "curl https://one.one.one.one"
     exit-status: 0
+{{ if ne .Env.OS "almalinux" }}
+  # crictl is downloaded from the cri-tools releases, make sure it can talk to containerd
+  "crictl: runtime info is available":
+    exec: "crictl info"
+    exit-status: 0
+    stdout:
+    - "RuntimeReady"
+{{ end }}
 {{ end }}
 {{ if ne .Env.OS "almalinux" }}
   "systemd: timer for logrotation exists":
