@@ -11,6 +11,12 @@ user:
     home: /home/metal
     uid: 1000
 file:
+{{ if eq .Env.OS_NAME "debian-stainless" }}
+  "/usr/sbin/sshd":
+    exists: false
+  "/usr/bin/ssh":
+    exists: false
+{{ end }}
   "/etc/systemd/network/10-lan0.link":
     exists: true
     contents:
@@ -111,9 +117,11 @@ service:
   frr:
     enabled: true
     running: true
+{{ if ne .Env.OS_NAME "debian-stainless" }}
   ssh:
     enabled: true
     running: true
+{{ end }}
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
 {{ if ne .Env.OS "almalinux" }}

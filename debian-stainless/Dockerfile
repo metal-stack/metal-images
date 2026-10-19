@@ -15,6 +15,7 @@ RUN set -ex \
                  perl perl-base perl-modules-.* libperl.* libtext-charwidth-perl libtext-wrapi18n-perl \
                  debian-archive-keyring gpgv sqv ucf sensible-utils runit-helper linux-base adduser \
                  dhcpcd-base \
+                 openssh-server openssh-client openssh-sftp-server libfido2-1 libcbor0.10 \
                  wget apparmor-utils python3-apparmor python3-libapparmor media-types gettext-base eject" \
  # regular expressions, no globbing while joining them
  && PKG_RE="$(set -f; echo ${REMOVE_PKGS} | tr ' ' '|')" \
@@ -36,9 +37,16 @@ RUN set -ex \
  && find /usr/bin /usr/sbin /usr/lib /usr/share -type f -perm /111 \
       -exec sh -c 'for f; do head -n1 "$f" | grep -q "^#!.*perl" && echo "$f"; done; true' _ {} + \
       | xargs -r rm -fv \
- # dangling symlinks, e.g. enabled apt-daily.timer and dpkg-db-backup.timer units or alternatives
- && find /etc/systemd /etc/alternatives /usr/bin /usr/sbin -xtype l -print -delete \
+ # dangling symlinks, e.g. enabled apt-daily.timer and dpkg-db-backup.timer units, alternatives or sysv init links
+ && find /etc/systemd /etc/alternatives /etc/rc?.d /usr/bin /usr/sbin -xtype l -print -delete \
+ # privilege separation user of sshd
+ && userdel sshd \
  && rm -rf /etc/apt /etc/dpkg /etc/debconf.conf \
+ # sshd_config from the debian image, host keys generated in the postinst and the .wants dirs of the ssh units
+           /etc/ssh /etc/sv/ssh /etc/systemd/system/ssh*.wants /etc/systemd/system/sshd*.wants \
+           /usr/lib/openssh /usr/share/openssh /usr/share/runit/meta/ssh /var/log/runit/ssh /run/sshd \
+           /var/lib/ucf/cache/:etc:ssh:sshd_config /var/lib/systemd/deb-systemd-helper-enabled/*ssh* \
+           /var/lib/systemd/deb-systemd-helper-enabled/multi-user.target.wants/ssh.service \
            /var/lib/apt /var/cache/apt /var/cache/debconf /var/log/apt /var/log/dpkg.log /var/log/alternatives.log \
            /usr/share/perl* /usr/lib/x86_64-linux-gnu/perl* /usr/share/debconf /usr/share/keyrings \
            /usr/share/doc/* /usr/share/man/* /usr/share/info/* /usr/share/lintian /usr/share/bug /usr/share/menu \
@@ -85,7 +93,7 @@ RUN set -ex \
     done \
  && rm -rf /var/lib/dpkg /tmp/* \
  # fail if one of the removed tools is still present
- && for b in apt apt-get dpkg dpkg-query perl; do \
+ && for b in apt apt-get dpkg dpkg-query perl ssh sshd; do \
       if command -v "${b}"; then echo "${b} is still present"; exit 1; fi; \
     done
 

@@ -38,7 +38,7 @@ GPU support for workers are available by using the `debian-nvidia` images. Pleas
 
 ### Stainless Debian
 
-The `debian-stainless` images are derived from the `debian` images and stripped down to what is needed on a Kubernetes worker node. They come without package management (`apt`, `dpkg`), `perl`, documentation and kernel modules for hardware which is not present in a server (sound, wireless, bluetooth, ...). These images can not be updated in place, nodes have to be reinstalled with a newer image instead. The list of installed packages is available in `/etc/metal/packages.txt`, the dpkg status of the installed packages is kept in `/usr/share/metal/sbom/lib/dpkg/status` for SBOM generation and vulnerability scanning with syft.
+The `debian-stainless` images are derived from the `debian` images and stripped down to what is needed on a Kubernetes worker node. They come without package management (`apt`, `dpkg`), `perl`, OpenSSH (neither client nor server), documentation and kernel modules for hardware which is not present in a server (sound, wireless, bluetooth, ...). These images can not be updated in place, nodes have to be reinstalled with a newer image instead. The list of installed packages is available in `/etc/metal/packages.txt`, the dpkg status of the installed packages is kept in `/usr/share/metal/sbom/lib/dpkg/status` for SBOM generation and vulnerability scanning with syft.
 
 ## How new images become usable in a metal-stack partition
 
