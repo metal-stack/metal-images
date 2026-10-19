@@ -1,0 +1,6 @@
+enable frr.service
+# os-installer runs systemctl preset-all, which disables every service not enabled here;
+# the first match of all preset files sorted by name wins, so this has to sort before 90-default.preset which disables systemd-networkd
+enable systemd-networkd.service
+enable lldpd.service
+enable watchdog.service
