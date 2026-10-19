@@ -7,6 +7,8 @@ set -e
 
 export GOSS_VERSION=v0.4.7
 export OS=$ID
+# set by goss.service from /etc/metal/test.env, distinguishes e.g. debian and debian-stainless
+export OS_NAME=${OS_NAME:-$ID}
 export MACHINE_TYPE=$1
 export ROUTER_ID=10.1.0.1
 export ASN=4200003073

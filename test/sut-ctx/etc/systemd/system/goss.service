@@ -1,0 +1,23 @@
+[Unit]
+Description=Run the goss tests of the metal-images test suite
+Wants=network-online.target
+# test the booted system, this also keeps multi-user.target from waiting for the tests
+After=network-online.target multi-user.target
+
+[Service]
+Type=oneshot
+# written by 00_create_disk.sh
+EnvironmentFile=/etc/metal/test.env
+WorkingDirectory=/home/metal/inputs
+# network-online.target does not wait for systemd-networkd on every image (e.g. almalinux), lan0 can still be down
+ExecStartPre=-/usr/lib/systemd/systemd-networkd-wait-online --interface=lan0:degraded --timeout=120
+# the test VM is connected to vm-br0 on the host, which routes its traffic to the internet
+ExecStartPre=-ip addr add 100.100.0.2/24 dev lan0
+ExecStartPre=-ip route add default via 100.100.0.1 dev lan0
+# 02_run_tests_in_vm.sh waits for the exit code on the console, the VM has no ssh access in all images
+ExecStart=/bin/sh -c './goss.sh "${MACHINE_TYPE}"; echo "GOSS_EXIT_CODE=$?"'
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

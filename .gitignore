@@ -14,3 +14,4 @@ initramfs
 downloads.md
 
 !capms/**/bin
+console.log

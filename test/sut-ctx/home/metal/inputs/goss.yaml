@@ -153,6 +153,8 @@ process:
 dns:
   google.com:
     resolvable: true
+    # the default of 500ms is too short for the first lookup in the test VM
+    timeout: 5000
 command:
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "internet is reachable":
@@ -168,11 +170,12 @@ command:
       - "logrotate.timer"
       - "logrotate.service"
 {{ if ne .Env.OS_NAME "debian-nvidia" }}
+  # goss.service, which runs these tests, is the only job left
   "systemd: no pending jobs":
-    exec: systemctl list-jobs
+    exec: "systemctl list-jobs --no-legend | awk '$2 != \"goss.service\"' | wc -l"
     exit-status: 0
-    stdout:
-    - "No jobs running."
+    stdout: |
+      0
 {{ end }}
 {{ end }}
   "systemd: no failed units":

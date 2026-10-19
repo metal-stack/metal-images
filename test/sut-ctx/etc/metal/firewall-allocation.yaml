@@ -1,0 +1,42 @@
+uuid: 7a2bd5f6-0c3e-4a8b-9f1d-3e5c8b2a6d41
+name: firewall
+project: b5f26a3b-9a4d-48db-a6b3-d1dd4ac4abec
+networks:
+    - network: bc830818-2df1-4904-8c40-4322296d393d
+      prefixes:
+        - 10.0.16.0/22
+      ips:
+        - 10.0.16.2
+      networkType: NETWORK_TYPE_CHILD
+      natType: NAT_TYPE_NONE
+      vrf: "3981"
+      asn: 4200003073
+      project: b5f26a3b-9a4d-48db-a6b3-d1dd4ac4abec
+    - network: internet-vagrant-lab
+      prefixes:
+        - 185.1.2.0/24
+        - 185.27.0.0/22
+      destinationPrefixes:
+        - 0.0.0.0/0
+      ips:
+        - 185.1.2.3
+      networkType: NETWORK_TYPE_EXTERNAL
+      natType: NAT_TYPE_IPV4_MASQUERADE
+      vrf: "104009"
+      asn: 4200003073
+    - network: underlay-vagrant-lab
+      prefixes:
+        - 10.0.12.0/22
+      ips:
+        - 10.1.0.1
+      networkType: NETWORK_TYPE_UNDERLAY
+      natType: NAT_TYPE_NONE
+      asn: 4200003073
+hostname: firewall
+sshPublicKeys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIhLhxQwOgAaJmqZ9njCdfNw2+LTm24CwUTay6ZYlJBQ metal-images
+ntpServers:
+    - address: 1.pool.ntp.org
+dnsServers:
+    - ip: 8.8.4.4
+allocationType: MACHINE_ALLOCATION_TYPE_FIREWALL
