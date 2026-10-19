@@ -7,7 +7,7 @@ image:
     id: debian-13.0.20300101
     url: http://images.metal-stack.io/metal-os/stable/debian/13/img.tar.lz4
 networks:
-    - network: bc830818-2df1-4904-8c40-4322296d393d
+    - network: 2d7c53f0-e071-4deb-b82b-c6ff9de45dad
       prefixes:
         - 10.0.16.0/22
       ips:
