@@ -3,7 +3,9 @@
 set -x
 
 unmount () {
-  umount ${ROOTFS}/sys/firmware/efi/efivars
+  if mountpoint -q ${ROOTFS}/sys/firmware/efi/efivars; then
+    umount ${ROOTFS}/sys/firmware/efi/efivars
+  fi
   umount ${ROOTFS}/sys
   umount ${ROOTFS}/proc
   umount ${ROOTFS}/dev
@@ -31,7 +33,10 @@ tar xf ${TAR} -C ${ROOTFS}/
 echo "Prepare chroot environment"
 mount -t proc proc "${ROOTFS}/proc"
 mount -t sysfs sys "${ROOTFS}/sys"
-mount -t efivarfs /sys/firmware/efi/efivars "${ROOTFS}/sys/firmware/efi/efivars"
+# efivarfs is only available on hosts booted via UEFI
+if [ -d /sys/firmware/efi/efivars ]; then
+  mount -t efivarfs /sys/firmware/efi/efivars "${ROOTFS}/sys/firmware/efi/efivars"
+fi
 mount --bind /dev "${ROOTFS}/dev"
 
 echo "Add sut-ctx"
@@ -39,14 +44,26 @@ rm -f "${ROOTFS}/etc/systemd/system/getty.target.wants/getty@tty1.service"
 cp -rf sut-ctx/* "${ROOTFS}/"
 mv "${ROOTFS}/etc/metal/${MACHINE_TYPE}.yaml" "${ROOTFS}/etc/metal/install.yaml"
 mv "${ROOTFS}/etc/metal/userdata-${MACHINE_TYPE}.json" "${ROOTFS}/etc/metal/userdata"
+if [ "${MACHINE_TYPE}" == "firewall" ]; then
+  mv "${ROOTFS}/etc/metal/firewall-allocation.yaml" "${ROOTFS}/etc/metal/machine-allocation.yaml"
+else
+  rm -f "${ROOTFS}/etc/metal/firewall-allocation.yaml"
+fi
 wget -qO "${ROOTFS}/usr/local/bin/goss" "${GOSS_URL}"
 chmod 755 "${ROOTFS}/usr/local/bin/goss"
+printf 'OS_NAME=%s\nMACHINE_TYPE=%s\n' "${OS_NAME}" "${MACHINE_TYPE}" > "${ROOTFS}/etc/metal/test.env"
 
-echo "Run /install-go in the chroot environment"
+echo "Run /os-installer in the chroot environment"
 docker create --name os-installer ghcr.io/metal-stack/os-installer:${OS_INSTALLER_VERSION}
 docker cp os-installer:/os-installer ${ROOTFS}/os-installer
 docker rm os-installer
-chroot ${ROOTFS} /bin/bash -lc "PATH=/sbin:$PATH MACHINE_TYPE='${MACHINE_TYPE}' INSTALL_FROM_CI=true /os-installer"
+# the image sets umask 077 for login shells (CIS 5.4.4); os-installer needs a normal
+# umask, otherwise e.g. systemd-networkd cannot read the generated .network files
+chroot ${ROOTFS} /bin/bash -lc "umask 022; PATH=/sbin:$PATH MACHINE_TYPE='${MACHINE_TYPE}' INSTALL_FROM_CI=true /os-installer"
+
+# enabled after the installation, os-installer runs systemctl preset-all on almalinux which removes it again;
+# systemctl is not available in the chroot of every image
+ln -sf /etc/systemd/system/goss.service "${ROOTFS}/etc/systemd/system/multi-user.target.wants/goss.service"
 
 echo "Extract kernel from os"
 ls -alh ${ROOTFS}/boot/
