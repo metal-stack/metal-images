@@ -18,7 +18,7 @@ target "_common_args" {
     args = {
         IGNITION_BRANCH = "v0.36.2"
         GOLLDPD_VERSION = "v0.4.12"
-        CRI_VERSION = "v1.36.0"
+        CRI_VERSION = "v1.37.0"
         ICE_VERSION = "2.4.5"
         ICE_PKG_VERSION = "1.3.53.0"
     }
@@ -52,7 +52,7 @@ target "debian" {
         FRR_APT_CHANNEL ="trixie"
       # see https://packages.debian.org/trixie/kernel/ for available versions
         KERNEL_VERSION = "6.12.113+deb13"
-        CONTAINERD_VERSION = "2.2.10"
+        CONTAINERD_VERSION = "2.3.7"
     }
     tags = ["ghcr.io/metal-stack/debian:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
@@ -92,7 +92,7 @@ target "ubuntu" {
         FRR_APT_CHANNEL ="resolute"
         # see https://kernel.ubuntu.com/mainline for available versions
         UBUNTU_MAINLINE_KERNEL_VERSION = "v6.18.57"
-        CONTAINERD_VERSION = "2.2.10"
+        CONTAINERD_VERSION = "2.3.7"
     }
     tags = ["ghcr.io/metal-stack/ubuntu:${SEMVER_MAJOR_MINOR}${SEMVER_PATCH}"]
 }
