@@ -1,6 +1,6 @@
 id: 00000000-0000-0000-0000-ac1f6b7aeb90
 nics:
-    - mac: ac:1f:6b:7a:eb:90
+    - mac: "00:03:00:11:11:01"
       name: eth4
       identifier: ""
       vendor: ""
@@ -16,7 +16,7 @@ nics:
           neighbors: []
           hostname: ""
       hostname: ""
-    - mac: ac:1f:6b:7a:eb:91
+    - mac: "00:03:00:11:12:01"
       name: eth5
       identifier: ""
       vendor: ""

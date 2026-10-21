@@ -2,17 +2,28 @@
 
 set -e
 
-echo "do machine test"
-# FIXME remove this || true once we understand why goss tests fail on google dns.
-ssh -F ./ssh/config -t machine <<"EOF" || true
-    set -ex
-    sudo ip addr add 100.100.0.2/24 dev lan0 || true
-    sudo ip route add default via 100.100.0.1 dev lan0 || true
-    cd /home/metal/inputs && sudo OS_NAME=${OS_NAME} ./goss.sh ${MACHINE_TYPE}
-    cd /home/metal/inputs && [ "${CIS_VERSION}" != "" ] && sudo CIS_VERSION=${CIS_VERSION} ./cis-benchmark.sh
-    echo "test completed"
-EOF
+TIMEOUT=${TIMEOUT:-900}
+
+echo "wait for the machine test, it is run by goss.service in the VM"
+rc=""
+for _ in $(seq "${TIMEOUT}"); do
+  rc=$(sed -n 's/.*GOSS_EXIT_CODE=\([0-9]*\).*/\1/p' ./console.log | head -n1)
+  if [ -n "${rc}" ]; then
+    break
+  fi
+  sleep 1
+done
+
+echo "console output of the VM"
+cat ./console.log
 
 echo "Terminating cloud-hypervisor processes"
 killall cloud-hypervisor
 rm -f ./my.sock
+
+if [ -z "${rc}" ]; then
+  echo "goss tests did not finish within ${TIMEOUT}s"
+  exit 1
+fi
+echo "goss tests finished with exit code ${rc}"
+exit "${rc}"
