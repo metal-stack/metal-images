@@ -67,8 +67,13 @@ RUN set -ex \
            /usr/bin/mtracebis \
  # python test suite and pydoc topics, bytecode caches are regenerated on demand
            /usr/lib/python3.*/test /usr/lib/python3.*/pydoc_data \
+ # sources of the hardware database, the compiled /usr/lib/udev/hwdb.bin is kept
+           /usr/lib/udev/hwdb.d \
  && find /usr/lib/python3* /usr/share/python3 -name __pycache__ -type d -prune -exec rm -rf {} + \
  && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name locale.alias -exec rm -rf {} + \
+ # without the sources a rebuild would only compile files from /etc/udev/hwdb.d into /etc/udev/hwdb.bin,
+ # which takes precedence over /usr/lib/udev/hwdb.bin
+ && systemctl mask systemd-hwdb-update.service \
  # kernel modules a bare-metal kubernetes worker never loads
  # drm is kept for the BMC console (ast, mgag200), infiniband for RDMA setups
  && for k in /usr/lib/modules/*; do \
