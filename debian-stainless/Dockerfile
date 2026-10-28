@@ -18,6 +18,7 @@ RUN set -ex \
                  openssh-server openssh-client openssh-sftp-server libfido2-1 libcbor0.10 \
                  curl libcurl4t64 libnghttp2-14 libnghttp3-9 libpsl5t64 librtmp1 libssh2-1t64 libbrotli1 \
                  libfreetype6 libpng16-16t64 \
+                 libgnutls30t64 libp11-kit0 libnettle8t64 libhogweed6t64 libtasn1-6 libldap2 libsasl2-2 libsasl2-modules-db \
                  wget apparmor-utils python3-apparmor python3-libapparmor media-types gettext-base eject" \
  # regular expressions, no globbing while joining them
  && PKG_RE="$(set -f; echo ${REMOVE_PKGS} | tr ' ' '|')" \
