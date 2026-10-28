@@ -59,6 +59,12 @@ RUN set -ex \
            /usr/local/bin/ignition-validate \
  # the only user of libfreetype6, grub fonts are not generated on the node
            /usr/bin/grub-mkfont \
+ # frr daemons which are not enabled in /etc/frr/daemons, zebra, bgpd, staticd and mgmtd are kept
+           /usr/lib/frr/babeld /usr/lib/frr/bfdd /usr/lib/frr/eigrpd /usr/lib/frr/fabricd /usr/lib/frr/isisd \
+           /usr/lib/frr/ldpd /usr/lib/frr/nhrpd /usr/lib/frr/ospfd /usr/lib/frr/ospf6d /usr/lib/frr/pathd \
+           /usr/lib/frr/pbrd /usr/lib/frr/pimd /usr/lib/frr/pim6d /usr/lib/frr/ripd /usr/lib/frr/ripngd /usr/lib/frr/vrrpd \
+           /usr/lib/frr/ospfclient.py /usr/lib/frr/frr_babeltrace.py /usr/lib/x86_64-linux-gnu/frr/modules/pathd_pcep.so \
+           /usr/bin/mtracebis \
  # python test suite and pydoc topics, bytecode caches are regenerated on demand
            /usr/lib/python3.*/test /usr/lib/python3.*/pydoc_data \
  && find /usr/lib/python3* /usr/share/python3 -name __pycache__ -type d -prune -exec rm -rf {} + \
