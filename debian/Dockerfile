@@ -85,6 +85,8 @@ RUN set -ex \
  # install containerd
  && curl -fLsS https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz -o /tmp/containerd.tar.gz \
  && tar -xf /tmp/containerd.tar.gz -C /usr \
+ # load testing tool for containerd, not needed on a node
+ && rm -f /usr/bin/containerd-stress \
  && mkdir -p /var/bin/containerruntimes /etc/containerd \
  && ls -l /lib/systemd/system \
  # install runc
