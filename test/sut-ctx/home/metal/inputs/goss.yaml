@@ -11,6 +11,18 @@ user:
     home: /home/metal
     uid: 1000
 file:
+{{ if eq .Env.OS_NAME "debian-stainless" }}
+  "/usr/sbin/sshd":
+    exists: false
+  "/usr/bin/ssh":
+    exists: false
+  "/usr/bin/curl":
+    exists: false
+  "/usr/lib/udev/hwdb.d":
+    exists: false
+  "/usr/lib/udev/hwdb.bin":
+    exists: true
+{{ end }}
   "/etc/systemd/network/10-lan0.link":
     exists: true
     contents:
@@ -111,9 +123,11 @@ service:
   frr:
     enabled: true
     running: true
+{{ if ne .Env.OS_NAME "debian-stainless" }}
   ssh:
     enabled: true
     running: true
+{{ end }}
 {{ end }}
 {{ if eq .Env.MACHINE_TYPE "machine" }}
 {{ if ne .Env.OS "almalinux" }}
@@ -158,8 +172,20 @@ dns:
 command:
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "internet is reachable":
+{{ if eq .Env.OS_NAME "debian-stainless" }}
+    # no curl in debian-stainless, cloudflare answers the default python user agent with 403
+    exec: "python3 -c 'import urllib.request as u; u.urlopen(u.Request(\"https://one.one.one.one\", headers={\"User-Agent\": \"goss\"}), timeout=10)'"
+{{ else }}
     exec: "curl https://one.one.one.one"
+{{ end }}
     exit-status: 0
+{{ end }}
+{{ if eq .Env.OS_NAME "debian-stainless" }}
+  "systemd: hwdb update is masked":
+    exec: "systemctl is-enabled systemd-hwdb-update.service"
+    exit-status: 1
+    stdout: |
+      masked
 {{ end }}
 {{ if ne .Env.OS "almalinux" }}
   "systemd: timer for logrotation exists":

@@ -34,6 +34,12 @@ debian: test
 	OS_NAME=debian OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache debian
 	OS_NAME=debian OUTPUT_FOLDER="" CIS_VERSION=v4.1-4 SEMVER_MAJOR_MINOR=13 ./test.sh
 
+.PHONY: debian-stainless
+debian-stainless: test
+	mkdir -p "images/debian-stainless/13"
+	OS_NAME=debian-stainless OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 docker buildx bake --no-cache debian-stainless
+	OS_NAME=debian-stainless OUTPUT_FOLDER="" SEMVER_MAJOR_MINOR=13 ./test.sh
+
 .PHONY: nvidia
 nvidia:
 	mkdir -p "images/nvidia/13"
