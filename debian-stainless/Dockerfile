@@ -16,6 +16,8 @@ RUN set -ex \
                  debian-archive-keyring gpgv sqv ucf sensible-utils runit-helper linux-base adduser \
                  dhcpcd-base \
                  openssh-server openssh-client openssh-sftp-server libfido2-1 libcbor0.10 \
+                 curl libcurl4t64 libnghttp2-14 libnghttp3-9 libpsl5t64 librtmp1 libssh2-1t64 libbrotli1 \
+                 libfreetype6 libpng16-16t64 \
                  wget apparmor-utils python3-apparmor python3-libapparmor media-types gettext-base eject" \
  # regular expressions, no globbing while joining them
  && PKG_RE="$(set -f; echo ${REMOVE_PKGS} | tr ' ' '|')" \
@@ -54,6 +56,8 @@ RUN set -ex \
            /usr/share/i18n \
  # os-installer only calls ignition
            /usr/local/bin/ignition-validate \
+ # the only user of libfreetype6, grub fonts are not generated on the node
+           /usr/bin/grub-mkfont \
  # python test suite and pydoc topics, bytecode caches are regenerated on demand
            /usr/lib/python3.*/test /usr/lib/python3.*/pydoc_data \
  && find /usr/lib/python3* /usr/share/python3 -name __pycache__ -type d -prune -exec rm -rf {} + \
@@ -93,7 +97,7 @@ RUN set -ex \
     done \
  && rm -rf /var/lib/dpkg /tmp/* \
  # fail if one of the removed tools is still present
- && for b in apt apt-get dpkg dpkg-query perl ssh sshd; do \
+ && for b in apt apt-get dpkg dpkg-query perl ssh sshd curl grub-mkfont; do \
       if command -v "${b}"; then echo "${b} is still present"; exit 1; fi; \
     done
 

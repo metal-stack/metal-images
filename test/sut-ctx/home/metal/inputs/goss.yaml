@@ -16,6 +16,8 @@ file:
     exists: false
   "/usr/bin/ssh":
     exists: false
+  "/usr/bin/curl":
+    exists: false
 {{ end }}
   "/etc/systemd/network/10-lan0.link":
     exists: true
@@ -166,7 +168,12 @@ dns:
 command:
 {{ if eq .Env.MACHINE_TYPE "machine" }}
   "internet is reachable":
+{{ if eq .Env.OS_NAME "debian-stainless" }}
+    # no curl in debian-stainless, cloudflare answers the default python user agent with 403
+    exec: "python3 -c 'import urllib.request as u; u.urlopen(u.Request(\"https://one.one.one.one\", headers={\"User-Agent\": \"goss\"}), timeout=10)'"
+{{ else }}
     exec: "curl https://one.one.one.one"
+{{ end }}
     exit-status: 0
 {{ end }}
 {{ if ne .Env.OS "almalinux" }}
