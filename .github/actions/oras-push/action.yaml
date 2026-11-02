@@ -1,0 +1,71 @@
+---
+# TODO: this can be moved into actions-common and used for other OCI artifacts, too
+name: ORAS push
+description: Runs an optional pre-push command, pushes the image and optional SBOM as layers of an OCI artifact, signs it with cosign and exposes the manifest digest.
+
+inputs:
+  image:
+    description: The image name to push to, without tag, e.g. ghcr.io/org/repo/name.
+    required: true
+  tag:
+    description: The tag to push and sign.
+    required: true
+  artifact-type:
+    description: The artifact type of the pushed artifact.
+    required: true
+  file:
+    description: The file to push as the main layer.
+    required: true
+  media-type:
+    description: The media type of the main layer.
+    required: true
+  sbom:
+    description: Optional SPDX file to push as an additional application/spdx+json layer.
+    required: false
+    default: ""
+  pre-push-command:
+    description: Optional shell command(s) to run before pushing.
+    required: false
+    default: ""
+
+outputs:
+  digest:
+    description: The digest of the pushed manifest.
+    value: ${{ steps.push.outputs.digest }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install oras
+      uses: oras-project/setup-oras@v2
+
+    - name: Run pre-push command
+      if: inputs.pre-push-command != ''
+      shell: bash
+      run: ${{ inputs.pre-push-command }}
+
+    - name: oras push
+      id: push
+      shell: bash
+      run: |
+        layers=("${{ inputs.file }}:${{ inputs.media-type }}")
+
+        if [ -n "${{ inputs.sbom }}" ]; then
+          layers+=("${{ inputs.sbom }}:application/spdx+json")
+        fi
+
+        digest=$(oras push "${{ inputs.image }}:${{ inputs.tag }}" \
+            --artifact-type "${{ inputs.artifact-type }}" \
+            "${layers[@]}" \
+            --format go-template --template "{{ .digest }}")
+
+        echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+
+    - name: Install cosign
+      uses: sigstore/cosign-installer@v4.1.2
+
+    - name: cosign sign
+      shell: bash
+      run: |
+        cosign sign --yes --key env://COSIGN_PRIVATE_KEY \
+            "${{ inputs.image }}:${{ inputs.tag }}" "${{ inputs.image }}@${{ steps.push.outputs.digest }}"

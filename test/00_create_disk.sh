@@ -16,7 +16,7 @@ trap 'rc=$?; unmount; exit $rc' ERR
 
 GOSS_VERSION=v0.4.7
 GOSS_URL=https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64
-TAR=../images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar
+TAR=../img.tar
 DISK=disk.raw
 SIZE=4G
 ROOTFS=./rootfs
