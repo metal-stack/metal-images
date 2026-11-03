@@ -14,8 +14,8 @@ unmount () {
 
 trap 'rc=$?; unmount; exit $rc' ERR
 
-GOSS_VERSION=v0.4.10
-GOSS_URL=https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64
+GOSS_VERSION=0.4.10
+GOSS_URL=https://github.com/goss-org/goss/releases/download/v0.4.10/goss_${GOSS_VERSION}_linux_x86_64.tar.gz
 TAR=../images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar
 DISK=disk.raw
 SIZE=4G
