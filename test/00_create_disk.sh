@@ -14,13 +14,13 @@ unmount () {
 
 trap 'rc=$?; unmount; exit $rc' ERR
 
-GOSS_VERSION=v0.4.7
+GOSS_VERSION=v0.4.10
 GOSS_URL=https://github.com/goss-org/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64
 TAR=../images${OUTPUT_FOLDER}/${OS_NAME}/${SEMVER_MAJOR_MINOR}/img.tar
 DISK=disk.raw
 SIZE=4G
 ROOTFS=./rootfs
-OS_INSTALLER_VERSION=v0.3.1
+OS_INSTALLER_VERSION=v0.3.4
 
 echo "Extract tar file for a disk image"
 truncate -s "$SIZE" "$DISK"
