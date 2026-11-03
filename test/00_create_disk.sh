@@ -49,7 +49,9 @@ if [ "${MACHINE_TYPE}" == "firewall" ]; then
 else
   rm -f "${ROOTFS}/etc/metal/firewall-allocation.yaml"
 fi
-wget -qO "${ROOTFS}/usr/local/bin/goss" "${GOSS_URL}"
+wget -q "${GOSS_URL}"
+tar -xf goss_${GOSS_VERSION}_linux_x86_64.tar.gz goss
+mv goss "${ROOTFS}/usr/local/bin/goss"
 chmod 755 "${ROOTFS}/usr/local/bin/goss"
 printf 'OS_NAME=%s\nMACHINE_TYPE=%s\n' "${OS_NAME}" "${MACHINE_TYPE}" > "${ROOTFS}/etc/metal/test.env"
 
