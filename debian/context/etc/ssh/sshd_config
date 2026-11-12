@@ -98,8 +98,8 @@ MaxStartups 10:30:60
 #VersionAddendum none
 
 # CIS 5.2.18 - Ensure SSH access is limited
-AllowUsers metal
-AllowGroups sudo
+AllowUsers metal gardener
+AllowGroups sudo gardener
 DenyUsers nobody
 DenyGroups nobody nogroup
 
