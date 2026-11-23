@@ -1,0 +1,14 @@
+[Unit]
+Description=Suricata Intrusion Detection Service Exporter
+After=network.target
+After=suricata.service
+
+[Service]
+ExecStartPre=/bin/rm -f $PIDFILE
+ExecStart=/usr/bin/suricata_exporter
+ExecReload=/bin/kill -USR2 $MAINPID
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

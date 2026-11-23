@@ -3,6 +3,7 @@ ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.102.2
 ARG NODE_EXPORTER_VERSION=v1.12.1
 ARG NFTABLES_EXPORTER_VERSION=v0.5.1
+ARG SURICATA_EXPORTER_VERSION=0.6.2
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -44,6 +45,12 @@ COPY --from=ctx . /
 
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh
+
+# Install suricata-exporter
+RUN \
+ && curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz \
+ && tar -xf suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter \
+ && mv suricata_exporter /usr/bin/suricata_exporter
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
