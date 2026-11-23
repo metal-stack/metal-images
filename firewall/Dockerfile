@@ -48,8 +48,9 @@ COPY --from=ctx . /
 RUN /suricata-and-chrony-installation.sh
 
 # Install suricata-exporter
-RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz
-RUN tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter -C /usr/bin/suricata_exporter
+RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz \
+ && tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter -C /usr/bin/suricata_exporter \
+ && systemctl enable suricata-exporter.service
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
@@ -61,7 +62,6 @@ RUN systemctl disable chrony \
  && systemctl enable frr.service \
  && systemctl enable ethtool-lan0.service \
  && systemctl enable ethtool-lan1.service
- 
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service
