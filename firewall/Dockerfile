@@ -51,7 +51,8 @@ RUN /suricata-and-chrony-installation.sh
 
 # Install suricata-exporter
 RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz \
- && tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter -C /usr/bin/ \
+ && tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter \
+ && mv suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter /usr/bin/suricata_exporter \
  && systemctl enable suricata-exporter.service
 
 # Install evebox
