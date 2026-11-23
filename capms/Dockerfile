@@ -9,8 +9,8 @@ ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
 
 COPY --from=ctx . /
 
-RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg \
- && echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list \
+RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/Release.key -o /etc/apt/keyrings/kubernetes-apt-keyring.asc \
+ && echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/${KUBE_APT_BRANCH}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list \
  && apt update \
  && apt install --yes --no-install-recommends \
         kubeadm=${KUBE_VERSION}-1.1 \

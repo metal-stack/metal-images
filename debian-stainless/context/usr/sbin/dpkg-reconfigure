@@ -1,0 +1,5 @@
+#!/bin/sh
+# os-installer calls "dpkg-reconfigure grub-efi-amd64-bin" after update-grub. The postinst
+# of grub-efi-amd64-bin has nothing to do on an installed system and debian-stainless
+# comes without dpkg, so this is a no-op. Remove once os-installer does not call it anymore.
+exit 0

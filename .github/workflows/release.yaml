@@ -35,6 +35,7 @@ jobs:
               "firewall/3.0-ubuntu",
               "debian/13",
               "debian-nvidia/13",
+              "debian-stainless/13",
               "almalinux/10"
             ]
 
