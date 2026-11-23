@@ -3,7 +3,6 @@ ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.102.2
 ARG NODE_EXPORTER_VERSION=v1.12.1
 ARG NFTABLES_EXPORTER_VERSION=v0.5.1
-ARG SURICATA_EXPORTER_VERSION=0.6.2
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -20,7 +19,9 @@ FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-
 FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
-    DEBIAN_FRONTEND="noninteractive"
+    DEBIAN_FRONTEND="noninteractive" \
+    SURICATA_EXPORTER_VERSION=0.6.2
+
 
 # Install bridge-utils as a requirement for frr
 # remove iptables as it is not required anymore from tailscale
@@ -47,10 +48,8 @@ COPY --from=ctx . /
 RUN /suricata-and-chrony-installation.sh
 
 # Install suricata-exporter
-RUN \
- && curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz \
- && tar -xf suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter \
- && mv suricata_exporter /usr/bin/suricata_exporter
+RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz
+RUN tar -xf /tmp/suricata-exporter.tgz -C /usr/bin/suricata_exporter suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \

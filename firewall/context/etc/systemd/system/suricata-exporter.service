@@ -5,7 +5,7 @@ After=suricata.service
 
 [Service]
 ExecStartPre=/bin/rm -f $PIDFILE
-ExecStart=/usr/bin/suricata_exporter
+ExecStart=/usr/bin/suricata_exporter -suricata.socket-path=/run/suricata-command.socket
 ExecReload=/bin/kill -USR2 $MAINPID
 Restart=always
 RestartSec=60
