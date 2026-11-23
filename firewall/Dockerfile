@@ -49,7 +49,7 @@ RUN /suricata-and-chrony-installation.sh
 
 # Install suricata-exporter
 RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz
-RUN tar -xf /tmp/suricata-exporter.tgz -C /usr/bin/suricata_exporter suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter
+RUN tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter -C /usr/bin/suricata_exporter
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
