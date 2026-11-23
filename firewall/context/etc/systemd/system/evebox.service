@@ -1,0 +1,10 @@
+[Unit]
+Description=EveBox Agent
+
+[Service]
+Environment=EVEBOX_DATA_DIRECTORY=/var/lib/evebox
+EnvironmentFile=-/etc/default/evebox-agent
+ExecStart=/usr/bin/evebox agent
+
+[Install]
+WantedBy=multi-user.target

@@ -16,6 +16,8 @@ FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
 
+FROM jasonish/evebox:latest AS evebox-artifacts
+
 FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
@@ -51,6 +53,9 @@ RUN /suricata-and-chrony-installation.sh
 RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz \
  && tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter -C /usr/bin/ \
  && systemctl enable suricata-exporter.service
+
+# Install evebox
+COPY --from=evebox-artifacts /usr/bin/evebox /usr/bin/evebox
 
 RUN systemctl disable chrony \
  && systemctl mask chrony \
