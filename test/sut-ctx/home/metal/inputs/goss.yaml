@@ -138,6 +138,9 @@ service:
   suricata-update:
     enabled: true
     running: false
+  suricata-update.timer:
+    enabled: true
+    running: true
   nftables:
     enabled: true
     running: true
