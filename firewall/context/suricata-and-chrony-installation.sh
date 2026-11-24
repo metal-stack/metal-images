@@ -2,6 +2,14 @@
 set -e
 source /etc/os-release
 
+# The build context already contains files which are shipped as conffiles by the packages
+# installed below (e.g. /etc/logrotate.d/suricata, /etc/nftables.conf and /etc/suricata/update.yaml).
+# dpkg treats those files as locally created and prompts for a decision. As the build is
+# noninteractive the prompt hits EOF and dpkg aborts with
+# "end of file on stdin at conffile prompt", leaving the affected files as *.dpkg-new and the
+# package in state "iU" (unpacked but not configured). Keep our versions and never prompt.
+DPKG_OPTS=(-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold")
+
 if [ "${ID}" = "ubuntu" ] ; then
     echo "Ubuntu - Install suricata"
 
@@ -14,10 +22,10 @@ if [ "${ID}" = "ubuntu" ] ; then
 
     systemctl disable systemd-timesyncd
     apt-get update --quiet
-    apt-get install --yes --no-install-recommends chrony suricata suricata-update nftables || true
+    apt-get install --yes --no-install-recommends "${DPKG_OPTS[@]}" chrony suricata suricata-update nftables
 else
     echo "Debian - Install suricata"
-    apt-get install --yes --no-install-recommends chrony suricata suricata-update nftables || true
+    apt-get install --yes --no-install-recommends "${DPKG_OPTS[@]}" chrony suricata suricata-update nftables
     # remove testing list, otherwise doing update on the machine will show 100s of missing updates.
     rm -f /etc/apt/sources.list.d/testing.list
 fi
