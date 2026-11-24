@@ -3,6 +3,7 @@ ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.102.2
 ARG NODE_EXPORTER_VERSION=v1.12.1
 ARG NFTABLES_EXPORTER_VERSION=v0.5.1
+ARG EVEBOX_VERSION=0.32.0
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -16,7 +17,7 @@ FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
 
-FROM jasonish/evebox:latest AS evebox-artifacts
+FROM docker.io/jasonish/evebox:${EVEBOX_VERSION} AS evebox-artifacts
 
 FROM baseapp
 
