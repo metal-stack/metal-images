@@ -135,6 +135,10 @@ service:
   suricata-exporter:
     enabled: true
     running: true
+  # enabled on demand by the firewall-controller
+  evebox:
+    enabled: false
+    running: false
   suricata-update:
     enabled: true
     running: false
