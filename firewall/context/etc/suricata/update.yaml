@@ -21,6 +21,12 @@ modify-conf: /etc/suricata/modify.conf
 # List of files to ignore. Overridden by the --ignore command line option.
 ignore:
   - "*deleted.rules"
+  # The DNP3, Modbus and ENIP app-layer parsers are disabled by default in
+  # Suricata 8. Their event rules shipped by the distribution therefore cannot
+  # be parsed and make `suricata -T` (and thus suricata-update) fail.
+  - "dnp3-events.rules"
+  - "modbus-events.rules"
+  - "enip-events.rules"
 
 # Override the user-agent string.
 #user-agent: "Suricata-Update"
@@ -36,7 +42,7 @@ ignore:
 
 # Provide a command to reload the Suricata rules.
 # May be overridden by the --reload-command command line option.
-reload-command: sudo systemctl reload suricata
+reload-command: systemctl try-reload-or-restart --no-block suricata
 
 # Remote rule sources. Simply a list of URLs.
 sources:

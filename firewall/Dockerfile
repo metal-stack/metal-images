@@ -3,6 +3,7 @@ ARG FIREWALL_CONTROLLER_VERSION=v2.5.0
 ARG TAILSCALE_VERSION=v1.102.2
 ARG NODE_EXPORTER_VERSION=v1.12.1
 ARG NFTABLES_EXPORTER_VERSION=v0.5.1
+ARG EVEBOX_VERSION=0.32.0
 
 FROM ghcr.io/metal-stack/droptailer-client:${DROPTAILER_VERSION} AS droptailer-artifacts
 
@@ -16,10 +17,14 @@ FROM ghcr.io/tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale-artifacts
 
 FROM quay.io/prometheus/node-exporter:${NODE_EXPORTER_VERSION} AS node_exporter-artifacts
 
+FROM docker.io/jasonish/evebox:${EVEBOX_VERSION} AS evebox-artifacts
+
 FROM baseapp
 
 ENV DEBCONF_NONINTERACTIVE_SEEN="true" \
-    DEBIAN_FRONTEND="noninteractive"
+    DEBIAN_FRONTEND="noninteractive" \
+    SURICATA_EXPORTER_VERSION=0.6.2
+
 
 # Install bridge-utils as a requirement for frr
 # remove iptables as it is not required anymore from tailscale
@@ -45,6 +50,15 @@ COPY --from=ctx . /
 # Install suricata IDS
 RUN /suricata-and-chrony-installation.sh
 
+# Install suricata-exporter
+RUN curl -fLsS https://github.com/corelight/suricata_exporter/releases/download/v${SURICATA_EXPORTER_VERSION}/suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64.tar.gz -o /tmp/suricata-exporter.tgz \
+ && tar -xf /tmp/suricata-exporter.tgz suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter \
+ && mv suricata_exporter-${SURICATA_EXPORTER_VERSION}.linux-amd64/suricata_exporter /usr/bin/suricata_exporter \
+ && systemctl enable suricata-exporter.service
+
+# Install evebox
+COPY --from=evebox-artifacts /usr/bin/evebox /usr/bin/evebox
+
 RUN systemctl disable chrony \
  && systemctl mask chrony \
  && chmod +x /etc/systemd/system-generators/systemd-vrf-generator \
@@ -55,7 +69,6 @@ RUN systemctl disable chrony \
  && systemctl enable frr.service \
  && systemctl enable ethtool-lan0.service \
  && systemctl enable ethtool-lan1.service
- 
 
 # Fix permissions of systemd service files
 RUN chmod 0644 /lib/systemd/system/*.service

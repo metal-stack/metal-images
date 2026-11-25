@@ -1,0 +1,5 @@
+# os-installer runs `systemctl preset-all`. Debian and Ubuntu do not ship a
+# "disable *" default preset, so every unit with an [Install] section would be
+# enabled. These units are enabled on demand by the firewall-controller.
+disable evebox.service
+disable suricata-ips.service
